@@ -27,7 +27,12 @@
   :figwheel
   {}
   :npm
-  {:dependencies [[express "^4.15.2"]]
+  {:dependencies [[body-parser "^1.17.2"]
+                  [compression "^1.6.2"]
+                  [express "^4.15.2"]
+                  [express-winston "^2.4.0"]
+                  [helmet "^3.6.0"]
+                  [winston "^2.3.1"]]
    :root "build"}
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Profiles
