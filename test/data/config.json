@@ -1,0 +1,8 @@
+{
+	"key1": "file1",
+	"key2": "file2",
+	"file": {
+		"key1": "value1",
+		"key2": "value2"
+	}
+}

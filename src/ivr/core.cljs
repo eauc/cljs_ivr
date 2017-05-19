@@ -1,8 +1,9 @@
 (ns ivr.core
   (:require [cljs.nodejs :as nodejs]
+            [ivr.libs.logger :as logger]
             [ivr.libs.middlewares :as middlewares]
             [ivr.routes.index :as index]
-            [ivr.libs.logger :as logger]))
+            [ivr.services.config :as config]))
 
 (nodejs/enable-util-print!)
 
@@ -18,13 +19,33 @@
               (middlewares/init)
               (.use "/" index/router))))
 
+(defn- start-server [config]
+  (create-app)
+  (-> http
+      (.createServer #(@app %1 %2))
+      (.listen (:port config)
+               #(logger/default "info" "Server started on port"
+                                (:port config)))))
+
 (defn -main []
-  (let [port (or (some-> js/process
-                         (aget "env" "PORT")
-                         (js/parseInt)) 3000)]
-    (create-app)
-    (-> http
-        (.createServer #(@app %1 %2))
-        (.listen port #(logger/default "info" "Server started on port" port)))))
+  (let [env {:port (or (some-> js/process
+                               (aget "env" "PORT")
+                               (js/parseInt)) 3000)}
+        config-paths (-> js/process
+                         (aget "argv")
+                         (.slice 2)
+                         (js->clj))
+        config-layers (into (mapv (fn [path] {:path path}) config-paths)
+                            [{:desc "env" :config env}])]
+    (config/init {:layers config-layers
+                  :http-retry-timeout-s 10
+                  :http-retry-delay-s 2
+                  :on-success (fn [config-info]
+                                (logger/default "info" "Config loaded" (:config config-info))
+                                ;; (re-frame/dispatch-sync [:init config-info])
+                                (start-server (:config config-info)))
+                  :on-error (fn []
+                              (logger/default "error" "Config load failed")
+                              (.exit js/process 1))})))
 
 (set! *main-cli-fn* -main)
