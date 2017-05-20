@@ -34,27 +34,81 @@
                                 :config {:port 3000}}]}
                       result)))
              :on-error #(is (= nil %))}
+            (config/init))
+        init-error-result
+        (-> {:layers [{:path "unknown.json"}]
+             :http-retry-timeout-s 1
+             :http-retry-delay-s 1
+             :on-success (fn [result]
+                           (is (= nil result)))
+             :on-error (fn [error]
+                         (is (= {:config {}
+                                 :loads [{:desc "unknown.json"
+                                          :config {}
+                                          :error (str "Cannot find module '"
+                                                      (.cwd js/process)
+                                                      "/unknown.json'")}]}
+                                error)))}
             (config/init))]
     (async
      done
      (go
        (<! init-result)
+       (<! init-error-result)
        (done)))))
 
-;; (deftest init-error
-;;   (async
-;;    done
-;;    (-> {:layers [{:path "unknown.json"}]
-;;         :http-retry-timeout-s 1
-;;         :http-retry-delay-s 1
-;;         :on-success (fn [result]
-;;                       (is (= nil result))
-;;                       (done))
-;;         :on-error (fn [error]
-;;                     (is (= {:config {}
-;;                             :loads [{:desc "unknown.json"
-;;                                      :config {}
-;;                                      :error (str "Cannot find module '" (.cwd js/process) "/unknown.json'")}]}
-;;                             error))
-;;                     (done))}
-;;        (config/init))))
+(deftest explain
+  (testing "empty config"
+    (let [config-info {:config {}
+                       :loads []}]
+      (is (= config-info
+             (config/explain config-info {})))
+      (is (= config-info
+             (config/explain config-info {:path "to.value"})))))
+  (let [config-info {:config {:port 3000
+                              :dispatch_url {:internal "http://clouddispatch"}}
+                     :loads [{:desc "local.json"
+                              :config {:dispatch_url {:internal "http://localhost:8080"}}}
+                             {:desc "http://cloudstore"
+                              :config {:port 3000
+                                       :dispatch_url {:internal "http://clouddispatch"}}}
+                             {:desc "env"
+                              :config {:port 3000}}]}]
+    (testing "empty path"
+      (is (= config-info
+             (config/explain config-info {}))))
+    (testing "simple path"
+      (is (= {:config {:port 3000}
+              :loads [{:desc "local.json"
+                       :config {}}
+                      {:desc "http://cloudstore"
+                       :config {:port 3000}}
+                      {:desc "env"
+                       :config {:port 3000}}]}
+             (config/explain config-info {:path "port"}))))
+    (testing "deep path"
+      (is (= {:config {:dispatch_url {:internal "http://clouddispatch"}}
+              :loads [{:desc "local.json"
+                       :config {:dispatch_url {:internal "http://localhost:8080"}}}
+                      {:desc "http://cloudstore"
+                       :config {:dispatch_url {:internal "http://clouddispatch"}}}
+                      {:desc "env"
+                       :config {}}]}
+             (config/explain config-info {:path "dispatch_url.internal"}))))
+    (testing "unknown path"
+      (is (= {:config {}
+              :loads [{:desc "local.json"
+                       :config {}}
+                      {:desc "http://cloudstore"
+                       :config {}}
+                      {:desc "env"
+                       :config {}}]}
+             (config/explain config-info {:path "unknown"})))
+      (is (= {:config {}
+              :loads [{:desc "local.json"
+                       :config {}}
+                      {:desc "http://cloudstore"
+                       :config {}}
+                      {:desc "env"
+                       :config {}}]}
+             (config/explain config-info {:path "to.unknown"}))))))
