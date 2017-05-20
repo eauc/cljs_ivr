@@ -20,11 +20,21 @@
       result
       (recur rest (conj result (<! c))))))
 
+(spec/def :ivr.config.init/on-success
+  fn?)
+
+(spec/def :ivr.config.init/on-error
+  fn?)
+
+(spec/def :ivr.config.init/options
+  (spec/keys :req-un [:ivr.config/layers
+                      :ivr.config.layer.load/http-retry-timeout-s
+                      :ivr.config.layer.load/http-retry-delay-s
+                      :ivr.config.init/on-success
+                      :ivr.config.init/on-error]))
+
 (spec/fdef init
-           :args (spec/keys :req-un [:ivr.config/layers
-                                     :ivr.config.layer.load/http-retry-timeout-s
-                                     :ivr.config.layer.load/http-retry-delay-s])
-           :ret :ivr.config/info)
+           :args (spec/cat :options :ivr.config.init/options))
 (defn init [{:as options
              :keys [layers on-success on-error]}]
   (log "debug" "init" options)

@@ -29,7 +29,7 @@
 (spec/def :ivr.config/layer
   (spec/or :file :ivr.config/file-layer
            :object :ivr.config/object-layer
-           :url :ivr.config/url-layer))
+           :url :ivr.config/http-layer))
 
 (spec/def :ivr.config/layers
   (spec/coll-of :ivr.config/layer))

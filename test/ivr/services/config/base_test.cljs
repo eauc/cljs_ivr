@@ -1,8 +1,13 @@
 (ns ivr.services.config.base-test
   (:require [cljs.core.async :refer [<!]]
-            [clojure.test :as test :refer-macros [deftest is run-tests testing async]]
+            [cljs.spec.test :as stest]
+            [clojure.test :as test :refer-macros [async deftest is run-tests testing use-fixtures]]
             [ivr.services.config.base :as base])
   (:require-macros [cljs.core.async.macros :refer [go]]))
+
+(use-fixtures :once
+  {:before (fn [] (stest/instrument 'ivr.services.config.base))
+   :after (fn [] (stest/unstrument 'ivr.services.config.base))})
 
 (deftest layer-type
   (is (= :file-layer
