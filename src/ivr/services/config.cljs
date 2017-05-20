@@ -6,7 +6,16 @@
             [ivr.services.config.file]
             [ivr.services.config.http]
             [ivr.services.config.object]
-            [ivr.services.config.invalid]))
+            [ivr.services.config.invalid]
+            [cljs.core.async :as async :refer [<!]])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
+
+(defn all-chans [chans]
+  (go-loop [[c & rest] chans
+            result []]
+    (if (nil? c)
+      result
+      (recur rest (conj result (<! c))))))
 
 (spec/fdef init
            :args (spec/keys :req-un [:ivr.config/layers
@@ -16,16 +25,13 @@
 (defn init [{:as options
              :keys [layers on-success on-error]}]
   (log "debug" "init" options)
-  (let [load (->> layers
-                  (mapv #(base/load-layer % options))
-                  (clj->js)
-                  (.all js/Promise))]
-    (.then load
-           (fn [load-results]
-             (let [results (js->clj load-results)
-                   config (apply merge (mapv :config load-results))
-                   errors (remove nil? (mapv :error load-results))
-                   info {:config config :loads results}]
-               (if (empty? errors)
-                 (on-success info)
-                 (on-error info)))))))
+  (let [load-chans (mapv #(base/load-layer % options) layers)
+        results-chan (all-chans load-chans)]
+    (go
+      (let [results (<! results-chan)
+            config (apply merge (mapv :config results))
+            errors (remove nil? (mapv :error results))
+            info {:config config :loads results}]
+        (if (empty? errors)
+          (on-success info)
+          (on-error info))))))

@@ -44,8 +44,10 @@
                    [com.cemerick/piggieback "0.2.1"]]
     :cljsbuild
     {:builds
-     {:app {:figwheel {:on-jsload "ivr.core/create-app"}
-            :compiler {:preloads [devtools.preload]}}}}
+     {:app {:figwheel {:on-jsload "ivr.core-test/create-app"}
+            :source-paths ["test"]
+            :compiler {:main "ivr.core-test"
+                       :preloads [devtools.preload]}}}}
     :npm
     {:dependencies [[source-map-support "^0.4.15"]
                     [ws "^2.3.1"]]}}
