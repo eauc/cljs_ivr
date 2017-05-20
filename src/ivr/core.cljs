@@ -1,9 +1,11 @@
 (ns ivr.core
   (:require [cljs.nodejs :as nodejs]
+            [ivr.db]
             [ivr.libs.logger :as logger]
             [ivr.libs.middlewares :as middlewares]
             [ivr.routes.index :as index]
-            [ivr.services.config :as config]))
+            [ivr.services.config :as config]
+            [re-frame.core :as re-frame]))
 
 (nodejs/enable-util-print!)
 
@@ -42,7 +44,7 @@
                   :http-retry-delay-s 2
                   :on-success (fn [config-info]
                                 (logger/default "info" "Config loaded" (:config config-info))
-                                ;; (re-frame/dispatch-sync [:init config-info])
+                                (re-frame/dispatch-sync [:ivr.db/init config-info])
                                 (start-server (:config config-info)))
                   :on-error (fn []
                               (logger/default "error" "Config load failed")

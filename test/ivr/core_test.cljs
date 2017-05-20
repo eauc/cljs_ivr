@@ -7,5 +7,6 @@
 (enable-console-print!)
 
 (defn create-app []
-  (test/run-all-tests #"ivr.*-test")
+  (test/run-tests 'ivr.services.config.base-test
+                  'ivr.services.config-test)
   (core/create-app))
