@@ -3,6 +3,7 @@
             [ivr.db]
             [ivr.libs.logger :as logger]
             [ivr.libs.middlewares :as middlewares]
+            [ivr.routes.api-v1 :as api-v1-routes]
             [ivr.routes.config :as config-routes]
             [ivr.routes.index :as index-routes]
             [ivr.services.config :as config]
@@ -20,8 +21,10 @@
   (reset! app
           (-> (express)
               (middlewares/init)
-              (.use "/" index-routes/router)
-              (.use "/config" config-routes/router))))
+              (index-routes/init)
+              (api-v1-routes/init)
+              (config-routes/init)
+              )))
 
 (defn- start-server [config]
   (create-app)

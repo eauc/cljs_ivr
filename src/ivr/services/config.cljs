@@ -67,13 +67,3 @@
           loads (:loads config-info)]
       {:config (explain-config config path-keys)
        :loads (explain-loads loads path-keys)})))
-
-(re-frame/reg-event-fx
- ::explain-route
- ;; db/default-interceptors
- (fn config-explain-route [{:keys [db]} [_ req res]]
-   (let [query (js->clj (aget req "query") :keywordize-keys true)
-         explanation (explain (:config-info db) query)
-         response (merge explanation {:link "/config"})]
-     (-> res (.send (clj->js response))))
-   {}))

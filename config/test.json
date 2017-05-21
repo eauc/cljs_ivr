@@ -1,0 +1,7 @@
+{
+  "environment": {
+    "dispatch_url": {
+      "internal": "http://clouddispatch"
+    }
+  }
+}

@@ -1,13 +1,16 @@
 (ns ivr.routes.index
-  (:require [cljs.nodejs :as nodejs]))
+  (:require [cljs.nodejs :as nodejs]
+            [ivr.routes.url :as url]))
 
 (defonce express (nodejs/require "express"))
 
-(defn- indexRoute [req res]
-  (-> res (.send (clj->js {:module "IVR"
-                           :version "1.0.0"
-                           :apis {:v1 "/v1"}}))))
+(defn- index-route [req res]
+  (-> res (.send (clj->js url/config))))
 
 (def router
   (doto (.Router express)
-    (.get "/" indexRoute)))
+    (.get "/" index-route)))
+
+(defn init [app]
+  (doto app
+    (.use "/" router)))

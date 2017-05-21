@@ -1,20 +1,22 @@
 (ns ivr.services.config.http
   (:require [cljs.core.async :as async :refer [>!]]
             [cljs.nodejs :as nodejs]
-            [ivr.services.config.base :as base :refer [log]])
-  (:require-macros [cljs.core.async.macros :refer [go]]))
+            [ivr.services.config.base :as base :refer [log]]
+            [ivr.services.web :as web])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
 (defonce superagent (nodejs/require "superagent"))
 
-(defn- delayMs [function delay]
+(defn with-timeout-ms [channel timeout on-timeout]
   (go
-    (<! (async/timeout delay))
-    (function)))
+    (first
+     (async/alts!
+      [(go (<! (async/timeout timeout)) (on-timeout))
+       channel]))))
 
 (defmethod base/load-layer :http-layer
   [layer {:keys [http-retry-timeout-s http-retry-delay-s]}]
-  (let [result (async/chan 1)
-        last-error (atom nil)
+  (let [last-error (atom nil)
         stop (atom false)
         on-http-success
         (fn [response]
@@ -22,19 +24,19 @@
                            (aget "body")
                            (js->clj :keywordize-keys true))]
             (reset! stop true)
-            (go (>! result {:desc (:path layer)
-                            :config config}))))
-        start-load
-        (fn try-to-load []
+            {:desc (:path layer)
+             :config config}))
+        result
+        (go-loop []
           (if-not @stop
-            (-> (superagent "GET" (:path layer))
-                (.accept "json")
-                (.then
-                 on-http-success
-                 (fn on-http-error [error]
-                   (reset! last-error (aget error "message"))
-                   (log "warn" "Http load error, retrying..." {:error @last-error})
-                   (delayMs try-to-load (* 1000 http-retry-delay-s)))))))
+            (let [[result payload] (<! (web/request {:url (:path layer)}))]
+              (if (= result :ivr.web/success)
+                (on-http-success payload)
+                (do
+                  (reset! last-error (:message payload))
+                  (log "warn" "Http load error, retrying...")
+                  (<! (async/timeout (* 1000  http-retry-delay-s)))
+                  (recur))))))
         stop-load
         #(when-not @stop
            (reset! stop true)
@@ -42,7 +44,4 @@
                 {:desc (:path layer)
                  :config {}
                  :error @last-error}))]
-    (start-load)
-    (go (first (async/alts!
-                [(delayMs stop-load (* 1000 http-retry-timeout-s))
-                 result])))))
+    (with-timeout-ms result (* 1000 http-retry-timeout-s) stop-load)))
