@@ -4,6 +4,7 @@
   :dependencies
   [[org.clojure/clojure "1.8.0"]
    [org.clojure/clojurescript "1.9.521"]
+   [hiccups "0.3.0"]
    [reagent "0.6.1"]
    [re-frame "0.9.3"]
    [org.clojure/test.check "0.9.0"]]

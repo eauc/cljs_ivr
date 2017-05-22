@@ -18,6 +18,12 @@
     (let [route {:req "req" :res "res" :next "next"}
           base-context {:coeffects {:db {:config-info {:config "config"}}
                                     :route route}}]
+      (testing "dispatch effect"
+        (is (= (merge base-context
+                      {:effects {:dispatch [:event route :payload]}})
+               (routes/after-route
+                (merge base-context
+                       {:effects {:dispatch [:event :payload]}})))))
       (testing "ivr.routes/next effect"
         (is (= (merge base-context
                       {:effects {:ivr.routes/next {:next "next"}}})

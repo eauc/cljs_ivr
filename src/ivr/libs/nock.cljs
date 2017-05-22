@@ -14,8 +14,7 @@
                               :start "1"
                               :nodes {:1 {:type "announcement"
                                           :soundname "son1"}}}))
-        ;; (.get "/account/0007/file")
-        ;; (.query true)
-        ;; (.reply 200 (clj->js {:meta {:total_count 1}
-        ;;                       :objects [{:_id "id_son1"}]}))
-        )))
+        (.get "/account/0007/file")
+        (.query true)
+        (.reply 200 (clj->js {:meta {:total_count 1}
+                              :objects [{:_id "id_son1"}]})))))

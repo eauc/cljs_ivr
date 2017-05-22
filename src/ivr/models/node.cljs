@@ -2,7 +2,7 @@
   (:require [cljs.spec :as spec]
             [ivr.libs.logger :as logger]
             [ivr.models.store :as store]
-            ;; [ivr.models.verbs :as verbs]
+            [ivr.models.verbs :as verbs]
             [ivr.services.routes :as routes]))
 
 (def known-types
@@ -46,30 +46,30 @@
         (conform-type))
     node))
 
-;; (spec/def ::store
-;;   fn?)
+(spec/def ::store
+  fn?)
 
-;; (spec/def ::verbs
-;;   fn?)
+(spec/def ::verbs
+  fn?)
 
-;; (spec/fdef enter-type
-;;            :args (spec/cat :node ::node
-;;                            :options (spec/keys :req-un [::verbs ::store]))
-;;            :ret map?)
-;; (defmulti enter-type #(node-type %))
+(spec/fdef enter-type
+           :args (spec/cat :node ::node
+                           :options (spec/keys :req-un [::verbs ::store]))
+           :ret map?)
+(defmulti enter-type #(node-type %))
 
-;; (defmethod enter-type :unknown
-;;   [node _]
-;;   {:ivr.routes/response
-;;    (routes/error-response
-;;     {:status 500
-;;      :status_code "invalid_node"
-;;      :message "Invalid node - type"
-;;      :cause node})})
+(defmethod enter-type :unknown
+  [node _]
+  {:ivr.routes/response
+   (routes/error-response
+    {:status 500
+     :status_code "invalid_node"
+     :message "Invalid node - type"
+     :cause node})})
 
-;; (spec/fdef enter
-;;            :args (spec/cat :node ::node)
-;;            :ret map?)
-;; (defn enter [node]
-;;   (enter-type node {:store store/query
-;;                     :verbs verbs/create}))
+(spec/fdef enter
+           :args (spec/cat :node ::node)
+           :ret map?)
+(defn enter [node]
+  (enter-type node {:store store/query
+                    :verbs verbs/create}))

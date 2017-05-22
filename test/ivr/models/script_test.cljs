@@ -66,48 +66,47 @@
                             :next :2}}}
                (script/conform {:id "script-id"
                                 :nodes {:3 {:next "2"}}} options)))))
-    ;; (testing "start"
-    ;;   (let [enter-node (fn [node] (assoc node :action "enter-node"))]
-    ;;     (is (= {:ivr.routes/response
-    ;;             {:status 500
-    ;;              :data {:status 500
-    ;;                     :status_code "invalid_script"
-    ;;                     :message "Invalid script - missing start index"
-    ;;                     :cause {}}}}
-    ;;            (script/start {} enter-node)))
-    ;;     (let [script {:id "script-id"
-    ;;                   :nodes {:1 {}}}]
-    ;;       (is (= {:ivr.routes/response
-    ;;               {:status 500
-    ;;                :data {:status 500
-    ;;                       :status_code "invalid_script"
-    ;;                       :message "Invalid script - missing start index"
-    ;;                       :cause script}}}
-    ;;              (script/start script enter-node))))
-    ;;     (let [script {:id "script-id"
-    ;;                   :start "toto"
-    ;;                   :nodes {:1 {}}}]
-    ;;       (is (= {:ivr.routes/response
-    ;;               {:status 500
-    ;;                :data {:status 500
-    ;;                       :status_code "invalid_script"
-    ;;                       :message "Invalid script - missing start node"
-    ;;                       :cause script}}}
-    ;;              (script/start script enter-node))))
-    ;;     (let [script {:id "script-id"
-    ;;                   :start :1
-    ;;                   :nodes {:1 {:type "unknown"}}}]
-    ;;       (is (= {:ivr.routes/response
-    ;;               {:status 500
-    ;;                :data {:status 500
-    ;;                       :status_code "invalid_node"
-    ;;                       :message "Invalid node - type"
-    ;;                       :cause (get-in script [:nodes :1])}}}
-    ;;              (script/start script enter-node))))
-    ;;     (let [script {:id "script-id"
-    ;;                   :start :1
-    ;;                   :nodes {:1 {:type "announcement"}}}]
-    ;;       (is (= {:type "announcement"
-    ;;               :action "enter-node"}
-    ;;              (script/start script enter-node))))))
-    ))
+    (testing "start"
+      (let [enter-node (fn [node] (assoc node :action "enter-node"))]
+        (is (= {:ivr.routes/response
+                {:status 500
+                 :data {:status 500
+                        :status_code "invalid_script"
+                        :message "Invalid script - missing start index"
+                        :cause {}}}}
+               (script/start {} enter-node)))
+        (let [script {:id "script-id"
+                      :nodes {:1 {}}}]
+          (is (= {:ivr.routes/response
+                  {:status 500
+                   :data {:status 500
+                          :status_code "invalid_script"
+                          :message "Invalid script - missing start index"
+                          :cause script}}}
+                 (script/start script enter-node))))
+        (let [script {:id "script-id"
+                      :start "toto"
+                      :nodes {:1 {}}}]
+          (is (= {:ivr.routes/response
+                  {:status 500
+                   :data {:status 500
+                          :status_code "invalid_script"
+                          :message "Invalid script - missing start node"
+                          :cause script}}}
+                 (script/start script enter-node))))
+        (let [script {:id "script-id"
+                      :start :1
+                      :nodes {:1 {:type "unknown"}}}]
+          (is (= {:ivr.routes/response
+                  {:status 500
+                   :data {:status 500
+                          :status_code "invalid_node"
+                          :message "Invalid node - type"
+                          :cause (get-in script [:nodes :1])}}}
+                 (script/start script enter-node))))
+        (let [script {:id "script-id"
+                      :start :1
+                      :nodes {:1 {:type "announcement"}}}]
+          (is (= {:type "announcement"
+                  :action "enter-node"}
+                 (script/start script enter-node))))))))

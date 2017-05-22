@@ -1,8 +1,10 @@
 (ns ivr.core-test
   (:require [clojure.test :as test]
             [ivr.models.node-test]
+            [ivr.models.node.announcement-test]
             [ivr.models.script-test]
             [ivr.models.store-test]
+            [ivr.models.verb-base-test]
             [ivr.routes.url-test]
             [ivr.services.config.base-test]
             [ivr.services.config-test]
@@ -13,8 +15,10 @@
 
 (defn create-app []
   (test/run-tests 'ivr.models.node-test
+                  'ivr.models.node.announcement-test
                   'ivr.models.script-test
                   'ivr.models.store-test
+                  'ivr.models.verb-base-test
                   'ivr.routes.url-test
                   'ivr.services.config.base-test
                   'ivr.services.config-test

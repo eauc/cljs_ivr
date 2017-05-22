@@ -42,6 +42,7 @@
         config (get-in context [:coeffects :db :config-info :config])]
     (-> context
         (update-effect :ivr.web/request #(update-web-request-fx % route))
+        (update-effect :dispatch #(insert-route-in-event % route))
         (merge-in-effect :ivr.routes/response {:res res})
         (merge-in-effect :ivr.routes/next {:next next})
         (merge-in-effect :ivr.web/request {:config config}))))
@@ -60,10 +61,12 @@
 
 (re-frame/reg-fx
  :ivr.routes/response
- (fn route-response [{:keys [status data res]
-                      :or {status 200}}]
+ (fn route-response [{:keys [status content-type data res]
+                      :or {status 200
+                           content-type "application/json"}}]
    (-> res
        (.status status)
+       (.set "Content-Type" content-type)
        (.send (clj->js data)))))
 
 (re-frame/reg-fx

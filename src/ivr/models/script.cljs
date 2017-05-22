@@ -2,7 +2,7 @@
   (:require [cljs.spec :as spec]
             [ivr.db :as db]
             [ivr.models.node :as node]
-            ;; [ivr.models.node.announcement]
+            [ivr.models.node.announcement]
             [ivr.services.routes :as routes]
             [re-frame.core :as re-frame]))
 
@@ -33,33 +33,33 @@
                                                                   :script-id (:id script)
                                                                   :account-id account-id})])))))
 
-;; (spec/fdef start
-;;            :args (spec/cat :script ::script :enter-node fn?)
-;;            :ret map?)
-;; (defn start [script enter-node]
-;;   (let [start-index (:start script)
-;;         start-node (get-in script [:nodes start-index])]
-;;     (cond
-;;       (nil? start-index) {:ivr.routes/response
-;;                           (routes/error-response
-;;                            {:status 500
-;;                             :status_code "invalid_script"
-;;                             :message "Invalid script - missing start index"
-;;                             :cause script})}
-;;       (nil? start-node) {:ivr.routes/response
-;;                          (routes/error-response
-;;                           {:status 500
-;;                            :status_code "invalid_script"
-;;                            :message "Invalid script - missing start node"
-;;                            :cause script})}
-;;       (not (spec/valid? :ivr.models.node/type
-;;             (:type start-node))) {:ivr.routes/response
-;;                                   (routes/error-response
-;;                                    {:status 500
-;;                                     :status_code "invalid_node"
-;;                                     :message "Invalid node - type"
-;;                                     :cause start-node})}
-;;       :else (enter-node start-node {}))))
+(spec/fdef start
+           :args (spec/cat :script ::script :enter-node fn?)
+           :ret map?)
+(defn start [script enter-node]
+  (let [start-index (:start script)
+        start-node (get-in script [:nodes start-index])]
+    (cond
+      (nil? start-index) {:ivr.routes/response
+                          (routes/error-response
+                           {:status 500
+                            :status_code "invalid_script"
+                            :message "Invalid script - missing start index"
+                            :cause script})}
+      (nil? start-node) {:ivr.routes/response
+                         (routes/error-response
+                          {:status 500
+                           :status_code "invalid_script"
+                           :message "Invalid script - missing start node"
+                           :cause script})}
+      (not (spec/valid? :ivr.models.node/type
+                        (:type start-node))) {:ivr.routes/response
+                                              (routes/error-response
+                                               {:status 500
+                                                :status_code "invalid_node"
+                                                :message "Invalid node - type"
+                                                :cause start-node})}
+      :else (enter-node start-node {}))))
 
 (re-frame/reg-event-fx
  ::start-route
@@ -68,6 +68,4 @@
  (fn start-route [{:keys [route]} _]
    (let [{:keys [req]} route
          script (aget req "script")]
-     {:ivr.routes/response {:data script}}
-     ;; (start script node/enter)
-     )))
+     (start script node/enter))))
