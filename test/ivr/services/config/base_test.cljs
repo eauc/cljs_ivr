@@ -65,7 +65,9 @@
                   (<! file-error-load))))
          (testing "http"
            (is (= {:desc "http://localhost:3000"
-                   :config {:module "IVR" :version "1.0.0" :apis {:v1 "/smartccivr"}}}
+                   :config {:module "IVR"
+                            :version "1.0.0"
+                            :apis {:v1 {:link "/smartccivr"}}}}
                   (<! http-load)))
            (is (= {:desc "http://localhost:3001"
                    :config {}

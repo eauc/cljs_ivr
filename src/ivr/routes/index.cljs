@@ -5,7 +5,7 @@
 (defonce express (nodejs/require "express"))
 
 (defn- index-route [req res]
-  (-> res (.send (clj->js url/config))))
+  (-> res (.send (clj->js (update-in url/config [:apis :v1] select-keys [:link])))))
 
 (def router
   (doto (.Router express)

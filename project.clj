@@ -10,8 +10,8 @@
   :hooks [leiningen.cljsbuild]
   :plugins
   [[lein-cljsbuild "1.1.5"]
-   [lein-figwheel "0.5.10"]
-   [lein-npm "0.6.2"]
+   [lein-figwheel "0.5.10" :exclusions [org.clojure/clojure]]
+   [lein-npm "0.6.2" :exclusions [org.clojure/clojure]]
    [lein-pprint "1.1.2"]]
   :source-paths ["src"]
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

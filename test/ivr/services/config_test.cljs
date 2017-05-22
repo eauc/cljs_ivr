@@ -2,8 +2,7 @@
   (:require [cljs.core.async :as async :refer [<!]]
             [cljs.spec.test :as stest]
             [clojure.test :as test :refer-macros [async deftest is run-tests testing use-fixtures]]
-            [ivr.services.config :as config]
-            [cljs.spec :as spec])
+            [ivr.services.config :as config])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (use-fixtures :once
@@ -28,11 +27,11 @@
                                       :key2 "value2"}
                                :module "IVR"
                                :version "1.0.0"
-                               :apis {:v1 "/smartccivr"}}
+                               :apis {:v1 {:link "/smartccivr"}}}
                       :loads [{:desc "http://localhost:3000"
                                :config {:module "IVR"
                                         :version "1.0.0"
-                                        :apis {:v1 "/smartccivr"}}}
+                                        :apis {:v1 {:link "/smartccivr"}}}}
                               {:desc "test/data/config.json"
                                :config {:key1 "file1"
                                         :key2 "file2"

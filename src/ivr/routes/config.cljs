@@ -9,17 +9,11 @@
 (defonce express (nodejs/require "express"))
 
 (def base-url
-  (str (get-in url/config [:apis :v1]) "/config"))
+  (str (get-in url/config [:apis :v1 :link])
+       (get-in url/config [:apis :v1 :config :link])))
 
 (def explain-url
-  "/")
-
-(defn absolute-url [api-entry]
-  (str base-url api-entry))
-
-(defn describe []
-  {:link base-url
-   :explain (absolute-url explain-url)})
+  (get-in url/config [:apis :v1 :config :explain]))
 
 (def explain-route
   (routes/dispatch [::explain-route]))
@@ -39,7 +33,8 @@
  (fn config-explain-route [{:keys [db route]} _]
    (let [{:keys [req]} route
          query (js->clj (aget req "query") :keywordize-keys true)
-         explanation (config/explain (:config-info db) query)]
+         explanation (config/explain (:config-info db) query)
+         link (url/absolute [:v1 :config :explain])]
      {:ivr.routes/response
       {:data (merge explanation
-                    {:link (absolute-url explain-url)})}})))
+                    {:link link})}})))
