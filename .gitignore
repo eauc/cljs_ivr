@@ -3,3 +3,4 @@
 build/
 figwheel_server.log
 target/
+node_modules

@@ -23,7 +23,7 @@
           :compiler {:main "ivr.core"
                      :optimizations :none
                      :output-to "build/app.js"
-                     :output-dir "build"
+                     :output-dir "build/app"
                      :pretty-print true
                      :target :nodejs}}}}
   :figwheel
@@ -34,7 +34,6 @@
                   [express "^4.15.2"]
                   [express-winston "^2.4.0"]
                   [helmet "^3.6.0"]
-                  [nock "^9.0.13"]
                   [superagent "^3.5.2"]
                   [winston "^2.3.1"]]
    :root "build"}
@@ -44,15 +43,24 @@
   {:dev
    {:dependencies [[binaryage/devtools "0.9.4"]
                    [figwheel-sidecar "0.5.10"]
+                   [pjstadig/humane-test-output "0.8.1"]
                    [com.cemerick/piggieback "0.2.1"]]
     :cljsbuild
     {:builds
-     {:app {:figwheel {:on-jsload "ivr.core-test/create-app"}
-            :source-paths ["test"]
-            :compiler {:main "ivr.core-test"
-                       :preloads [devtools.preload]}}}}
+     {:app {:figwheel {:on-jsload "ivr.core/create-app"}
+            :compiler {:preloads [devtools.preload]}}
+      :test {:figwheel {:on-jsload "ivr.core-test/run-tests"}
+             :source-paths ["src" "test"]
+             :compiler {:main "ivr.core-test"
+                        :optimizations :none
+                        :output-to "build/test.js"
+                        :output-dir "build/test"
+                        :preloads [devtools.preload]
+                        :pretty-print true
+                        :target :nodejs}}}}
     :npm
-    {:dependencies [[source-map-support "^0.4.15"]
+    {:dependencies [[nock "^9.0.13"]
+                    [source-map-support "^0.4.15"]
                     [ws "^2.3.1"]]}}
    :production
    {}
