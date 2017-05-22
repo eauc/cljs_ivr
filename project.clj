@@ -33,6 +33,7 @@
                   [express "^4.15.2"]
                   [express-winston "^2.4.0"]
                   [helmet "^3.6.0"]
+                  [nock "^9.0.13"]
                   [superagent "^3.5.2"]
                   [winston "^2.3.1"]]
    :root "build"}
