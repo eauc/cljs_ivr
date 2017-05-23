@@ -51,12 +51,11 @@
  ::resolve-script
  [routes/interceptor
   db/default-interceptors]
- (fn resolve-script [{:keys [db route]} _]
-   (let [{:keys [req]} route
-         account-id (aget req "query" "account_id")
+ (fn resolve-script [_ [_ {:keys [req]}]]
+   (let [account-id (aget req "query" "account_id")
          script-id (aget req "params" "script_id")
-         on-success [::resolve-script-success account-id]
-         on-error [::resolve-script-error script-id]]
+         on-success [::resolve-script-success {:account-id account-id}]
+         on-error [::resolve-script-error {:script-id script-id}]]
      {:ivr.web/request
       (store/query
        {:type :ivr.store/get-script
@@ -69,9 +68,8 @@
  ::resolve-script-success
  [routes/interceptor
   db/default-interceptors]
- (fn resolve-script-success [{:keys [route]} [_ account-id response]]
-   (let [{:keys [req next]} route
-         script (-> response
+ (fn resolve-script-success [_ [_ {:keys [account-id response]} {:keys [req]}]]
+   (let [script (-> response
                     (aget "body")
                     (js->clj :keywordize-keys true)
                     (script/conform {:account-id account-id}))]
@@ -82,7 +80,7 @@
  ::resolve-script-error
  [routes/interceptor
   db/default-interceptors]
- (fn resolve-script-error [_ [_ script-id error]]
+ (fn resolve-script-error [_ [_ {:keys [script-id error]}]]
    {:ivr.routes/response
     (routes/error-response
      {:status 404

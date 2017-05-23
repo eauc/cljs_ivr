@@ -30,8 +30,8 @@
      :query {:query {:filename name
                      :metadata.type "scriptSound"
                      :metadata.script script-id}}
-     :on-success [::get-sound-success query]
-     :on-error [::get-file-error (assoc query :url url)]}))
+     :on-success [::get-sound-success {:query query}]
+     :on-error [::get-file-error {:query (assoc query :url url)}]}))
 
 (defn get-sound-success [{:keys [account-id script-id name on-success] :as query} response]
   (if (= 0 (or (aget response "body" "meta" "total_count") 0))
@@ -44,14 +44,16 @@
                :script-id script-id
                :name name}})}
     (let [id (aget response "body" "objects" 0 "_id")
-          url (str "/cloudstore/file/" id)]
-      {:dispatch (vec (conj on-success url))})))
+          url (str "/cloudstore/file/" id)
+          [on-success-event on-success-payload] on-success]
+      {:dispatch [on-success-event
+                  (assoc on-success-payload :sound-url url)]})))
 
 (re-frame/reg-event-fx
  ::get-sound-success
  [routes/interceptor
   db/default-interceptors]
- (fn get-sound-success-fx [_ [_ query response]]
+ (fn get-sound-success-fx [_ [_ {:keys [query response]}]]
    (get-sound-success query response)))
 
 (defn get-file-error [query error]
@@ -68,5 +70,5 @@
  ::get-file-error
  [routes/interceptor
   db/default-interceptors]
- (fn get-file-error-fx [_ [_ query error]]
+ (fn get-file-error-fx [_ [_ {:keys [query error]}]]
    (get-file-error query error)))

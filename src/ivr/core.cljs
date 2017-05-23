@@ -51,7 +51,7 @@
                   :http-retry-delay-s 2
                   :on-success (fn [config-info]
                                 (logger/default "info" "Config loaded" (:config config-info))
-                                (re-frame/dispatch-sync [:ivr.db/init config-info])
+                                (re-frame/dispatch-sync [:ivr.db/init {:config-info config-info}])
                                 (start-server (:config config-info)))
                   :on-error (fn []
                               (logger/default "error" "Config load failed")

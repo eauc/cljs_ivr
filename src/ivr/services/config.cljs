@@ -4,7 +4,6 @@
             [cljs.nodejs :as nodejs]
             [cljs.spec :as spec]
             [ivr.db :as db]
-            [ivr.libs.logger :as logger]
             [ivr.services.config.base :as base :refer [log]]
             [ivr.services.config.file]
             [ivr.services.config.http]

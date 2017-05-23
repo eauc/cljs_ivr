@@ -1,6 +1,5 @@
 (ns ivr.models.node
   (:require [cljs.spec :as spec]
-            [ivr.libs.logger :as logger]
             [ivr.models.store :as store]
             [ivr.models.verbs :as verbs]
             [ivr.services.routes :as routes]))

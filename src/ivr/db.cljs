@@ -43,5 +43,5 @@
 (re-frame/reg-event-db
  ::init
  [default-interceptors]
- (fn init [db [_ config-info]]
+ (fn init [db [_ {:keys [config-info]}]]
    (assoc db :config-info config-info)))

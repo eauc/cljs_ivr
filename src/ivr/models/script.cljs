@@ -65,7 +65,6 @@
  ::start-route
  [routes/interceptor
   db/default-interceptors]
- (fn start-route [{:keys [route]} _]
-   (let [{:keys [req]} route
-         script (aget req "script")]
+ (fn start-route [_ [_ {:keys [req]}]]
+   (let [script (aget req "script")]
      (start script node/enter))))

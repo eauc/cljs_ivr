@@ -1,6 +1,5 @@
 (ns ivr.routes.url
-  (:require [clojure.string :as str]
-            [ivr.libs.logger :as logger]))
+  (:require [clojure.string :as s]))
 
 (def config
   {:module "IVR"
@@ -20,8 +19,8 @@
       (:link value))))
 
 (defn- replace-param [url [name value]]
-  (let [pattern (str/replace (str name) #"-" "_")]
-    (str/replace url pattern value)))
+  (let [pattern (s/replace (str name) #"-" "_")]
+    (s/replace url pattern value)))
 
 (defn- replace-params [url params]
   (reduce #(replace-param %1 %2) url params))

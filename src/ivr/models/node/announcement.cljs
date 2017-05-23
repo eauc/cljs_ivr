@@ -24,25 +24,27 @@
   [node] node)
 
 (defmethod node/enter-type "announcement"
-  [node {:keys [store verbs]}]
+  [node {:keys [store verbs] :as options}]
   (let [{:keys [account-id script-id id next disabled soundname]} node]
     (if disabled
       (if next
-        {:ivr.routes/response (verbs [{:type :ivr.verbs/redirect
-                                       :path (url/absolute
-                                              [:v1 :action :script-enter-node]
-                                              {:script-id script-id
-                                               :node-id (subs (str next) 1)})}])}
-        {:ivr.routes/response (verbs [{:type :ivr.verbs/hangup}])})
+        {:ivr.routes/response
+         (verbs [{:type :ivr.verbs/redirect
+                  :path (url/absolute
+                          [:v1 :action :script-enter-node]
+                          {:script-id script-id
+                           :node-id (subs (str next) 1)})}])}
+        {:ivr.routes/response
+         (verbs [{:type :ivr.verbs/hangup}])})
       {:ivr.web/request
        (store
         {:type :ivr.store/get-sound-by-name
          :name soundname
          :account-id account-id
          :script-id script-id
-         :on-success [::play-sound node verbs]})})))
+         :on-success [::play-sound options]})})))
 
-(defn play-sound [{:keys [id no_barge script-id]} verbs sound-url]
+(defn play-sound [sound-url {:keys [id no_barge script-id]} verbs]
   (if no_barge
     {:ivr.routes/response
      (verbs [{:type :ivr.verbs/play
@@ -61,5 +63,5 @@
  ::play-sound
  [routes/interceptor
   db/default-interceptors]
- (fn play-sound-fx [_ [_ node verbs sound-url]]
-   (play-sound node verbs sound-url)))
+ (fn play-sound-fx [_ [_ {:keys [node verbs sound-url]}]]
+   (play-sound sound-url node verbs)))

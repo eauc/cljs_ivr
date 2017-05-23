@@ -31,16 +31,16 @@
                                 :metadata.type "scriptSound"
                                 :metadata.script "script-id"}}
                 :on-success
-                [:ivr.models.store/get-sound-success query]
+                [:ivr.models.store/get-sound-success {:query query}]
                 :on-error
                 [:ivr.models.store/get-file-error
-                 (assoc query :url "/cloudstore/account/account-id/file")]}
+                 {:query (assoc query :url "/cloudstore/account/account-id/file")}]}
                (store/query query)))))
     (testing "get-sound-success"
       (let [query {:account-id "account-id"
                    :script-id "script-id"
                    :name "sound"
-                   :on-success [:success :payload]}]
+                   :on-success [:success {:payload "data"}]}]
         (testing "no result"
           (let [response (clj->js {:body {:meta {:total_count 0}}
                                    :objects []})]
@@ -57,7 +57,8 @@
           (let [response (clj->js {:body {:meta {:total_count 2}
                                           :objects [{:_id "42"}
                                                     {:_id "54"}]}})]
-            (is (= {:dispatch [:success :payload "/cloudstore/file/42"]}
+            (is (= {:dispatch [:success {:payload "data"
+                                         :sound-url "/cloudstore/file/42"}]}
                    (store/get-sound-success query response)))))))
     (testing "get-file-error"
       (is (= {:ivr.routes/response
