@@ -26,8 +26,35 @@
                                :query query})
             verbs (fn [actions] {:verbs "mock"
                                  :actions actions})
-            options {:store store
+            options {:action-data {:action "data"}
+                     :call-id "call-id"
+                     :store store
                      :verbs verbs}]
+        (testing "preset"
+          (let [node {:type "announcement"
+                      :account-id "account-id"
+                      :script-id "script-id"
+                      :soundname "sound"
+                      :preset {:type :ivr.node.announcement.preset/set
+                               :to :to_var
+                               :value "set_value"}}]
+            (is (= {:call-id "call-id"
+                    :data {:action "data"
+                           :to_var "set_value"}}
+                   (:ivr.call/action-data
+                    (node/enter-type node options)))))
+          (let [node {:type "announcement"
+                      :account-id "account-id"
+                      :script-id "script-id"
+                      :soundname "sound"
+                      :preset {:type :ivr.node.announcement.preset/copy
+                               :to :to_var
+                               :from :action}}]
+            (is (= {:call-id "call-id"
+                    :data {:action "data"
+                           :to_var "data"}}
+                   (:ivr.call/action-data
+                    (node/enter-type node options))))))
         (testing "enabled"
           (let [node {:type "announcement"
                       :account-id "account-id"

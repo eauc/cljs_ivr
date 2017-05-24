@@ -4,27 +4,14 @@
             [ivr.models.node :as node]
             [ivr.models.node.announcement]
             [ivr.services.routes :as routes]
+            [ivr.specs.node]
+            [ivr.specs.script]
             [re-frame.core :as re-frame]))
-
-(spec/def ::account-id
-  string?)
-
-(spec/def ::id
-  string?)
-
-(spec/def ::start
-  keyword?)
-
-(spec/def ::nodes
-  (spec/coll-of :ivr.models.node/node :kind map?))
-
-(spec/def ::script
-  (spec/keys :req-un [::id ::account-id ::start ::nodes]))
 
 (spec/fdef conform
            :args (spec/cat :script map?
-                           :options (spec/keys :req-un [::account-id]))
-           :ret ::script)
+                           :options (spec/keys :req-un [:ivr.script/account-id]))
+           :ret :ivr.script/script)
 (defn conform [script {:keys [account-id]}]
   (-> script
       (assoc :account-id account-id)
@@ -34,9 +21,10 @@
                                                                   :account-id account-id})])))))
 
 (spec/fdef start
-           :args (spec/cat :script ::script :enter-node fn?)
+           :args (spec/cat :script :ivr.script/script
+                           :options :ivr.script/start-options)
            :ret map?)
-(defn start [script enter-node]
+(defn start [script {:keys [call-id action-data enter-node]}]
   (let [start-index (:start script)
         start-node (get-in script [:nodes start-index])]
     (cond
@@ -52,19 +40,24 @@
                            :status_code "invalid_script"
                            :message "Invalid script - missing start node"
                            :cause script})}
-      (not (spec/valid? :ivr.models.node/type
+      (not (spec/valid? :ivr.node/type
                         (:type start-node))) {:ivr.routes/response
                                               (routes/error-response
                                                {:status 500
                                                 :status_code "invalid_node"
                                                 :message "Invalid node - type"
                                                 :cause start-node})}
-      :else (enter-node start-node {}))))
+      :else (enter-node start-node {:action-data action-data
+                                    :call-id call-id}))))
 
 (re-frame/reg-event-fx
  ::start-route
  [routes/interceptor
   db/default-interceptors]
- (fn start-route [_ [_ {:keys [req]}]]
-   (let [script (aget req "script")]
-     (start script node/enter))))
+ (fn start-route [{:keys [db]} [_ {:keys [req]}]]
+   (let [script (aget req "script")
+         call-id (aget req "query" "call_id")
+         action-data (get-in db [:calls call-id :action-data])]
+     (start script {:action-data action-data
+                    :call-id call-id
+                    :enter-node node/enter}))))

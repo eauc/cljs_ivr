@@ -1,12 +1,7 @@
 (ns ivr.models.verb-base
-  (:require [cljs.spec :as spec]))
-
-(spec/def ::type
-  keyword?)
-
-(spec/def ::verb
-  (spec/keys :req-un [::type]))
+  (:require [cljs.spec :as spec]
+            [ivr.specs.verb]))
 
 (spec/fdef create-type
-           :args (spec/cat :verb ::verb))
+           :args (spec/cat :verb :ivr.verb/verb))
 (defmulti create-type :type)

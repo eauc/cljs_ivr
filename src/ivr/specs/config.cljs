@@ -1,6 +1,5 @@
-(ns ivr.services.config.spec
-  (:require [cljs.spec :as spec]
-            [ivr.libs.logger :as logger]))
+(ns ivr.specs.config
+  (:require [cljs.spec :as spec]))
 
 (spec/def :ivr.config/config
   map?)
@@ -40,6 +39,10 @@
 (spec/def :ivr.config.layer.load/http-retry-delay-s
   integer?)
 
+(spec/def :ivr.config.layer.load/options
+  (spec/keys :req-un [:ivr.config.layer.load/http-retry-timeout-s
+                      :ivr.config.layer.load/http-retry-delay-s]))
+
 (spec/def :ivr.config.layer.load/error
   string?)
 
@@ -53,3 +56,16 @@
 (spec/def :ivr.config/info
   (spec/keys :req-un [:ivr.config/config
                       :ivr.config/loads]))
+
+(spec/def :ivr.config.init/on-success
+  fn?)
+
+(spec/def :ivr.config.init/on-error
+  fn?)
+
+(spec/def :ivr.config.init/options
+  (spec/keys :req-un [:ivr.config/layers
+                      :ivr.config.layer.load/http-retry-timeout-s
+                      :ivr.config.layer.load/http-retry-delay-s
+                      :ivr.config.init/on-success
+                      :ivr.config.init/on-error]))

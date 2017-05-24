@@ -1,6 +1,6 @@
 (ns ivr.services.config.base
   (:require [cljs.spec :as spec]
-            [ivr.services.config.spec]
+            [ivr.specs.config]
             [ivr.libs.logger :as logger]))
 
 (def log (logger/create "Config"))
@@ -14,7 +14,6 @@
 
 (spec/fdef load-layer
            :args (spec/cat :layer :ivr.config/http-layer
-                           :options (spec/keys :req-un [:ivr.config.layer.load/http-retry-timeout-s
-                                                        :ivr.config.layer.load/http-retry-delay-s]))
+                           :options :ivr.config.layer.load/options)
            :ret any?)
 (defmulti load-layer layer-type)

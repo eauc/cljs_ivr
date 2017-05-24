@@ -3,15 +3,9 @@
             [clojure.data :as data]
             [ivr.debug :refer [debug?]]
             [ivr.libs.logger :as logger]
-            [ivr.services.config.spec]
+            [ivr.specs.db]
             [re-frame.core :as re-frame]
             [re-frame.loggers :as re-loggers]))
-
-(spec/def ::config-info
-  :ivr.config/info)
-
-(spec/def ::db
-  (spec/keys :req-un [::config-info]))
 
 (def log
   (logger/create "DB"))
@@ -22,11 +16,11 @@
    :after
    (fn check-db-schema [context]
      (let [new-db (get-in context [:effects :db])]
-       (if (or (nil? new-db) (spec/valid? ::db new-db))
+       (if (or (nil? new-db) (spec/valid? :ivr.db/db new-db))
          context
          (do
            (log "error" "spec check failed"
-                (spec/explain-data ::db new-db))
+                (spec/explain-data :ivr.db/db new-db))
            (assoc context :effects {})))))))
 
 (re-loggers/set-loggers!
@@ -40,8 +34,11 @@
   [(when debug? re-frame/debug)
    (when debug? check-db-interceptor)])
 
+(def default-db
+  {:calls {}})
+
 (re-frame/reg-event-db
  ::init
  [default-interceptors]
- (fn init [db [_ {:keys [config-info]}]]
-   (assoc db :config-info config-info)))
+ (fn init [_ [_ {:keys [config-info]}]]
+   (assoc default-db :config-info config-info)))

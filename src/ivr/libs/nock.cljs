@@ -13,7 +13,9 @@
         (.reply 200 (clj->js {:id "1234"
                               :start "1"
                               :nodes {:1 {:type "announcement"
-                                          :soundname "son1"}}}))
+                                          :soundname "son1"
+                                          :preset {:value "toto"
+                                                   :varname "titi"}}}}))
         (.get "/account/0007/file")
         (.query true)
         (.reply 200 (clj->js {:meta {:total_count 1}

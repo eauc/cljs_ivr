@@ -6,17 +6,15 @@
             [ivr.models.verbs.gather]
             [ivr.models.verbs.hangup]
             [ivr.models.verbs.play]
-            [ivr.models.verbs.redirect])
+            [ivr.models.verbs.redirect]
+            [ivr.specs.verb])
   (:require-macros [hiccups.core :as hiccup :refer [html]]))
-
-(spec/def ::verbs
-  (spec/coll-of :ivr.models.verb-base/verb :kind vector?))
 
 (defn clj->xml [data]
   (html data))
 
 (spec/fdef create
-           :args (spec/cat :verbs ::verbs))
+           :args (spec/cat :verbs :ivr.verb/verbs))
 (defn create [verbs]
   (let [verbs-xml [:Response (for [verb verbs] (verb-base/create-type verb))]]
     {:content-type "application/xml"

@@ -7,6 +7,7 @@
             [ivr.models.store-test]
             [ivr.models.verb-base-test]
             [ivr.routes.url-test]
+            [ivr.services.calls-test]
             [ivr.services.config.base-test]
             [ivr.services.config-test]
             [ivr.services.routes-test]))
@@ -20,6 +21,7 @@
                   'ivr.models.store-test
                   'ivr.models.verb-base-test
                   'ivr.routes.url-test
+                  'ivr.services.calls-test
                   'ivr.services.config.base-test
                   'ivr.services.config-test
                   'ivr.services.routes-test))

@@ -1,17 +1,12 @@
 (ns ivr.models.store
-  (:require [re-frame.core :as re-frame]
+  (:require [cljs.spec :as spec]
             [ivr.services.routes :as routes]
-            [cljs.spec :as spec]
-            [ivr.db :as db]))
-
-(spec/def ::type
-  keyword?)
-
-(spec/def ::query
-  (spec/keys :req-un [::type]))
+            [ivr.db :as db]
+            [ivr.specs.store]
+            [re-frame.core :as re-frame]))
 
 (spec/fdef query
-           :args (spec/cat :query ::query)
+           :args (spec/cat :query :ivr.store/query)
            :ret map?)
 (defmulti query :type)
 

@@ -1,14 +1,15 @@
 (ns ivr.services.config
-  (:require [clojure.string :as str]
-            [cljs.core.async :as async :refer [<!]]
+  (:require [cljs.core.async :as async :refer [<!]]
             [cljs.nodejs :as nodejs]
             [cljs.spec :as spec]
+            [clojure.string :as str]
             [ivr.db :as db]
             [ivr.services.config.base :as base :refer [log]]
             [ivr.services.config.file]
             [ivr.services.config.http]
             [ivr.services.config.object]
             [ivr.services.config.invalid]
+            [ivr.specs.config]
             [re-frame.core :as re-frame])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
@@ -18,19 +19,6 @@
     (if (nil? c)
       result
       (recur rest (conj result (<! c))))))
-
-(spec/def :ivr.config.init/on-success
-  fn?)
-
-(spec/def :ivr.config.init/on-error
-  fn?)
-
-(spec/def :ivr.config.init/options
-  (spec/keys :req-un [:ivr.config/layers
-                      :ivr.config.layer.load/http-retry-timeout-s
-                      :ivr.config.layer.load/http-retry-delay-s
-                      :ivr.config.init/on-success
-                      :ivr.config.init/on-error]))
 
 (spec/fdef init
            :args (spec/cat :options :ivr.config.init/options))

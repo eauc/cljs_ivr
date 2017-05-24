@@ -2,32 +2,11 @@
   (:require [cljs.spec :as spec]
             [ivr.models.store :as store]
             [ivr.models.verbs :as verbs]
-            [ivr.services.routes :as routes]))
-
-(def known-types
-  #{"announcement"})
-
-(spec/def ::account-id
-  string?)
-
-(spec/def ::script-id
-  string?)
-
-(spec/def ::next
-  keyword?)
-
-(spec/def ::type
-  known-types)
-
-(spec/def ::base-node
-  (spec/keys :req-un [::account-id ::script-id ::type]
-             :opt-un [::next]))
-
-(spec/def ::node
-  (spec/or :announcement :ivr.models.node.announcement/node))
+            [ivr.services.routes :as routes]
+            [ivr.specs.node :as node-specs]))
 
 (defn node-type [node]
-  (or (known-types (:type node))
+  (or (node-specs/known-types (:type node))
       :unknown))
 
 (defmulti conform-type node-type)
@@ -45,15 +24,9 @@
         (conform-type))
     node))
 
-(spec/def ::store
-  fn?)
-
-(spec/def ::verbs
-  fn?)
-
 (spec/fdef enter-type
-           :args (spec/cat :node ::node
-                           :options (spec/keys :req-un [::verbs ::store]))
+           :args (spec/cat :node :ivr.node/node
+                           :options :ivr.node/enter-options)
            :ret map?)
 (defmulti enter-type #(node-type %))
 
@@ -67,8 +40,11 @@
      :cause node})})
 
 (spec/fdef enter
-           :args (spec/cat :node ::node)
+           :args (spec/cat :node :ivr.node/node
+                           :options :ivr.node/enter-options)
            :ret map?)
-(defn enter [node]
-  (enter-type node {:store store/query
+(defn enter [node {:keys [action-data call-id]}]
+  (enter-type node {:action-data action-data
+                    :call-id call-id
+                    :store store/query
                     :verbs verbs/create}))
