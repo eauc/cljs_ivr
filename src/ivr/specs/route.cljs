@@ -10,7 +10,11 @@
 (spec/def :ivr.route/next
   fn?)
 
+(spec/def :ivr.route/params
+  map?)
+
 (spec/def :ivr.route/route
-  (spec/keys :req-un [:ivr.route/req]
+  (spec/keys :req-un [:ivr.route/req
+                      :ivr.route/params]
              :opt-un [:ivr.route/res
                       :ivr.route/next]))

@@ -30,10 +30,8 @@
  ::explain-route
  [routes/interceptor
   db/default-interceptors]
- (fn config-explain-route [{:keys [db route]} _]
-   (let [{:keys [req]} route
-         query (js->clj (aget req "query") :keywordize-keys true)
-         explanation (config/explain (:config-info db) query)
+ (fn config-explain-route [{:keys [db]} [_ {:keys [params]}]]
+   (let [explanation (config/explain (:config-info db) params)
          link (url/absolute [:v1 :config :explain])]
      {:ivr.routes/response
       {:data (merge explanation

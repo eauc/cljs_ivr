@@ -5,7 +5,7 @@
 
 (deftest routes-service
   (testing "after-route"
-    (let [route {:req "req"}
+    (let [route {:req "req" :params {}}
           id-effect-handler {:key :id-effect
                              :handler (fn [& args] (first args))}
           base-context {:coeffects {:db {:config-info {:config "config"}}
@@ -36,9 +36,9 @@
             (routes/after-route (merge base-context {:effects {:first-effect "value"}})
                                 [first-effect-handler])
             (is (= '({:coeffects {:db {:config-info {:config "config"}}
-                                  :event [:name :payload {:req "req"}]}
+                                  :event [:name :payload {:req "req" :params {}}]}
                       :effects {:first-effect "value"}}
-                     {:req "req"}
+                     {:req "req" :params {}}
                      "value")
                    @first-args)))
           (testing "multiple handled effects, next handlers are called with result from previous handlers"
@@ -48,22 +48,24 @@
                                                          :second-effect "2nd-value"}})
                           [first-effect-handler second-effect-handler])]
               (is (=    [:name :payload {:req "req"
+                                         :params {}
                                          :first "1st-value"
                                          :second "2nd-value"}]
                         (get-in result [:coeffects :event])))
               (is (= '({:coeffects {:db {:config-info {:config "config"}}
-                                    :event [:name :payload {:req "req"}]}
+                                    :event [:name :payload {:req "req" :params {}}]}
                         :effects {:first-effect "1st-value"
                                   :other "other-value"
                                   :second-effect "2nd-value"}}
-                       {:req "req"}
+                       {:req "req" :params {}}
                        "1st-value")
                      @first-args))
               (is (= '({:coeffects {:db {:config-info {:config "config"}}
-                                    :event [:name :payload {:req "req" :first "1st-value"}]}
+                                    :event [:name :payload
+                                            {:req "req" :params {} :first "1st-value"}]}
                         :effects {:other "other-value"
                                   :second-effect "2nd-value"}}
-                       {:req "req" :first "1st-value"}
+                       {:req "req" :params {} :first "1st-value"}
                        "2nd-value")
                      @second-args))))
           (testing "next dispatch gets called with route updated by handlers"
@@ -71,7 +73,7 @@
                           (merge base-context {:effects {:first-effect "1st-value"
                                                          :dispatch [:next-event :payload]}})
                           [first-effect-handler])]
-              (is (= [:next-event :payload {:req "req" :first "1st-value"}]
+              (is (= [:next-event :payload {:req "req" :params {} :first "1st-value"}]
                      (get-in result [:effects :dispatch]) ))))
           (testing "handled effect get removed from effets map"
             (is (= {}
@@ -89,7 +91,7 @@
                      [id-effect-handler])))))
           (testing "multiple handled effects are all removed"
             (is (= {:coeffects {:db {:config-info {:config "config"}}
-                                :event [:name :payload {:req "req"}]}
+                                :event [:name :payload route]}
                     :effects {:other "other-value"}}
                    (routes/after-route (merge base-context
                                               {:effects {:first-effect "first-value"

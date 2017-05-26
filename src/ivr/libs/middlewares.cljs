@@ -2,7 +2,6 @@
   (:require [cljs.nodejs :as nodejs]
             [ivr.debug :refer [debug? test? default-log-level]]))
 
-(defonce body-parser (nodejs/require "body-parser"))
 (defonce compression (nodejs/require "compression"))
 (defonce express-winston (nodejs/require "express-winston"))
 (defonce helmet (nodejs/require "helmet"))
@@ -56,7 +55,6 @@
     (.set "json spaces" 4)
     (.use (helmet))
     (.use (compression))
-    (.use (.json body-parser))
     (.use (.logger express-winston
                    (clj->js {:level default-log-level
                              :meta true

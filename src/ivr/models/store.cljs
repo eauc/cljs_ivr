@@ -1,7 +1,8 @@
 (ns ivr.models.store
   (:require [cljs.spec :as spec]
-            [ivr.services.routes :as routes]
             [ivr.db :as db]
+            [ivr.libs.logger :as logger]
+            [ivr.services.routes :as routes]
             [ivr.specs.store]
             [re-frame.core :as re-frame]))
 
@@ -28,21 +29,23 @@
      :on-success [::get-sound-success {:query query}]
      :on-error [::get-file-error {:query (assoc query :url url)}]}))
 
-(defn get-sound-success [{:keys [account-id script-id name on-success] :as query} response]
-  (if (= 0 (or (aget response "body" "meta" "total_count") 0))
-    {:ivr.routes/response
-     (routes/error-response
-      {:status 500
-       :statusCode "sound_not_found"
-       :message "Sound not found"
-       :cause {:account-id account-id
-               :script-id script-id
-               :name name}})}
-    (let [id (aget response "body" "objects" 0 "_id")
-          url (str "/cloudstore/file/" id)
-          [on-success-event on-success-payload] on-success]
-      {:dispatch [on-success-event
-                  (assoc on-success-payload :sound-url url)]})))
+(defn get-sound-success [{:keys [account-id script-id name on-success] :as query}
+                         response]
+  (let [body (aget response "body")]
+    (if (= 0 (or (get-in body [:meta :total_count]) 0))
+      {:ivr.routes/response
+       (routes/error-response
+        {:status 500
+         :statusCode "sound_not_found"
+         :message "Sound not found"
+         :cause {:account-id account-id
+                 :script-id script-id
+                 :name name}})}
+      (let [id (get-in body [:objects 0 :_id])
+            url (str "/cloudstore/file/" id)
+            [on-success-event on-success-payload] on-success]
+        {:dispatch [on-success-event
+                    (assoc on-success-payload :sound-url url)]}))))
 
 (re-frame/reg-event-fx
  ::get-sound-success

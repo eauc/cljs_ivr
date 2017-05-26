@@ -42,8 +42,8 @@
                    :name "sound"
                    :on-success [:success {:payload "data"}]}]
         (testing "no result"
-          (let [response (clj->js {:body {:meta {:total_count 0}}
-                                   :objects []})]
+          (let [response #js {:body {:meta {:total_count 0}}
+                              :objects []}]
             (is (= {:ivr.routes/response
                     {:status 500
                      :data {:status 500
@@ -54,9 +54,9 @@
                                     :name "sound"}}}}
                    (store/get-sound-success query response)))))
         (testing "ok"
-          (let [response (clj->js {:body {:meta {:total_count 2}
-                                          :objects [{:_id "42"}
-                                                    {:_id "54"}]}})]
+          (let [response #js {:body {:meta {:total_count 2}
+                                     :objects [{:_id "42"}
+                                               {:_id "54"}]}}]
             (is (= {:dispatch [:success {:payload "data"
                                          :sound-url "/cloudstore/file/42"}]}
                    (store/get-sound-success query response)))))))

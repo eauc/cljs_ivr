@@ -54,10 +54,10 @@
  ::start-route
  [routes/interceptor
   db/default-interceptors]
- (fn start-route [{:keys [db]} [_ {:keys [req]}]]
-   (let [script (aget req "script")
-         call-id (aget req "query" "call_id")
-         action-data (get-in db [:calls call-id :action-data])]
+ (fn start-route [{:keys [db] :as coeffects}
+                  [_ {:keys [params] :as route}]]
+   (let [{:keys [script call]} params
+         action-data (:action-data call)]
      (start script {:action-data action-data
-                    :call-id call-id
+                    :call-id (get-in call [:info :id])
                     :enter-node node/enter}))))

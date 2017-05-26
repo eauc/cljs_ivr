@@ -20,9 +20,7 @@
         stop (atom false)
         on-http-success
         (fn [response]
-          (let [config (-> response
-                           (aget "body")
-                           (js->clj :keywordize-keys true))]
+          (let [config (aget response "body")]
             (reset! stop true)
             {:desc (:path layer)
              :config config}))

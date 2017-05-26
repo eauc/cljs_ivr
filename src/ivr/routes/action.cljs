@@ -55,9 +55,9 @@
  ::resolve-script
  [routes/interceptor
   db/default-interceptors]
- (fn resolve-script [_ [_ {:keys [req]}]]
-   (let [account-id (aget req "query" "account_id")
-         script-id (aget req "params" "script_id")
+ (fn resolve-script [_ [_ {:keys [params]}]]
+   (let [account-id (:account_id params)
+         script-id (:script_id params)
          on-success [::resolve-script-success {:account-id account-id}]
          on-error [::resolve-script-error {:script-id script-id}]]
      {:ivr.web/request
@@ -72,13 +72,11 @@
  ::resolve-script-success
  [routes/interceptor
   db/default-interceptors]
- (fn resolve-script-success [_ [_ {:keys [account-id response]} {:keys [req]}]]
-   (let [script (-> response
-                    (aget "body")
-                    (js->clj :keywordize-keys true)
+ (fn resolve-script-success [_ [_ {:keys [account-id response]} {:keys [params]}]]
+   (let [script (-> (aget response "body")
                     (script/conform {:account-id account-id}))]
-     (aset req "script" script)
-     {:ivr.routes/next nil})))
+     {:ivr.routes/params (assoc params :script script)
+      :ivr.routes/next nil})))
 
 (re-frame/reg-event-fx
  ::resolve-script-error
