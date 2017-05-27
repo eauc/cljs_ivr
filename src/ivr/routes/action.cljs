@@ -27,7 +27,7 @@
   (routes/dispatch [:ivr.services.calls/resolve {:create? true}]))
 
 (def resolve-script-middleware
-  (routes/dispatch [::resolve-script]))
+  (routes/dispatch [:ivr.models.script/resolve]))
 
 (def script-start-route
   (routes/dispatch [:ivr.models.script/start-route]))
@@ -50,42 +50,3 @@
 (defn init [app]
   (doto app
     (.use base-url router)))
-
-(re-frame/reg-event-fx
- ::resolve-script
- [routes/interceptor
-  db/default-interceptors]
- (fn resolve-script [_ [_ {:keys [params]}]]
-   (let [account-id (:account_id params)
-         script-id (:script_id params)
-         on-success [::resolve-script-success {:account-id account-id}]
-         on-error [::resolve-script-error {:script-id script-id}]]
-     {:ivr.web/request
-      (store/query
-       {:type :ivr.store/get-script
-        :account-id account-id
-        :script-id script-id
-        :on-success on-success
-        :on-error on-error})})))
-
-(re-frame/reg-event-fx
- ::resolve-script-success
- [routes/interceptor
-  db/default-interceptors]
- (fn resolve-script-success [_ [_ {:keys [account-id response]} {:keys [params]}]]
-   (let [script (-> (aget response "body")
-                    (script/conform {:account-id account-id}))]
-     {:ivr.routes/params (assoc params :script script)
-      :ivr.routes/next nil})))
-
-(re-frame/reg-event-fx
- ::resolve-script-error
- [routes/interceptor
-  db/default-interceptors]
- (fn resolve-script-error [_ [_ {:keys [script-id error]}]]
-   {:ivr.routes/response
-    (routes/error-response
-     {:status 404
-      :status_code "script_not_found"
-      :message "Script not found"
-      :cause (assoc error :scriptid script-id)})}))

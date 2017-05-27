@@ -3,16 +3,21 @@
             [ivr.models.store :as store]
             [ivr.models.verbs :as verbs]
             [ivr.services.routes :as routes]
-            [ivr.specs.node :as node-specs]))
+            [ivr.specs.node :as node-specs]
+            [re-frame.core :as re-frame]))
 
-(defn node-type [node]
+
+(defn- node-type [node]
   (or (node-specs/known-types (:type node))
       :unknown))
 
+
 (defmulti conform-type node-type)
+
 
 (defmethod conform-type :unknown
   [node] node)
+
 
 (defn conform [node {:keys [id account-id script-id]}]
   (if (map? node)
@@ -24,11 +29,13 @@
         (conform-type))
     node))
 
+
 (spec/fdef enter-type
            :args (spec/cat :node :ivr.node/node
                            :options :ivr.node/enter-options)
            :ret map?)
 (defmulti enter-type #(node-type %))
+
 
 (defmethod enter-type :unknown
   [node _]
@@ -39,6 +46,7 @@
      :message "Invalid node - type"
      :cause node})})
 
+
 (spec/fdef enter
            :args (spec/cat :node :ivr.node/node
                            :options :ivr.node/enter-options)
@@ -48,3 +56,7 @@
                     :call-id call-id
                     :store store/query
                     :verbs verbs/create}))
+(re-frame/reg-cofx
+ :ivr.node/enter-cofx
+ (fn enter-cofx [coeffects _]
+   (assoc coeffects :enter-node enter)))

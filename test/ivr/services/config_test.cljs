@@ -117,4 +117,15 @@
                          :config {}}
                         {:desc "env"
                          :config {}}]}
-               (config/explain config-info {:path "to.unknown"})))))))
+               (config/explain config-info {:path "to.unknown"}))))))
+  (testing "explain-route"
+    (let [config-info {:config {:port 3000 :url "/smartccivr"}
+                       :loads [{:config {:port 3000 :url "/other"}}
+                               {:config {:url "/smartccivr"}}]}]
+      (is (= {:ivr.routes/response
+              {:data {:config {:port 3000}
+                      :loads [{:config {:port 3000}}
+                              {:config {}}]}
+               :link "/smartccivr/config/"}}
+             (config/explain-route {:db {:config-info config-info}}
+                                   [:explain {:params {:path "port"}}]))))))

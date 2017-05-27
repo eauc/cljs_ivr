@@ -4,21 +4,25 @@
             [cljs.spec :as spec]
             [clojure.string :as str]
             [ivr.db :as db]
+            [ivr.routes.url :as url]
             [ivr.services.config.base :as base :refer [log]]
             [ivr.services.config.file]
             [ivr.services.config.http]
             [ivr.services.config.object]
             [ivr.services.config.invalid]
+            [ivr.services.routes :as routes]
             [ivr.specs.config]
             [re-frame.core :as re-frame])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
-(defn all-chans [chans]
+
+(defn- all-chans [chans]
   (go-loop [[c & rest] chans
             result []]
     (if (nil? c)
       result
       (recur rest (conj result (<! c))))))
+
 
 (spec/fdef init
            :args (spec/cat :options :ivr.config.init/options))
@@ -36,15 +40,19 @@
           (on-success info)
           (on-error info))))))
 
-(defn explain-config [config path]
+
+(defn- explain-config [config path]
   (let [value (get-in config path)]
     (if (nil? value)
       {}
       (assoc-in {} path value))))
 
-(defn explain-loads [loads path]
+
+(defn- explain-loads [loads path]
   (mapv (fn [load]
           (update load :config #(explain-config % path))) loads))
+
+
 
 (defn explain [config-info {:keys [path]}]
   (if (nil? path)
@@ -54,3 +62,16 @@
           loads (:loads config-info)]
       {:config (explain-config config path-keys)
        :loads (explain-loads loads path-keys)})))
+
+
+(defn explain-route [{:keys [db]} [_ {:keys [params]}]]
+  (let [explanation (explain (:config-info db) params)
+        link (url/absolute [:v1 :config :explain])]
+    {:ivr.routes/response
+     {:data explanation
+      :link link}}))
+(re-frame/reg-event-fx
+ ::explain-route
+ [routes/interceptor
+  db/default-interceptors]
+ explain-route)

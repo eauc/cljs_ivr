@@ -3,8 +3,57 @@
             [ivr.models.script :as script]))
 
 (deftest script-model
-  (let [options {:account-id "account-id"}]
-    (testing "conform"
+  (testing "events"
+    (testing "resolve"
+      (let [store #(assoc % :store :query)
+            route-params {:account_id "account-id"
+                          :script_id "script-id"}]
+        (is (= {:ivr.web/request
+                {:store :query
+                 :type :ivr.store/get-script
+                 :account-id "account-id"
+                 :script-id "script-id"
+                 :on-success [:ivr.models.script/resolve-success
+                              {:account-id "account-id"}]
+                 :on-error [:ivr.models.script/resolve-error
+                            {:script-id "script-id"}]}}
+               (script/resolve-event
+                {:store store}
+                [:resolve {:params route-params}])))))
+    (testing "resolve-success"
+      (let [response #js {:body {:start "42"}}]
+        (is (= {:ivr.routes/params {:route :params
+                                    :script {:start :42
+                                             :account-id "account-id"
+                                             :nodes {}}}
+                :ivr.routes/next nil}
+               (script/resolve-success
+                {}
+                [:success {:account-id "account-id"
+                           :response response} {:params {:route :params}}])))))
+    (testing "resolve-error"
+      (let [response #js {:body {:start "42"}}]
+        (is (= {:ivr.routes/response {:status 404
+                                      :data {:status 404
+                                             :status_code "script_not_found"
+                                             :message "Script not found"
+                                             :cause {:message "error"
+                                                     :scriptid "script-id"}}}}
+               (script/resolve-error
+                {}
+                [:success {:script-id "script-id"
+                           :error {:message "error"}}])))))
+    (testing "start-route"
+      (let [enter-node #(assoc % :node :enter)
+            script {:start :42
+                    :nodes {:42 {:type "announcement"}}}
+            call {:id "call-id"}]
+        (is (= {:type "announcement", :node :enter}
+               (script/start-route
+                {:enter-node enter-node}
+                [:start {:params {:script script :call call}}]))))))
+  (testing "conform"
+    (let [options {:account-id "account-id"}]
       (testing "start"
         (is (= {:account-id "account-id"
                 :start nil
@@ -65,49 +114,49 @@
                             :script-id "script-id"
                             :next :2}}}
                (script/conform {:id "script-id"
-                                :nodes {:3 {:next "2"}}} options)))))
-    (testing "start"
-      (let [enter-node (fn [node] (assoc node :action "enter-node"))
-            options {:enter-node enter-node}]
+                                :nodes {:3 {:next "2"}}} options))))))
+  (testing "start"
+    (let [enter-node (fn [node] (assoc node :action "enter-node"))
+          options {:enter-node enter-node}]
+      (is (= {:ivr.routes/response
+              {:status 500
+               :data {:status 500
+                      :status_code "invalid_script"
+                      :message "Invalid script - missing start index"
+                      :cause {}}}}
+             (script/start {} options)))
+      (let [script {:id "script-id"
+                    :nodes {:1 {}}}]
         (is (= {:ivr.routes/response
                 {:status 500
                  :data {:status 500
                         :status_code "invalid_script"
                         :message "Invalid script - missing start index"
-                        :cause {}}}}
-               (script/start {} options)))
-        (let [script {:id "script-id"
-                      :nodes {:1 {}}}]
-          (is (= {:ivr.routes/response
-                  {:status 500
-                   :data {:status 500
-                          :status_code "invalid_script"
-                          :message "Invalid script - missing start index"
-                          :cause script}}}
-                 (script/start script options))))
-        (let [script {:id "script-id"
-                      :start "toto"
-                      :nodes {:1 {}}}]
-          (is (= {:ivr.routes/response
-                  {:status 500
-                   :data {:status 500
-                          :status_code "invalid_script"
-                          :message "Invalid script - missing start node"
-                          :cause script}}}
-                 (script/start script options))))
-        (let [script {:id "script-id"
-                      :start :1
-                      :nodes {:1 {:type "unknown"}}}]
-          (is (= {:ivr.routes/response
-                  {:status 500
-                   :data {:status 500
-                          :status_code "invalid_node"
-                          :message "Invalid node - type"
-                          :cause (get-in script [:nodes :1])}}}
-                 (script/start script options))))
-        (let [script {:id "script-id"
-                      :start :1
-                      :nodes {:1 {:type "announcement"}}}]
-          (is (= {:type "announcement"
-                  :action "enter-node"}
-                 (script/start script options))))))))
+                        :cause script}}}
+               (script/start script options))))
+      (let [script {:id "script-id"
+                    :start "toto"
+                    :nodes {:1 {}}}]
+        (is (= {:ivr.routes/response
+                {:status 500
+                 :data {:status 500
+                        :status_code "invalid_script"
+                        :message "Invalid script - missing start node"
+                        :cause script}}}
+               (script/start script options))))
+      (let [script {:id "script-id"
+                    :start :1
+                    :nodes {:1 {:type "unknown"}}}]
+        (is (= {:ivr.routes/response
+                {:status 500
+                 :data {:status 500
+                        :status_code "invalid_node"
+                        :message "Invalid node - type"
+                        :cause (get-in script [:nodes :1])}}}
+               (script/start script options))))
+      (let [script {:id "script-id"
+                    :start :1
+                    :nodes {:1 {:type "announcement"}}}]
+        (is (= {:type "announcement"
+                :action "enter-node"}
+               (script/start script options)))))))

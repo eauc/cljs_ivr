@@ -11,12 +11,19 @@
            :ret map?)
 (defmulti query :type)
 
+(re-frame/reg-cofx
+ :ivr.store/cofx
+ (fn store-cofx [coeffects _]
+   (assoc coeffects :store query)))
+
+
 (defmethod query :ivr.store/get-script
   [{:keys [account-id script-id on-success on-error]}]
   {:method "GET"
    :url (str "/cloudstore/account/" account-id "/script/" script-id)
    :on-success on-success
    :on-error on-error})
+
 
 (defmethod query :ivr.store/get-sound-by-name
   [{:keys [name account-id script-id] :as query}]
@@ -28,6 +35,7 @@
                      :metadata.script script-id}}
      :on-success [::get-sound-success {:query query}]
      :on-error [::get-file-error {:query (assoc query :url url)}]}))
+
 
 (defn get-sound-success [{:keys [account-id script-id name on-success] :as query}
                          response]
@@ -53,6 +61,7 @@
   db/default-interceptors]
  (fn get-sound-success-fx [_ [_ {:keys [query response]}]]
    (get-sound-success query response)))
+
 
 (defn get-file-error [query error]
   {:ivr.routes/response
