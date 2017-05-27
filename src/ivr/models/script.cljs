@@ -73,30 +73,37 @@
  resolve-error)
 
 
-(defn start-route [{:keys [enter-node store verbs] :as coeffects}
+(defn- enter-node-id [script node-id
+                      {:keys [call enter-node store verbs] :as options}]
+  (let [node (get-in script [:nodes node-id])
+        action-data (:action-data call)
+        call-id (get-in call [:info :id])]
+    (if (nil? node)
+      {:ivr.routes/response
+       (routes/error-response
+        {:status 500
+         :status_code "invalid_script"
+         :message "Invalid script - missing node"
+         :cause script})}
+      (enter-node node {:action-data action-data
+                        :call-id call-id
+                        :store store
+                        :verbs verbs}))))
+
+
+(defn start-route [coeffects
                    [_ {:keys [params] :as route}]]
   (let [{:keys [script call]} params
-        action-data (:action-data call)
-        call-id (get-in call [:info :id])
-        start-index (:start script)
-        start-node (get-in script [:nodes start-index])]
-    (cond
-      (nil? start-index) {:ivr.routes/response
-                          (routes/error-response
-                           {:status 500
-                            :status_code "invalid_script"
-                            :message "Invalid script - missing start index"
-                            :cause script})}
-      (nil? start-node) {:ivr.routes/response
-                         (routes/error-response
-                          {:status 500
-                           :status_code "invalid_script"
-                           :message "Invalid script - missing start node"
-                           :cause script})}
-      :else (enter-node start-node {:action-data action-data
-                                    :call-id call-id
-                                    :store store
-                                    :verbs verbs}))))
+        start-index (:start script)]
+    (if (nil? start-index)
+      {:ivr.routes/response
+       (routes/error-response
+        {:status 500
+         :status_code "invalid_script"
+         :message "Invalid script - missing start index"
+         :cause script})}
+      (enter-node-id script start-index
+                     (assoc coeffects :call call)))))
 
 (re-frame/reg-event-fx
  ::start-route
@@ -106,6 +113,22 @@
   (re-frame/inject-cofx :ivr.store/cofx)
   (re-frame/inject-cofx :ivr.verbs/cofx)]
  start-route)
+
+
+(defn enter-node-route [coeffects
+                        [_ {:keys [params] :as route}]]
+  (let [{:keys [script call node_id]} params]
+    (enter-node-id script (keyword node_id)
+                   (assoc coeffects :call call))))
+
+(re-frame/reg-event-fx
+ ::enter-node-route
+ [routes/interceptor
+  db/default-interceptors
+  (re-frame/inject-cofx :ivr.node/enter-cofx)
+  (re-frame/inject-cofx :ivr.store/cofx)
+  (re-frame/inject-cofx :ivr.verbs/cofx)]
+ enter-node-route)
 
 
 (defn leave-node-route [{:keys [leave-node store verbs] :as coeffects}

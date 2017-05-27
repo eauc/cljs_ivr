@@ -75,7 +75,7 @@
                   {:status 500
                    :data {:status 500
                           :status_code "invalid_script"
-                          :message "Invalid script - missing start node"
+                          :message "Invalid script - missing node"
                           :cause script}}}
                  (script/start-route
                   coeffects
@@ -92,6 +92,37 @@
                  (script/start-route
                   coeffects
                   [:enter {:params {:script script
+                                    :call call}}]))))))
+    (testing "enter-node-route"
+      (let [enter-node #(assoc %1 :node :enter :params %2)
+            coeffects {:enter-node enter-node :store "store" :verbs "verbs"}
+            call {:info {:id "call-id"}
+                  :action-data {:action :data}}]
+        (let [script {:id "script-id"
+                      :nodes {:other {}}}]
+          (is (= {:ivr.routes/response
+                  {:status 500
+                   :data {:status 500
+                          :status_code "invalid_script"
+                          :message "Invalid script - missing node"
+                          :cause script}}}
+                 (script/enter-node-route
+                  coeffects
+                  [:enter {:params {:script script
+                                    :node_id "42"
+                                    :call call}}]))))
+        (let [script {:id "script-id"
+                      :nodes {:42 {:type "announcement"}}}]
+          (is (= {:type "announcement"
+                  :node :enter
+                  :params {:action-data {:action :data}
+                           :call-id "call-id"
+                           :store "store"
+                           :verbs "verbs"}}
+                 (script/enter-node-route
+                  coeffects
+                  [:enter {:params {:script script
+                                    :node_id "42"
                                     :call call}}]))))))
     (testing "leave-node-route"
       (let [leave-node #(assoc %1 :node :leave :params %2)
