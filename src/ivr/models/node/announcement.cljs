@@ -62,7 +62,7 @@
                     :name soundname
                     :account-id account-id
                     :script-id script-id
-                    :on-success [::play-sound options]})})]
+                    :on-success [::play-sound (assoc options :node node)]})})]
     (merge update-action-data result)))
 
 (defn play-sound [sound-url {:keys [id no_barge script-id]} verbs]
@@ -86,3 +86,7 @@
   db/default-interceptors]
  (fn play-sound-fx [_ [_ {:keys [node verbs sound-url]}]]
    (play-sound sound-url node verbs)))
+
+(defmethod node/leave-type "announcement"
+  [node options]
+  (go-to-next node options))

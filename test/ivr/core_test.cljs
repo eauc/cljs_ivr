@@ -1,16 +1,16 @@
 (ns ivr.core-test
   (:require [clojure.test :as test]
-            [pjstadig.humane-test-output]
-            [ivr.models.node-test]
-            [ivr.models.node.announcement-test]
-            [ivr.models.script-test]
-            [ivr.models.store-test]
-            [ivr.models.verb-base-test]
-            [ivr.routes.url-test]
-            [ivr.services.calls-test]
-            [ivr.services.config.base-test]
-            [ivr.services.config-test]
-            [ivr.services.routes-test]))
+            ivr.models.node-test
+            ivr.models.node.announcement-test
+            ivr.models.script-test
+            ivr.models.store-test
+            ivr.models.verbs-test
+            ivr.routes.url-test
+            ivr.services.calls-test
+            ivr.services.config-test
+            ivr.services.config.base-test
+            ivr.services.routes-test
+            pjstadig.humane-test-output))
 
 (enable-console-print!)
 
@@ -19,12 +19,13 @@
                   'ivr.models.node.announcement-test
                   'ivr.models.script-test
                   'ivr.models.store-test
-                  'ivr.models.verb-base-test
+                  'ivr.models.verbs-test
                   'ivr.routes.url-test
                   'ivr.services.calls-test
                   'ivr.services.config.base-test
                   'ivr.services.config-test
-                  'ivr.services.routes-test))
+                  'ivr.services.routes-test
+                  ))
 
 (defn -main []
   (run-tests))

@@ -7,7 +7,8 @@
             [ivr.services.routes :as routes]
             [ivr.specs.node]
             [ivr.specs.script]
-            [re-frame.core :as re-frame]))
+            [re-frame.core :as re-frame]
+            [ivr.libs.logger :as logger]))
 
 
 (defn- resolve-event [{:keys [store]} [_ {:keys [params]}]]
@@ -22,6 +23,7 @@
        :script-id script-id
        :on-success on-success
        :on-error on-error})}))
+
 (re-frame/reg-event-fx
  ::resolve
  [routes/interceptor
@@ -48,6 +50,7 @@
                    (conform {:account-id account-id}))]
     {:ivr.routes/params (assoc params :script script)
      :ivr.routes/next nil}))
+
 (re-frame/reg-event-fx
  ::resolve-success
  [routes/interceptor
@@ -62,6 +65,7 @@
      :status_code "script_not_found"
      :message "Script not found"
      :cause (assoc error :scriptid script-id)})})
+
 (re-frame/reg-event-fx
  ::resolve-error
  [routes/interceptor
@@ -69,12 +73,12 @@
  resolve-error)
 
 
-(spec/fdef start
-           :args (spec/cat :script :ivr.script/script
-                           :options :ivr.script/start-options)
-           :ret map?)
-(defn start [script {:keys [call-id action-data enter-node]}]
-  (let [start-index (:start script)
+(defn start-route [{:keys [enter-node store verbs] :as coeffects}
+                   [_ {:keys [params] :as route}]]
+  (let [{:keys [script call]} params
+        action-data (:action-data call)
+        call-id (get-in call [:info :id])
+        start-index (:start script)
         start-node (get-in script [:nodes start-index])]
     (cond
       (nil? start-index) {:ivr.routes/response
@@ -89,26 +93,44 @@
                            :status_code "invalid_script"
                            :message "Invalid script - missing start node"
                            :cause script})}
-      (not (spec/valid? :ivr.node/type
-                        (:type start-node))) {:ivr.routes/response
-                                              (routes/error-response
-                                               {:status 500
-                                                :status_code "invalid_node"
-                                                :message "Invalid node - type"
-                                                :cause start-node})}
       :else (enter-node start-node {:action-data action-data
-                                    :call-id call-id}))))
+                                    :call-id call-id
+                                    :store store
+                                    :verbs verbs}))))
 
-
-(defn start-route [{:keys [enter-node]} [_ {:keys [params] :as route}]]
-  (let [{:keys [script call]} params
-        action-data (:action-data call)]
-    (start script {:action-data action-data
-                   :call-id (get-in call [:info :id])
-                   :enter-node enter-node})))
 (re-frame/reg-event-fx
  ::start-route
  [routes/interceptor
   db/default-interceptors
-  (re-frame/inject-cofx :ivr.node/enter-cofx)]
+  (re-frame/inject-cofx :ivr.node/enter-cofx)
+  (re-frame/inject-cofx :ivr.store/cofx)
+  (re-frame/inject-cofx :ivr.verbs/cofx)]
  start-route)
+
+
+(defn leave-node-route [{:keys [leave-node store verbs] :as coeffects}
+                        [_ {:keys [params] :as route}]]
+  (let [{:keys [script call node_id]} params
+        action-data (:action-data call)
+        call-id (get-in call [:info :id])
+        node (get-in script [:nodes (keyword node_id)])]
+    (cond
+      (nil? node) {:ivr.routes/response
+                   (routes/error-response
+                    {:status 500
+                     :status_code "invalid_script"
+                     :message "Invalid script - missing node"
+                     :cause script})}
+      :else (leave-node node {:action-data action-data
+                              :call-id call-id
+                              :store store
+                              :verbs verbs}))))
+
+(re-frame/reg-event-fx
+ ::leave-node-route
+ [routes/interceptor
+  db/default-interceptors
+  (re-frame/inject-cofx :ivr.node/leave-cofx)
+  (re-frame/inject-cofx :ivr.store/cofx)
+  (re-frame/inject-cofx :ivr.verbs/cofx)]
+ leave-node-route)

@@ -52,12 +52,13 @@
 
 
 (defn- get-route-params [req]
-  (or (aget req "ivr-params")
-      (let [body (json->clj (aget req "text"))
-            params (js->clj (aget req "params") :keywordize-keys true)
-            query (js->clj (aget req "query") :keywordize-keys true)]
-        (log "info" "Extract ivr-params"
-             (merge body query params)))))
+  (let [params (js->clj (aget req "params") :keywordize-keys true)]
+    (log "info" "Extract ivr-params"
+         (merge (or (aget req "ivr-params")
+                    (let [body (json->clj (aget req "text"))
+                          query (js->clj (aget req "query") :keywordize-keys true)]
+                      (merge body query)))
+                params))))
 
 
 (defn dispatch [event]

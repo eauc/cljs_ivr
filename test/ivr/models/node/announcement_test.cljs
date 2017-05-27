@@ -67,7 +67,8 @@
                              :account-id "account-id"
                              :script-id "script-id"
                              :on-success
-                             [:ivr.models.node.announcement/play-sound options]}}}
+                             [:ivr.models.node.announcement/play-sound
+                              (assoc options :node node)]}}}
                    (node/enter-type node options)))))
         (testing "disabled - no next"
           (let [node {:type "announcement"
@@ -108,4 +109,23 @@
                             :play ["sound-url"]}]}}
                (announcement-node/play-sound "sound-url"
                                              {:id "node-id" :script-id "script-id"}
-                                             verbs)))))))
+                                             verbs)))))
+    (testing "leave"
+      (testing "no next"
+        (let [node {:type "announcement"
+                    :account-id "account-id"
+                    :script-id "script-id"}]
+          (is (= {:ivr.routes/response
+                  {:verbs "mock"
+                   :actions [{:type :ivr.verbs/hangup}]}}
+                 (node/leave-type node {:verbs verbs})))))
+      (testing "next"
+        (let [node {:type "announcement"
+                    :account-id "account-id"
+                    :script-id "script-id"
+                    :next :2}]
+          (is (= {:ivr.routes/response
+                  {:verbs "mock"
+                   :actions [{:type :ivr.verbs/redirect
+                              :path "/smartccivr/script/script-id/node/2"}]}}
+                 (node/leave-type node {:verbs verbs}))))))))

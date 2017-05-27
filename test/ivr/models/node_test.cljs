@@ -32,4 +32,12 @@
                                              :status_code "invalid_node"
                                              :message "Invalid node - type"
                                              :cause {:type "unknown"}}}}
-               (node/enter-type {:type "unknown"} options)))))))
+               (node/enter-type {:type "unknown"} options)))))
+    (testing "leave"
+      (testing "unknown type"
+        (is (= {:ivr.routes/response {:status 500
+                                      :data {:status 500
+                                             :status_code "invalid_node"
+                                             :message "Invalid node - type"
+                                             :cause {:type "unknown"}}}}
+               (node/leave-type {:type "unknown"} options)))))))

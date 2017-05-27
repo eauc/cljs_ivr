@@ -46,17 +46,29 @@
      :message "Invalid node - type"
      :cause node})})
 
-
-(spec/fdef enter
-           :args (spec/cat :node :ivr.node/node
-                           :options :ivr.node/enter-options)
-           :ret map?)
-(defn enter [node {:keys [action-data call-id]}]
-  (enter-type node {:action-data action-data
-                    :call-id call-id
-                    :store store/query
-                    :verbs verbs/create}))
 (re-frame/reg-cofx
  :ivr.node/enter-cofx
  (fn enter-cofx [coeffects _]
-   (assoc coeffects :enter-node enter)))
+   (assoc coeffects :enter-node enter-type)))
+
+
+(spec/fdef leave-type
+           :args (spec/cat :node :ivr.node/node
+                           :options :ivr.node/enter-options)
+           :ret map?)
+(defmulti leave-type #(node-type %))
+
+
+(defmethod leave-type :unknown
+  [node _]
+  {:ivr.routes/response
+   (routes/error-response
+    {:status 500
+     :status_code "invalid_node"
+     :message "Invalid node - type"
+     :cause node})})
+
+(re-frame/reg-cofx
+ :ivr.node/leave-cofx
+ (fn leave-cofx [coeffects _]
+   (assoc coeffects :leave-node leave-type)))

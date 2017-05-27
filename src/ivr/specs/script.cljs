@@ -30,7 +30,15 @@
 (spec/def :ivr.script/enter-node
   fn?)
 
+(spec/def :ivr.script/leave-node
+  fn?)
+
 (spec/def :ivr.script/start-options
   (spec/keys :req-un [:ivr.call/action-data
                       :ivr.script/call-id
                       :ivr.script/enter-node]))
+
+(spec/def :ivr.script/leave-node-options
+  (spec/keys :req-un [:ivr.call/action-data
+                      :ivr.script/call-id
+                      :ivr.script/leave-node]))
