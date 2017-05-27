@@ -9,52 +9,25 @@
    :after (fn [] (stest/unstrument 'ivr.models.node.announcement))})
 
 (deftest announcement-node-model
-  (let [verbs (fn [actions] {:verbs "mock"
-                             :actions actions})]
-    (testing "conform"
-      (is (= {:type "announcement"
-              :id "node-id"
-              :account-id "account-id"
-              :script-id "script-id"
-              :next nil}
-             (node/conform {:type "announcement"}
-                           {:id "node-id"
-                            :account-id "account-id"
-                            :script-id "script-id"}))))
-    (testing "enter"
-      (let [store (fn [query] {:store "mock"
-                               :query query})
-            verbs (fn [actions] {:verbs "mock"
-                                 :actions actions})
-            options {:action-data {:action "data"}
-                     :call-id "call-id"
-                     :store store
-                     :verbs verbs}]
-        (testing "preset"
-          (let [node {:type "announcement"
-                      :account-id "account-id"
-                      :script-id "script-id"
-                      :soundname "sound"
-                      :preset {:type :ivr.node.announcement.preset/set
-                               :to :to_var
-                               :value "set_value"}}]
-            (is (= {:call-id "call-id"
-                    :data {:action "data"
-                           :to_var "set_value"}}
-                   (:ivr.call/action-data
-                    (node/enter-type node options)))))
-          (let [node {:type "announcement"
-                      :account-id "account-id"
-                      :script-id "script-id"
-                      :soundname "sound"
-                      :preset {:type :ivr.node.announcement.preset/copy
-                               :to :to_var
-                               :from :action}}]
-            (is (= {:call-id "call-id"
-                    :data {:action "data"
-                           :to_var "data"}}
-                   (:ivr.call/action-data
-                    (node/enter-type node options))))))
+  (let [store (fn [query] {:store "mock"
+                           :query query})
+        verbs (fn [actions] {:verbs "mock"
+                             :actions actions})
+        options {:action-data {:action "data"}
+                 :call-id "call-id"
+                 :store store
+                 :verbs verbs}]
+      (testing "conform"
+        (is (= {:type "announcement"
+                :id "node-id"
+                :account-id "account-id"
+                :script-id "script-id"
+                :next nil}
+               (node/conform {:type "announcement"}
+                             {:id "node-id"
+                              :account-id "account-id"
+                              :script-id "script-id"}))))
+      (testing "enter"
         (testing "enabled"
           (let [node {:type "announcement"
                       :account-id "account-id"
@@ -91,41 +64,46 @@
                     {:verbs "mock"
                      :actions [{:type :ivr.verbs/redirect
                                 :path "/smartccivr/script/script-id/node/2"}]}}
-                   (node/enter-type node options)))))))
-    (testing "play-sound"
-      (testing "simple announcement"
-        (is (= {:ivr.routes/response
-                {:verbs "mock"
-                 :actions [{:type :ivr.verbs/play
-                            :path "sound-url"}]}}
-               (announcement-node/play-sound "sound-url" {:no_barge true} verbs))))
-      (testing "with dtmf catch"
-        (is (= {:ivr.routes/response
-                {:verbs "mock"
-                 :actions [{:type :ivr.verbs/gather
-                            :numdigits 1
-                            :timeout 1
-                            :callbackurl "/smartccivr/script/script-id/node/node-id/callback"
-                            :play ["sound-url"]}]}}
-               (announcement-node/play-sound "sound-url"
-                                             {:id "node-id" :script-id "script-id"}
-                                             verbs)))))
-    (testing "leave"
-      (testing "no next"
+                   (node/enter-type node options))))))
+      (testing "play-sound"
         (let [node {:type "announcement"
-                    :account-id "account-id"
-                    :script-id "script-id"}]
-          (is (= {:ivr.routes/response
-                  {:verbs "mock"
-                   :actions [{:type :ivr.verbs/hangup}]}}
-                 (node/leave-type node {:verbs verbs})))))
-      (testing "next"
-        (let [node {:type "announcement"
+                    :id "node-id"
                     :account-id "account-id"
                     :script-id "script-id"
-                    :next :2}]
-          (is (= {:ivr.routes/response
-                  {:verbs "mock"
-                   :actions [{:type :ivr.verbs/redirect
-                              :path "/smartccivr/script/script-id/node/2"}]}}
-                 (node/leave-type node {:verbs verbs}))))))))
+                    :soundname "son1"}]
+          (testing "simple announcement"
+            (is (= {:ivr.routes/response
+                    {:verbs "mock"
+                     :actions [{:type :ivr.verbs/play
+                                :path "sound-url"}]}}
+                   (announcement-node/play-sound
+                    "sound-url" (merge node {:no_barge true}) verbs))))
+          (testing "with dtmf catch"
+            (is (= {:ivr.routes/response
+                    {:verbs "mock"
+                     :actions [{:type :ivr.verbs/gather
+                                :numdigits 1
+                                :timeout 1
+                                :callbackurl "/smartccivr/script/script-id/node/node-id/callback"
+                                :play ["sound-url"]}]}}
+                   (announcement-node/play-sound
+                    "sound-url" node verbs))))))
+      (testing "leave"
+        (testing "no next"
+          (let [node {:type "announcement"
+                      :account-id "account-id"
+                      :script-id "script-id"}]
+            (is (= {:ivr.routes/response
+                    {:verbs "mock"
+                     :actions [{:type :ivr.verbs/hangup}]}}
+                   (node/leave-type node options)))))
+        (testing "next"
+          (let [node {:type "announcement"
+                      :account-id "account-id"
+                      :script-id "script-id"
+                      :next :2}]
+            (is (= {:ivr.routes/response
+                    {:verbs "mock"
+                     :actions [{:type :ivr.verbs/redirect
+                                :path "/smartccivr/script/script-id/node/2"}]}}
+                   (node/leave-type node options))))))))

@@ -1,45 +1,26 @@
 (ns ivr.models.node.announcement
-  (:require [ivr.db :as db]
+  (:require [cljs.spec :as spec]
+            [ivr.db :as db]
             [ivr.models.node :as node]
             [ivr.routes.url :as url]
             [ivr.services.routes :as routes]
+            [ivr.specs.node.announcement]
             [re-frame.core :as re-frame]))
 
-(defn- conform-preset [node]
-  (let [preset (:preset node)
-        value (:value preset)
-        varname (:varname preset)]
-    (if (and preset
-             (string? value)
-             (string? varname) (not (empty? varname)))
-      (if (re-find #"^\$" value)
-        (assoc node :preset {:type :ivr.node.announcement.preset/copy
-                             :from (keyword (subs value 1))
-                             :to (keyword varname)})
-        (assoc node :preset {:type :ivr.node.announcement.preset/set
-                             :value value
-                             :to (keyword varname)}))
-      (dissoc node :preset))))
 
 (defmethod node/conform-type "announcement"
   [node]
   (-> node
-      conform-preset))
+      node/conform-preset))
 
-(defn- apply-preset [node {:keys [call-id action-data]}]
-  (case (get-in node [:preset :type])
-    :ivr.node.announcement.preset/copy
-    (let [{:keys [from to]} (:preset node)
-          value (get action-data from)]
-      {:ivr.call/action-data {:call-id call-id
-                              :data (assoc action-data to value)}})
-    :ivr.node.announcement.preset/set
-    (let [{:keys [to value]} (:preset node)]
-      {:ivr.call/action-data {:call-id call-id
-                              :data (assoc action-data to value)}})
-    {}))
 
-(defn- go-to-next [{:keys [script-id next]} {:keys [verbs]}]
+(spec/fdef go-to-next
+           :args (spec/cat :node :ivr.node/node
+                           :options :ivr.node/options)
+           :ret map?)
+(defn- go-to-next
+  [{:keys [script-id next] :as node}
+   {:keys [verbs] :as options}]
   (if next
     {:ivr.routes/response
      (verbs [{:type :ivr.verbs/redirect
@@ -50,10 +31,11 @@
     {:ivr.routes/response
      (verbs [{:type :ivr.verbs/hangup}])}))
 
+
 (defmethod node/enter-type "announcement"
   [{:keys [account-id script-id disabled soundname] :as node}
    {:keys [store] :as options}]
-  (let [update-action-data (apply-preset node options)
+  (let [update-action-data (node/apply-preset node options)
         result (if disabled
                  (go-to-next node options)
                  {:ivr.web/request
@@ -65,6 +47,13 @@
                     :on-success [::play-sound (assoc options :node node)]})})]
     (merge update-action-data result)))
 
+
+
+(spec/fdef play-sound
+           :args (spec/cat :sound-url string?
+                           :node :ivr.node.announcement/node
+                           :options :ivr.node/verbs)
+           :ret map?)
 (defn play-sound [sound-url {:keys [id no_barge script-id]} verbs]
   (if no_barge
     {:ivr.routes/response
@@ -86,6 +75,7 @@
   db/default-interceptors]
  (fn play-sound-fx [_ [_ {:keys [node verbs sound-url]}]]
    (play-sound sound-url node verbs)))
+
 
 (defmethod node/leave-type "announcement"
   [node options]

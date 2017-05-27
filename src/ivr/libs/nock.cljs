@@ -15,7 +15,20 @@
                               :nodes {:1 {:type "announcement"
                                           :soundname "son1"
                                           :preset {:value "toto"
-                                                   :varname "titi"}}}}))
+                                                   :varname "titi"}}
+                                      :2 {:type "dtmfcatch"
+                                          :finishonkey "4"
+                                          :numdigits 3
+                                          :preset {:value "+33478597106"
+                                                   :varname "toto"}
+                                          :retry 2
+                                          :timeout "5"
+                                          :welcome [{:varname "titi"
+                                                     :voice "alice"}
+                                                    {:soundname "son1"}
+                                                    {:varname "toto"
+                                                     :voice "alice"
+                                                     :pronounce "phone"}]}}}))
         (.get "/account/0007/file")
         (.query true)
         (.reply 200 (clj->js {:meta {:total_count 1}

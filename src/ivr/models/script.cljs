@@ -3,6 +3,7 @@
             [ivr.db :as db]
             [ivr.models.node :as node]
             [ivr.models.node.announcement]
+            [ivr.models.node.dtmf-catch]
             [ivr.models.store :as store]
             [ivr.services.routes :as routes]
             [ivr.specs.node]
