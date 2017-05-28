@@ -8,4 +8,4 @@
 (def test? (= "test" node-env))
 
 (def default-log-level
-  (if debug? (if test? "warn" "verbose") "info"))
+  (if debug? (if test? "warn" "debug") "info"))

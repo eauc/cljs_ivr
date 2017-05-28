@@ -4,7 +4,8 @@
             [ivr.specs.node.announcement]
             [ivr.specs.node.dtmf-catch]
             [ivr.specs.node.fetch]
-            [ivr.specs.node.route]))
+            [ivr.specs.node.route]
+            [ivr.specs.node.smtp]))
 
 (spec/def :ivr.script/account-id
   :ivr.call/id)
@@ -19,7 +20,8 @@
   (spec/or :announcement :ivr.node.announcement/node
            :dtmf-catch :ivr.node.dtmf-catch/node
            :fetch :ivr.node.fetch/node
-           :route :ivr.node.route/node))
+           :route :ivr.node.route/node
+           :smtp :ivr.node.smtp/node))
 
 (spec/def :ivr.script/nodes
   (spec/coll-of :ivr.script/node :kind map?))

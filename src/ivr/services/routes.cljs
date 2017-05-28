@@ -20,7 +20,7 @@
 
 
 (defn- json->clj [json-string]
-  (->> (log "verbose" "json->clj"
+  (->> (log "silly" "json->clj"
             (or json-string "{}"))
        (transit/read json-reader)
        walk/keywordize-keys))

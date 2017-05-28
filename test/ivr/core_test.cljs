@@ -6,6 +6,7 @@
             ivr.models.node.dtmf-catch-speak-test
             ivr.models.node.fetch-test
             ivr.models.node.route-test
+            ivr.models.node.smtp-test
             ivr.models.script-test
             ivr.models.store-test
             ivr.models.verbs-test
@@ -25,6 +26,7 @@
                   'ivr.models.node.dtmf-catch-speak-test
                   'ivr.models.node.fetch-test
                   'ivr.models.node.route-test
+                  'ivr.models.node.smtp-test
                   'ivr.models.script-test
                   'ivr.models.store-test
                   'ivr.models.verbs-test

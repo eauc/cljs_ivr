@@ -15,11 +15,21 @@
 (def json-reader
   (transit/reader :json))
 
+(def json-writer
+  (transit/writer :json-verbose))
+
 (defn- json->clj [json-string]
-  (->> (log "verbose" "json->clj"
+  (->> (log "silly" "json->clj"
             (or json-string "{}"))
        (transit/read json-reader)
        walk/keywordize-keys))
+
+(defn- clj->json [data]
+  (if-not (nil? data)
+    (->> data
+         walk/stringify-keys
+         (transit/write json-writer)
+         (log "silly" "clj->json"))))
 
 (defn- parse-response-body [response callback]
   (let [text (atom "")]
@@ -27,16 +37,18 @@
       (.setEncoding "utf8")
       (.on "data" #(swap! text str %))
       (.on "end"
-           #(try
-              (let [body (json->clj @text)]
-                (aset response "body" body)
-                (aset response "text" @text)
-                (callback))
-              (catch js/Object error
-                (callback error)))))))
+           #(if-not (empty? @text)
+              (try
+                (let [body (json->clj @text)]
+                  (aset response "body" body)
+                  (aset response "text" @text)
+                  (callback))
+                (catch js/Object error
+                  (callback error)))
+              (callback))))))
 
 (defn request [{:as description
-                :keys [method url accept type]
+                :keys [method url accept data type]
                 :or {method "GET"
                      accept "json"
                      type "json"}}]
@@ -47,6 +59,7 @@
         (.accept accept)
         (.buffer true)
         (.parse parse-response-body)
+        (.send (clj->json data))
         (.then
          (fn [response]
            (log "info" "request success"

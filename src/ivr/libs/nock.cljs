@@ -1,8 +1,12 @@
 (ns ivr.libs.nock
   (:require [cljs.nodejs :as nodejs]
-            [ivr.debug :refer [debug?]]))
+            [ivr.debug :refer [debug?]]
+            [ivr.libs.logger :as logger]))
 
 (defonce nock (nodejs/require "nock"))
+
+(def log
+  (logger/create "nock"))
 
 (defonce cloudstore
   (when debug?
@@ -44,7 +48,13 @@
                                           :varname "titi"
                                           :case {:toto {:next "3"
                                                         :set {:varname "to_route"
-                                                              :value "toto"}}}}}}))
+                                                              :value "toto"}}}}
+                                      :5 {:type "smtp"
+                                          :subject "hello world"
+                                          :to "manu"
+                                          :attachment "/attach.txt"
+                                          :text "youpi"
+                                          :next "4"}}}))
         (.get "/account/0007/file")
         (.query true)
         (.reply 200 (clj->js {:meta {:total_count 1}
@@ -58,4 +68,9 @@
         (.defaultReplyHeaders #js {:Content-Type "application/json"})
         (.persist)
         (.post "/account/0007/routingrule/71/eval")
-        (.reply 200 "\"rule_value\""))))
+        (.reply 200 "\"rule_value\"")
+        (.post "/account/0007/mail"
+               (fn [body]
+                 (js/console.log "mail info" body)
+                 true))
+        (.reply 201))))

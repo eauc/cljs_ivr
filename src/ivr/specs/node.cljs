@@ -6,7 +6,8 @@
   #{"announcement"
     "dtmfcatch"
     "fetch"
-    "route"})
+    "route"
+    "smtp"})
 
 (spec/def :ivr.node/script-id
   string?)

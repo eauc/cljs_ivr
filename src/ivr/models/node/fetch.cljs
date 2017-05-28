@@ -1,10 +1,9 @@
 (ns ivr.models.node.fetch
-  (:require [ivr.models.node :as node]
-            [re-frame.core :as re-frame]
+  (:require [ivr.db :as db]
+            [ivr.libs.logger :as logger]
+            [ivr.models.node :as node]
             [ivr.services.routes :as routes]
-            [ivr.db :as db]
-            [ivr.libs.logger :as logger]))
-
+            [re-frame.core :as re-frame]))
 
 (def log
   (logger/create "node.fetch"))
