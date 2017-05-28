@@ -2,6 +2,7 @@
   (:require [cljs.spec :as spec]
             [ivr.models.store :as store]
             [ivr.models.verbs :as verbs]
+            [ivr.routes.url :as url]
             [ivr.services.routes :as routes]
             [ivr.specs.node :as node-specs]
             [ivr.specs.script]
@@ -38,21 +39,25 @@
     node))
 
 
-(defn conform-preset [node]
-  (let [preset (:preset node)
-        value (:value preset)
-        varname (:varname preset)]
-    (if (and preset
+(defn conform-set [map key]
+  (let [set (get map key)
+        value (:value set)
+        varname (:varname set)]
+    (if (and set
              (string? value)
              (string? varname) (not (empty? varname)))
       (if (re-find #"^\$" value)
-        (assoc node :preset {:type :ivr.node.preset/copy
-                             :from (keyword (subs value 1))
-                             :to (keyword varname)})
-        (assoc node :preset {:type :ivr.node.preset/set
-                             :value value
-                             :to (keyword varname)}))
-      (dissoc node :preset))))
+        (assoc map key {:type :ivr.node.preset/copy
+                        :from (keyword (subs value 1))
+                        :to (keyword varname)})
+        (assoc map key {:type :ivr.node.preset/set
+                        :value value
+                        :to (keyword varname)}))
+      (dissoc map key))))
+
+
+(defn conform-preset [node]
+  (conform-set node :preset))
 
 
 (spec/fdef enter-type
@@ -99,19 +104,46 @@
    (assoc coeffects :leave-node leave-type)))
 
 
+(defn- apply-data-set
+  [data set]
+  (case (:type set)
+    :ivr.node.preset/copy
+    (let [{:keys [from to]} set
+          value (get data from)]
+      (assoc data to value))
+    :ivr.node.preset/set
+    (let [{:keys [to value]} set]
+      (assoc data to value))
+    data))
+
+
 (spec/fdef apply-preset
            :args (spec/cat :node :ivr.script/node
                            :options :ivr.node/options)
            :ret map?)
-(defn apply-preset [node {:keys [call-id action-data]}]
-  (case (get-in node [:preset :type])
-    :ivr.node.preset/copy
-    (let [{:keys [from to]} (:preset node)
-          value (get action-data from)]
+(defn apply-preset
+  [{:keys [preset] :as node}
+   {:keys [call-id action-data]}]
+  (let [new-data (apply-data-set action-data preset)]
+    (if-not (= new-data action-data)
       {:ivr.call/action-data {:call-id call-id
-                              :data (assoc action-data to value)}})
-    :ivr.node.preset/set
-    (let [{:keys [to value]} (:preset node)]
-      {:ivr.call/action-data {:call-id call-id
-                              :data (assoc action-data to value)}})
-    {}))
+                              :data new-data}}
+      {})))
+
+
+(spec/fdef go-to-next
+           :args (spec/cat :node :ivr.script/node
+                           :options :ivr.node/options)
+           :ret map?)
+(defn- go-to-next
+  [{:keys [script-id next] :as node}
+   {:keys [verbs] :as options}]
+  (if next
+    {:ivr.routes/response
+     (verbs [{:type :ivr.verbs/redirect
+              :path (url/absolute
+                     [:v1 :action :script-enter-node]
+                     {:script-id script-id
+                      :node-id (subs (str next) 1)})}])}
+    {:ivr.routes/response
+     (verbs [{:type :ivr.verbs/hangup}])}))

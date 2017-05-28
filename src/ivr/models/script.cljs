@@ -147,6 +147,7 @@
                      :cause script})}
       :else (leave-node node {:action-data action-data
                               :call-id call-id
+                              :params params
                               :store store
                               :verbs verbs}))))
 

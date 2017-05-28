@@ -141,18 +141,20 @@
                   [:leave {:params {:script script
                                     :node_id "42"
                                     :call call}}]))))
-        (let [script {:nodes {:42 {:type "announcement"}}}]
+        (let [script {:nodes {:42 {:type "announcement"}}}
+              params {:script script
+                      :node_id "42"
+                      :call call}]
           (is (= {:type "announcement"
                   :node :leave
                   :params {:action-data {:action :data}
                            :call-id "call-id"
+                           :params params
                            :store "store"
                            :verbs "verbs"}}
                  (script/leave-node-route
                   coeffects
-                  [:leave {:params {:script script
-                                    :node_id "42"
-                                    :call call}}])))))))
+                  [:leave {:params params}])))))))
   (testing "conform"
     (let [options {:account-id "account-id"}]
       (testing "start"

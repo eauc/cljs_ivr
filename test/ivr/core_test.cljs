@@ -2,6 +2,8 @@
   (:require [clojure.test :as test]
             ivr.models.node-test
             ivr.models.node.announcement-test
+            ivr.models.node.dtmf-catch-test
+            ivr.models.node.dtmf-catch-speak-test
             ivr.models.script-test
             ivr.models.store-test
             ivr.models.verbs-test
@@ -17,6 +19,8 @@
 (defn run-tests []
   (test/run-tests 'ivr.models.node-test
                   'ivr.models.node.announcement-test
+                  'ivr.models.node.dtmf-catch-test
+                  'ivr.models.node.dtmf-catch-speak-test
                   'ivr.models.script-test
                   'ivr.models.store-test
                   'ivr.models.verbs-test

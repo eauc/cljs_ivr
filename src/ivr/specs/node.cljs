@@ -15,24 +15,24 @@
 (spec/def :ivr.node/type
   known-types)
 
-(spec/def :ivr.nodes.preset/type
-  #{:ivr.nodes.preset/copy
-    :ivr.nodes.preset/set})
+(spec/def :ivr.node.preset/type
+  #{:ivr.node.preset/copy
+    :ivr.node.preset/set})
 
-(spec/def :ivr.nodes.preset/value
+(spec/def :ivr.node.preset/value
   string?)
 
-(spec/def :ivr.nodes.preset/from
-  string?)
+(spec/def :ivr.node.preset/from
+  keyword?)
 
-(spec/def :ivr.nodes.preset/to
-  string?)
+(spec/def :ivr.node.preset/to
+  keyword?)
 
 (spec/def :ivr.node/preset
-  (spec/keys :req-un [:ivr.nodes.announcement.preset/type
-                      :ivr.nodes.announcement.preset/to]
-             :opt-un [:ivr.nodes.announcement.preset/from
-                      :ivr.nodes.announcement.preset/value]))
+  (spec/keys :req-un [:ivr.node.preset/type
+                      :ivr.node.preset/to]
+             :opt-un [:ivr.node.preset/from
+                      :ivr.node.preset/value]))
 
 (spec/def :ivr.node/node
   (spec/keys :req-un [:ivr.call/account-id
@@ -49,8 +49,12 @@
 (spec/def :ivr.node/verbs
   fn?)
 
+(spec/def :ivr.node/params
+  map?)
+
 (spec/def :ivr.node/options
   (spec/keys :req-un [:ivr.models.call/action-data
                       :ivr.node/call-id]
-             :opt-un [:ivr.node/store
+             :opt-un [:ivr.node/params
+                      :ivr.node/store
                       :ivr.node/verbs]))

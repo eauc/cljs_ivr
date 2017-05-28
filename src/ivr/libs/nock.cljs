@@ -18,17 +18,24 @@
                                                    :varname "titi"}}
                                       :2 {:type "dtmfcatch"
                                           :finishonkey "4"
+                                          :max_attempts 3
                                           :numdigits 3
                                           :preset {:value "+33478597106"
                                                    :varname "toto"}
                                           :retry 2
-                                          :timeout "5"
+                                          :timeout 5
+                                          :validationpattern "[421]"
+                                          :varname "dtmfcatch"
                                           :welcome [{:varname "titi"
                                                      :voice "alice"}
                                                     {:soundname "son1"}
                                                     {:varname "toto"
                                                      :voice "alice"
-                                                     :pronounce "phone"}]}}}))
+                                                     :pronounce "phone"}]
+                                          :case {:dtmf_ok {:set {:value "dtmf_toto"
+                                                                 :varname "dtmf_ok"}
+                                                           :next "43"}
+                                                 :max_attempt_reached "44"}}}}))
         (.get "/account/0007/file")
         (.query true)
         (.reply 200 (clj->js {:meta {:total_count 1}

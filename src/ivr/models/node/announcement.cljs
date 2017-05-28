@@ -14,30 +14,12 @@
       node/conform-preset))
 
 
-(spec/fdef go-to-next
-           :args (spec/cat :node :ivr.node/node
-                           :options :ivr.node/options)
-           :ret map?)
-(defn- go-to-next
-  [{:keys [script-id next] :as node}
-   {:keys [verbs] :as options}]
-  (if next
-    {:ivr.routes/response
-     (verbs [{:type :ivr.verbs/redirect
-              :path (url/absolute
-                     [:v1 :action :script-enter-node]
-                     {:script-id script-id
-                      :node-id (subs (str next) 1)})}])}
-    {:ivr.routes/response
-     (verbs [{:type :ivr.verbs/hangup}])}))
-
-
 (defmethod node/enter-type "announcement"
   [{:keys [account-id script-id disabled soundname] :as node}
    {:keys [store] :as options}]
   (let [update-action-data (node/apply-preset node options)
         result (if disabled
-                 (go-to-next node options)
+                 (node/go-to-next node options)
                  {:ivr.web/request
                   (store
                    {:type :ivr.store/get-sound-by-name
@@ -79,4 +61,4 @@
 
 (defmethod node/leave-type "announcement"
   [node options]
-  (go-to-next node options))
+  (node/go-to-next node options))

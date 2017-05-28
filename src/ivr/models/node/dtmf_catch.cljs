@@ -6,7 +6,12 @@
             [ivr.routes.url :as url]
             [ivr.services.routes :as routes]
             [ivr.specs.node.dtmf-catch]
-            [re-frame.core :as re-frame]))
+            [re-frame.core :as re-frame]
+            [ivr.libs.logger :as logger]))
+
+
+(def log
+  (logger/create "node.dtmf-catch"))
 
 (defn- conform-sound [sound]
   (if (and (string? (:varname sound))
@@ -25,11 +30,35 @@
       (update :welcome #(mapv conform-sound %))))
 
 
+(defn- conform-dtmf-ok [case]
+  (if (contains? case :dtmf_ok)
+    (-> case
+        (update :dtmf_ok node/conform-set :set)
+        (update-in [:dtmf_ok :next] keyword))
+    case))
+
+
+(defn- conform-max-attempt-reached [case]
+  (if (contains? case :max_attempt_reached)
+    (update case :max_attempt_reached keyword)
+    case))
+
+
+(defn- conform-case [node]
+  (if (contains? node :case)
+    (-> node
+        (update :case conform-dtmf-ok)
+        (update :case conform-max-attempt-reached))
+    node))
+
+
 (defmethod node/conform-type "dtmfcatch"
   [node]
   (-> node
       node/conform-preset
-      conform-welcome))
+      (update :max_attempts #(if-not (nil? %) (int %) 0))
+      conform-welcome
+      conform-case))
 
 
 (spec/fdef play-response
@@ -128,3 +157,92 @@
  [routes/interceptor
   db/default-interceptors]
  play-sound-event)
+
+
+(spec/fdef validate-digits-pattern
+           :args (spec/cat :pattern :ivr.node.dtmf-catch/validationpattern
+                           :digits :ivr.node.dtmf-catch/digits)
+           :ret boolean?)
+(defn- validate-digits-pattern [pattern digits]
+  (let [regex (re-pattern pattern)]
+    (every? #(re-find regex %) digits)))
+
+
+(spec/fdef digits-valid?
+           :args (spec/cat :node :ivr.node.dtmf-catch/node
+                           :params :ivr.node/params)
+           :ret boolean?)
+(defn- digits-valid?
+  [{:keys [finishonkey numdigits validationpattern] :as node}
+   {:keys [digits termdigit] :as params}]
+  (let [num-digits-ok? (or (nil? numdigits) (= numdigits (count digits)))
+        term-digit-ok? (or (nil? finishonkey) (= finishonkey termdigit))
+        pattern-ok? (or (nil? validationpattern) (nil? digits)
+                        (validate-digits-pattern validationpattern digits))]
+    (log "debug" "digits-valid?" {:num-digits-ok? num-digits-ok?
+                                  :term-digit-ok? term-digit-ok?
+                                  :pattern-ok? pattern-ok?})
+    (and num-digits-ok? term-digit-ok? pattern-ok?)))
+
+
+(spec/fdef save-action-data
+           :args (spec/cat :node :ivr.node.dtmf-catch/node
+                           :options :ivr.node/options)
+           :ret map?)
+(defn- save-action-data
+  [{:keys [varname] :as node}
+   {:keys [action-data call-id params] :as options}]
+  (let [{:keys [digits]} params
+        {:keys [set]} (get-in node [:case :dtmf_ok])
+        new-data (-> action-data
+                     (assoc (keyword varname) digits)
+                     (node/apply-data-set set))]
+    {:ivr.call/action-data {:call-id call-id
+                            :data new-data}}))
+
+
+(spec/fdef leave-success
+           :args (spec/cat :node :ivr.node.dtmf-catch/node
+                           :options :ivr.node/options)
+           :ret map?)
+(defn- leave-success
+  [node
+   {:keys [] :as options}]
+  (let [update-action-data (save-action-data node options)
+        {:keys [next]} (get-in node [:case :dtmf_ok])
+        result (node/go-to-next (assoc node :next next) options)]
+    (log "debug" "leave-success" {:next next})
+    (merge update-action-data result)))
+
+
+(spec/fdef leave-max-attempts-reached
+           :args (spec/cat :node :ivr.node.dtmf-catch/node
+                           :options :ivr.node/options)
+           :ret map?)
+(defn- leave-max-attempts-reached
+  [node options]
+  (log "debug" "leave-max-attempts-reached")
+  (let [next (get-in node [:case :max_attempt_reached])]
+    (node/go-to-next (assoc node :next next) options)))
+
+
+(spec/fdef leave-retry
+           :args (spec/cat :node :ivr.node.dtmf-catch/node
+                           :options :ivr.node/options)
+           :ret map?)
+(defn- leave-retry
+  [{:keys [max_attempts] :as node}
+   {:keys [params] :as options}]
+  (log "debug" "leave-retry")
+  (let [retries (int (:retries params))]
+    (if (<= max_attempts retries)
+      (leave-max-attempts-reached node options)
+      (play-retry node (inc retries) options))))
+
+
+(defmethod node/leave-type "dtmfcatch"
+  [node
+   {:keys [params] :as options}]
+  (if (digits-valid? node params)
+    (leave-success node options)
+    (leave-retry node options)))

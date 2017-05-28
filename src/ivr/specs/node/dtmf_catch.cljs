@@ -1,6 +1,6 @@
 (ns ivr.specs.node.dtmf-catch
-  (:require [ivr.specs.node]
-            [cljs.spec :as spec]))
+  (:require [cljs.spec :as spec]
+            [ivr.specs.node]))
 
 (spec/def :ivr.node.dtmf-catch.sound/pronounce
   #{"normal" "phone"})
@@ -36,32 +36,61 @@
   (spec/or :file-sound :ivr.node.dtmf-catch.sound/file
            :speak-sound :ivr.node.dtmf-catch.sound/speak))
 
-(spec/def :ivr.node.dtmf-catch/welcome
-  (spec/coll-of :ivr.node.dtmf-catch/sound :kind vector?))
+(spec/def :ivr.node.dtmf-catch/dtmf_ok
+  (spec/keys :opt-un [:ivr.node/next
+                      :ivr.node/set]))
 
-(spec/def :ivr.node.dtmf-catch/retry
-  integer?)
+(spec/def :ivr.node.dtmf-catch/max-attempt-reached
+  :ivr.node/next)
+
+(spec/def :ivr.node.dtmf-catch/case
+  (spec/keys :opt-un [:ivr.node.dtmf-catch/dtmf_ok
+                      :ivr.node.dtmf-catch/max_attempt_reached]))
 
 (spec/def :ivr.node.dtmf-catch/finishonkey
-  (or integer?
-      string?))
+  string?)
+
+(spec/def :ivr.node.dtmf-catch/max_attempts
+  integer?)
 
 (spec/def :ivr.node.dtmf-catch/numdigits
+  integer?)
+
+(spec/def :ivr.node.dtmf-catch/retry
   integer?)
 
 (spec/def :ivr.node.dtmf-catch/timeout
   integer?)
 
+(spec/def :ivr.node.dtmf-catch/validationpattern
+  string?)
+
+(spec/def :ivr.node.dtmf-catch/varname
+  string?)
+
+(spec/def :ivr.node.dtmf-catch/welcome
+  (spec/coll-of :ivr.node.dtmf-catch/sound :kind vector?))
+
 (spec/def :ivr.node.dtmf-catch/node
   (spec/and :ivr.node/node
-            (spec/keys :req-un [:ivr.node.dtmf-catch/welcome
-                                :ivr.node.dtmf-catch/retry]
-                       :opt-un [:ivr.node.dtmf-catch/finishonkey
+            (spec/keys :req-un [:ivr.node.dtmf-catch/max_attempts
+                                :ivr.node.dtmf-catch/retry
+                                :ivr.node.dtmf-catch/varname
+                                :ivr.node.dtmf-catch/welcome]
+                       :opt-un [:ivr.node.dtmf-catch/case
+                                :ivr.node.dtmf-catch/finishonkey
                                 :ivr.node.dtmf-catch/numdigits
-                                :ivr.node.dtmf-catch/timeout])))
+                                :ivr.node.dtmf-catch/timeout
+                                :ivr.node.dtmf-catch/validationpattern])))
 
 (spec/def :ivr.node.dtmf-catch/retries
   :ivr.node.dtmf-catch/retry)
+
+(spec/def :ivr.node.dtmf-catch/digit
+  string?)
+
+(spec/def :ivr.node.dtmf-catch/digits
+  (spec/coll-of :ivr.node.dtmf-catch/digit :kind vector?))
 
 (spec/def :ivr.node.dtmf-catch/options
   (spec/and :ivr.node/options
