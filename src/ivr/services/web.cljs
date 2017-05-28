@@ -16,8 +16,8 @@
   (transit/reader :json))
 
 (defn- json->clj [json-string]
-  (->> (or json-string "{}")
-       ;; (logger/default "error" "json-string")
+  (->> (log "verbose" "json->clj"
+            (or json-string "{}"))
        (transit/read json-reader)
        walk/keywordize-keys))
 

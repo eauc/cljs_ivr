@@ -12,7 +12,7 @@
 
 
 (def log
-  (logger/create "Routes"))
+  (logger/create "routes"))
 
 
 (def json-reader
@@ -20,7 +20,8 @@
 
 
 (defn- json->clj [json-string]
-  (->> (or json-string "{}")
+  (->> (log "verbose" "json->clj"
+            (or json-string "{}"))
        (transit/read json-reader)
        walk/keywordize-keys))
 

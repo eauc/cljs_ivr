@@ -7,6 +7,10 @@
             [ivr.specs.call]
             [re-frame.core :as re-frame]))
 
+
+(def log
+  (logger/create "calls"))
+
 (defn- try-to-create-call [db {:keys [account_id call_id script_id] :as params}]
   (if (or (nil? account_id)
           (nil? call_id)
@@ -52,7 +56,8 @@
 
 (re-frame/reg-fx
  :ivr.call/action-data
- (fn call-action-data-fx [{:keys [call-id data]}]
+ (fn call-action-data-fx [{:keys [call-id data] :as params}]
    (let [call (get-in @re-frame.db/app-db [:calls call-id])]
      (when call
+       (log "info" "update call action-data" params)
        (swap! re-frame.db/app-db assoc-in [:calls call-id :action-data] data)))))

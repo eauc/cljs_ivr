@@ -2,7 +2,8 @@
   (:require [cljs.spec :as spec]
             [ivr.specs.call]
             [ivr.specs.node.announcement]
-            [ivr.specs.node.dtmf-catch]))
+            [ivr.specs.node.dtmf-catch]
+            [ivr.specs.node.fetch]))
 
 (spec/def :ivr.script/account-id
   :ivr.call/id)
@@ -14,8 +15,9 @@
   keyword?)
 
 (spec/def :ivr.script/node
-  (spec/or :announcement :ivr.node.annoucement/node
-           :dtmf-catch :ivr.node.dtmf-catch/node))
+  (spec/or :announcement :ivr.node.announcement/node
+           :dtmf-catch :ivr.node.dtmf-catch/node
+           :fetch :ivr.node.fetch/node))
 
 (spec/def :ivr.script/nodes
   (spec/coll-of :ivr.script/node :kind map?))

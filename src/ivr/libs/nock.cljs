@@ -35,8 +35,22 @@
                                           :case {:dtmf_ok {:set {:value "dtmf_toto"
                                                                  :varname "dtmf_ok"}
                                                            :next "43"}
-                                                 :max_attempt_reached "44"}}}}))
+                                                 :max_attempt_reached "44"}}
+                                      :3 {:type "fetch"
+                                          :varname "to_fetch"
+                                          :id_routing_rule "71"
+                                          :next "2"}}}))
         (.get "/account/0007/file")
         (.query true)
         (.reply 200 (clj->js {:meta {:total_count 1}
                               :objects [{:_id "id_son1"}]})))))
+
+
+(defonce ivrservices
+  (when debug?
+    (-> (nock "http://clouddispatch/smartccivrservices")
+        (.log js/console.log)
+        (.defaultReplyHeaders #js {:Content-Type "application/json"})
+        (.persist)
+        (.post "/account/0007/routingrule/71/eval")
+        (.reply 200 "\"rule_value\""))))
