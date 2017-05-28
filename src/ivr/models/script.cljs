@@ -5,6 +5,7 @@
             [ivr.models.node.announcement]
             [ivr.models.node.dtmf-catch]
             [ivr.models.node.fetch]
+            [ivr.models.node.route]
             [ivr.models.store :as store]
             [ivr.services.routes :as routes]
             [ivr.specs.node]

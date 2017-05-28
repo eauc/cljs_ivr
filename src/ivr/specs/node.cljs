@@ -5,7 +5,8 @@
 (def known-types
   #{"announcement"
     "dtmfcatch"
-    "fetch"})
+    "fetch"
+    "route"})
 
 (spec/def :ivr.node/script-id
   string?)

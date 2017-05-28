@@ -45,9 +45,9 @@
 (defn- error-routing-rule
   [_ [_ {:keys [call-id action-data error node] :as options}]]
   (let [var-name (:varname node)
-        id-routing-rule (:id_routing_rule node)]
+        rule-id (:id_routing_rule node)]
     (log "error" "routing rule" {:error error
-                                 :id id-routing-rule})
+                                 :id rule-id})
     (merge {:ivr.call/action-data
             {:call-id call-id
              :data (assoc action-data var-name "__FAILED__")}}

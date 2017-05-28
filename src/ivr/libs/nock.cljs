@@ -39,7 +39,12 @@
                                       :3 {:type "fetch"
                                           :varname "to_fetch"
                                           :id_routing_rule "71"
-                                          :next "2"}}}))
+                                          :next "2"}
+                                      :4 {:type "route"
+                                          :varname "titi"
+                                          :case {:toto {:next "3"
+                                                        :set {:varname "to_route"
+                                                              :value "toto"}}}}}}))
         (.get "/account/0007/file")
         (.query true)
         (.reply 200 (clj->js {:meta {:total_count 1}
