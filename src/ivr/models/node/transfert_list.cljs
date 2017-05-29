@@ -1,12 +1,12 @@
 (ns ivr.models.node.transfert-list
-  (:require [ivr.models.node :as node]
-            [re-frame.core :as re-frame]
-            [ivr.services.routes :as routes]
+  (:require [cljs.nodejs :as nodejs]
+            [clojure.walk :as walk]
             [ivr.db :as db]
-            [cljs.nodejs :as nodejs]
-            [ivr.routes.url :as url]
             [ivr.libs.logger :as logger]
-            [clojure.walk :as walk]))
+            [ivr.models.node :as node]
+            [ivr.routes.url :as url]
+            [ivr.services.routes :as routes]
+            [re-frame.core :as re-frame]))
 
 
 (defonce query-string (nodejs/require "querystring"))

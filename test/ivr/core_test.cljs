@@ -8,6 +8,7 @@
             ivr.models.node.route-test
             ivr.models.node.smtp-test
             ivr.models.node.transfert-list-test
+            ivr.models.node.transfert-queue-test
             ivr.models.script-test
             ivr.models.store-test
             ivr.models.verbs-test
@@ -29,6 +30,7 @@
                   'ivr.models.node.route-test
                   'ivr.models.node.smtp-test
                   'ivr.models.node.transfert-list-test
+                  'ivr.models.node.transfert-queue-test
                   'ivr.models.script-test
                   'ivr.models.store-test
                   'ivr.models.verbs-test

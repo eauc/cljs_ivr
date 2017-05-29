@@ -5,6 +5,7 @@
             [ivr.models.verbs.dial-number]
             [ivr.models.verbs.gather]
             [ivr.models.verbs.hangup]
+            [ivr.models.verbs.loop-play]
             [ivr.models.verbs.play]
             [ivr.models.verbs.redirect]
             [ivr.specs.verb]

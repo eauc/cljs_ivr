@@ -60,7 +60,11 @@
                                           :failover "5"}
                                       :7 {:type "transferlist"
                                           :dest "unknown"
-                                          :failover "5"}}}))
+                                          :failover "6"}
+                                      :8 {:type "transferqueue"
+                                          :queue "3456"}
+                                      :9 {:type "transferqueue"
+                                          :queue "unknown"}}}))
         (.get "/account/0007/file")
         (.query true)
         (.reply 200 (clj->js {:meta {:total_count 1}
@@ -69,6 +73,19 @@
         (.reply 200 (clj->js {:fromSda "CALLER"
                               :ringingTimeoutSec 15
                               :ringing_tone "ringing"})))))
+
+
+(defonce acdlink
+  (when debug?
+    (-> (nock "http://clouddispatch/smartccacdlink")
+        (.log js/console.log)
+        (.defaultReplyHeaders #js {:Content-Type "application/json"})
+        (.persist)
+        (.post "/call/2234/enqueue"
+               (fn [body]
+                 (js/console.log "acd enqueue" body)
+                 (= "3456" (aget body "queue_id"))))
+        (.reply 200 #js {:waitSound "queue_waiting"}))))
 
 
 (defonce ivrservices

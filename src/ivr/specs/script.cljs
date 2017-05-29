@@ -6,7 +6,8 @@
             [ivr.specs.node.fetch]
             [ivr.specs.node.route]
             [ivr.specs.node.smtp]
-            [ivr.specs.node.transfert-list]))
+            [ivr.specs.node.transfert-list]
+            [ivr.specs.node.transfert-queue]))
 
 (spec/def :ivr.script/account-id
   :ivr.call/id)
@@ -23,7 +24,8 @@
            :fetch :ivr.node.fetch/node
            :route :ivr.node.route/node
            :smtp :ivr.node.smtp/node
-           :transfert-list :ivr.node.transfert-list/node))
+           :transfert-list :ivr.node.transfert-list/node
+           :transfert-queue :ivr.node.transfert-queue/node))
 
 (spec/def :ivr.script/nodes
   (spec/coll-of :ivr.script/node :kind map?))

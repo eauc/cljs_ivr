@@ -8,7 +8,8 @@
     "fetch"
     "route"
     "smtp"
-    "transferlist"})
+    "transferlist"
+    "transferqueue"})
 
 (spec/def :ivr.node/script-id
   string?)
