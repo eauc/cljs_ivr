@@ -37,7 +37,7 @@
           (is (= {:ivr.routes/response
                   {:verbs :create
                    :data [{:type :ivr.verbs/loop-play
-                           :sound-url "/cloudstore/file/waiting"}]}}
+                           :path "/cloudstore/file/waiting"}]}}
                  (tq-node/play-waiting-sound
                   {} [:event {:options options
                               :response response}])))))

@@ -7,7 +7,8 @@
             [ivr.specs.node.route]
             [ivr.specs.node.smtp]
             [ivr.specs.node.transfert-list]
-            [ivr.specs.node.transfert-queue]))
+            [ivr.specs.node.transfert-queue]
+            [ivr.specs.node.transfert-sda]))
 
 (spec/def :ivr.script/account-id
   :ivr.call/id)
@@ -25,7 +26,8 @@
            :route :ivr.node.route/node
            :smtp :ivr.node.smtp/node
            :transfert-list :ivr.node.transfert-list/node
-           :transfert-queue :ivr.node.transfert-queue/node))
+           :transfert-queue :ivr.node.transfert-queue/node
+           :transfert-sda :ivr.node.transfert-sda/node))
 
 (spec/def :ivr.script/nodes
   (spec/coll-of :ivr.script/node :kind map?))

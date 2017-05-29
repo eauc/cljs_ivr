@@ -147,3 +147,23 @@
                       :node-id (subs (str next) 1)})}])}
     {:ivr.routes/response
      (verbs [{:type :ivr.verbs/hangup}])}))
+
+
+(defn- ->transfert-config
+  [config account params]
+  (let [config (merge {:fromSda "CALLEE"
+                       :ringingTimeoutSec 10}
+                      config
+                      account)
+        from (or (if (= "CALLER" (:fromSda config))
+                   (:from params)
+                   (:to params))
+                 "sip:anonymous@anonymous.invalid")
+        record-enabled (if (contains? account :record_enabled)
+                         (:record_enabled account)
+                         false)
+        waiting-url (str "/smartccivr/twimlets/loopPlay/" (:ringing_tone config))]
+    {:from from
+     :timeout (:ringingTimeoutSec config)
+     :record record-enabled
+     :waitingurl waiting-url}))

@@ -48,32 +48,12 @@
   (play-transfert-list node options))
 
 
-(defn- ->transfert-config
-  [config account params]
-  (let [config (merge {:fromSda "CALLEE"
-                       :ringingTimeoutSec 10}
-                      config
-                      account)
-        from (or (if (= "CALLER" (:fromSda config))
-                   (:from params)
-                   (:to params))
-                 "sip:anonymous@anonymous.invalid")
-        record-enabled (if (contains? account :record_enabled)
-                         (:record_enabled account)
-                         false)
-        waiting-url (str "/smartccivr/twimlets/loopPlay/" (:ringing_tone config))]
-    {:from from
-     :timeout (:ringingTimeoutSec config)
-     :record record-enabled
-     :waitingurl waiting-url}))
-
-
 (defn- eval-list-with-config
   [{:keys [config] :as coeffects}
    [_ {:keys [node options response]
        :or {response #js {}}} {:keys [params]}]]
   (let [account (or (aget response "body") {})
-        transfert-config (->transfert-config config account params)
+        transfert-config (node/->transfert-config config account params)
         {account-id :account-id list-id :dest} node
         payload {:node node
                  :options options
