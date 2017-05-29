@@ -29,7 +29,7 @@
 (defmethod node/enter-type "transfersda"
   [{:keys [account-id] :as node}
    {:keys [store] :as options}]
-  (let [finally [::trasnfert-sda-with-config
+  (let [finally [::transfert-sda-with-config
                  {:node node :options options}]]
     {:ivr.web/request
      (store
@@ -43,7 +43,7 @@
   [{:keys [config] :as coeffects}
    [_ {:keys [node options response]
        :or {response #js {}}} {:keys [params]}]]
-  (let [account (or {} (get response "body"))
+  (let [account (or (aget response "body") {})
         transfert-config (node/->transfert-config config account params)
         {:keys [dest id script-id]} node
         {:keys [verbs]} options
@@ -51,7 +51,7 @@
                                    {:script-id script-id :node-id id})
         status-url (url/absolute [:v1 :status :dial]
                                  {:script-id script-id})]
-    {:ivr.web/response
+    {:ivr.routes/response
      (verbs
       [(merge {:type :ivr.verbs/dial-number
                :number dest
@@ -65,3 +65,15 @@
   db/default-interceptors
   (re-frame/inject-cofx :ivr.config/cofx [:ivr :transfersda])]
  transfert-sda-with-config)
+
+(defmethod node/leave-type "transfersda"
+  [node
+   {:keys [params verbs] :as options}]
+  (if (= "completed" (:dialstatus params))
+    {:ivr.routes/response
+     (verbs
+      [{:type :ivr.verbs/hangup}])}
+    (let [dialstatus (or (#{"no-answer" "busy"} (:dialstatus params))
+                         "other")
+          next (get-in node [:case (keyword dialstatus)])]
+      (node/go-to-next (assoc node :next next) options))))

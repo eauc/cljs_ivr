@@ -150,10 +150,10 @@
 
 
 (defn- ->transfert-config
-  [config account params]
+  [ivr-config account params]
   (let [config (merge {:fromSda "CALLEE"
                        :ringingTimeoutSec 10}
-                      config
+                      ivr-config
                       account)
         from (or (if (= "CALLER" (:fromSda config))
                    (:from params)

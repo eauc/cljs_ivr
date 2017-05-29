@@ -64,7 +64,12 @@
                                       :8 {:type "transferqueue"
                                           :queue "3456"}
                                       :9 {:type "transferqueue"
-                                          :queue "unknown"}}}))
+                                          :queue "unknown"}
+                                      :10 {:type "transfersda"
+                                           :dest "dest-sda"
+                                           :case {:noanswer "42"
+                                                  :busy "71"
+                                                  :other "3"}}}}))
         (.get "/account/0007/file")
         (.query true)
         (.reply 200 (clj->js {:meta {:total_count 1}
