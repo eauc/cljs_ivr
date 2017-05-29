@@ -10,7 +10,9 @@
                :action {:link "/script/:script_id"
                         :script-start "/node/start"
                         :script-enter-node "/node/:node_id"
-                        :script-leave-node "/node/:node_id/callback"}}}})
+                        :script-leave-node "/node/:node_id/callback"}
+               :status {:link "/script/:script_id"
+                        :dial "/dialstatus"}}}})
 
 (defn- relative [api-path]
   (let [value (get-in (:apis config) api-path)]

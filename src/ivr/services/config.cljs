@@ -75,3 +75,12 @@
  [routes/interceptor
   db/default-interceptors]
  explain-route)
+
+
+(re-frame/reg-cofx
+ :ivr.config/cofx
+ (fn config-cofx [{:keys [db] :as coeffects} path]
+   (->> path
+        (concat [:config-info :config])
+        (get-in db)
+        (assoc coeffects :config))))

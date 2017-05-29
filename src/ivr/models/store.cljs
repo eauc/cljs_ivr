@@ -17,6 +17,14 @@
    (assoc coeffects :store query)))
 
 
+(defmethod query :ivr.store/get-account
+  [{:keys [id on-success on-error]}]
+  {:method "GET"
+   :url (str "/cloudstore/account/" id)
+   :on-success on-success
+   :on-error on-error})
+
+
 (defmethod query :ivr.store/get-script
   [{:keys [account-id script-id on-success on-error]}]
   {:method "GET"

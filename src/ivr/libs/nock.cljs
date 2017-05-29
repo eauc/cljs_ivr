@@ -54,11 +54,21 @@
                                           :to "manu"
                                           :attachment "/attach.txt"
                                           :text "youpi"
-                                          :next "4"}}}))
+                                          :next "4"}
+                                      :6 {:type "transferlist"
+                                          :dest "3456"
+                                          :failover "5"}
+                                      :7 {:type "transferlist"
+                                          :dest "unknown"
+                                          :failover "5"}}}))
         (.get "/account/0007/file")
         (.query true)
         (.reply 200 (clj->js {:meta {:total_count 1}
-                              :objects [{:_id "id_son1"}]})))))
+                              :objects [{:_id "id_son1"}]}))
+        (.get "/account/0007")
+        (.reply 200 (clj->js {:fromSda "CALLER"
+                              :ringingTimeoutSec 15
+                              :ringing_tone "ringing"})))))
 
 
 (defonce ivrservices
@@ -73,4 +83,8 @@
                (fn [body]
                  (js/console.log "mail info" body)
                  true))
-        (.reply 201))))
+        (.reply 201)
+        (.post "/account/0007/destinationlist/3456/eval")
+        (.reply 200 #js {:sda "list-sda"
+                         :param1 "val1"
+                         :param2 "val2"}))))

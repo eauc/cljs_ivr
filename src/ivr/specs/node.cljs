@@ -7,7 +7,8 @@
     "dtmfcatch"
     "fetch"
     "route"
-    "smtp"})
+    "smtp"
+    "transferlist"})
 
 (spec/def :ivr.node/script-id
   string?)
