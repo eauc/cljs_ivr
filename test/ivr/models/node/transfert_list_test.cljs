@@ -61,6 +61,14 @@
                   {:config config} [:event
                                     {:node node :options options :response response}
                                     {:params params}])))
+          (let [options (merge options {:eval-list {:eval :list}})]
+            (is (= {:eval :list}
+                   (get-in
+                    (tl-node/eval-list-with-config
+                     {:config config} [:event
+                                       {:node node :options options :response response}
+                                       {:params params}])
+                    [:ivr.web/request :data]))))
           (let [config (merge config {:ringingTimeoutSec 5
                                       :fromSda "CALLER"})
                 params (merge params {:from "from-number"
@@ -128,4 +136,34 @@
                   {:verbs :create
                    :data [{:type :ivr.verbs/hangup}]}}
                  (tl-node/eval-list-error
-                  {} [:event {:node node :options options}]))))))))
+                  {} [:event {:node node :options options}])))))))
+  (testing "leave"
+    (let [store #(assoc % :store :query)
+          verbs (fn [vs] {:verbs :create :data vs})
+          params {:_dstLst_param1 "val1"
+                  :other "value"
+                  :_dstLst_param2 "val2"}
+          options {:params params :store store :verbs verbs}
+          base-node {:type "transferlist"
+                     :id "node-id"
+                     :account-id "account-id"
+                     :script-id "script-id"
+                     :dest "list-id"}
+          expected-options (assoc options :eval-list {:param1 "val1"
+                                                      :param2 "val2"})]
+      (is (= {:ivr.web/request
+              {:store :query
+               :type :ivr.store/get-account
+               :id "account-id"
+               :on-success
+               [:ivr.models.node.transfert-list/eval-list-with-config
+                {:node base-node :options expected-options}]
+               :on-error
+               [:ivr.models.node.transfert-list/eval-list-with-config
+                {:node base-node :options expected-options}]}}
+             (node/leave-type base-node options)))
+      (let [options (merge options {:params {:dialstatus "completed"}})]
+        (is (= {:ivr.routes/response
+                {:verbs :create
+                 :data [{:type :ivr.verbs/hangup}]}}
+               (node/leave-type base-node options)))))))

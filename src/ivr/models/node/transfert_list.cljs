@@ -5,7 +5,8 @@
             [ivr.db :as db]
             [cljs.nodejs :as nodejs]
             [ivr.routes.url :as url]
-            [ivr.libs.logger :as logger]))
+            [ivr.libs.logger :as logger]
+            [clojure.walk :as walk]))
 
 
 (defonce query-string (nodejs/require "querystring"))
@@ -29,7 +30,7 @@
       conform-failover))
 
 
-(defmethod node/enter-type "transferlist"
+(defn- play-transfert-list
   [{:keys [account-id] :as node}
    {:keys [store] :as options}]
   (let [finally [::eval-list-with-config
@@ -40,6 +41,11 @@
        :id account-id
        :on-success finally
        :on-error finally})}))
+
+
+(defmethod node/enter-type "transferlist"
+  [node options]
+  (play-transfert-list node options))
 
 
 (defn- ->transfert-config
@@ -75,7 +81,7 @@
     {:ivr.web/request
      {:method "POST"
       :url (str "/smartccivrservices/account/" account-id "/destinationlist/" list-id "/eval")
-      :data {}
+      :data (or (:eval-list options) {})
       :on-success [::transfert-call-to-list payload]
       :on-error [::eval-list-error payload]}}))
 
@@ -103,6 +109,16 @@
            xml-escape
            (str "?"))
       "")))
+
+
+(defn- callback-query->eval-list
+  [query]
+  (->> query
+       (walk/stringify-keys)
+       (filter (fn [[k v]] (re-find #"^_dstLst_" k)))
+       (map (fn [[k v]] [(nth (re-find #"^_dstLst_(.*)$" k) 1) v]))
+       (into {})
+       (walk/keywordize-keys)))
 
 
 (defn- transfert-call-to-list
@@ -142,3 +158,13 @@
  [routes/interceptor
   db/default-interceptors]
  eval-list-error)
+
+
+(defmethod node/leave-type "transferlist"
+  [node {:keys [params verbs] :as options}]
+  (if (= "completed" (:dialstatus params))
+    {:ivr.routes/response
+     (verbs
+      [{:type :ivr.verbs/hangup}])}
+    (let [eval-list (callback-query->eval-list params)]
+      (play-transfert-list node (assoc options :eval-list eval-list)))))
