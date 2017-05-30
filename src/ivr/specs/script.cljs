@@ -8,7 +8,8 @@
             [ivr.specs.node.smtp]
             [ivr.specs.node.transfert-list]
             [ivr.specs.node.transfert-queue]
-            [ivr.specs.node.transfert-sda]))
+            [ivr.specs.node.transfert-sda]
+            [ivr.specs.node.voice-record]))
 
 (spec/def :ivr.script/account-id
   :ivr.call/id)
@@ -27,7 +28,8 @@
            :smtp :ivr.node.smtp/node
            :transfert-list :ivr.node.transfert-list/node
            :transfert-queue :ivr.node.transfert-queue/node
-           :transfert-sda :ivr.node.transfert-sda/node))
+           :transfert-sda :ivr.node.transfert-sda/node
+           :voice-record :ivr.node.voice-record/node))
 
 (spec/def :ivr.script/nodes
   (spec/coll-of :ivr.script/node :kind map?))

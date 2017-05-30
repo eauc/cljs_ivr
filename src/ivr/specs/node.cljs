@@ -10,7 +10,8 @@
     "smtp"
     "transferlist"
     "transferqueue"
-    "transfersda"})
+    "transfersda"
+    "voicerecord"})
 
 (spec/def :ivr.node/script-id
   string?)

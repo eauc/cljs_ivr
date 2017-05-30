@@ -1,9 +1,9 @@
 (ns ivr.models.node.transfert-sda
-  (:require [ivr.models.node :as node]
-            [re-frame.core :as re-frame]
+  (:require [ivr.db :as db]
+            [ivr.models.node :as node]
+            [ivr.routes.url :as url]
             [ivr.services.routes :as routes]
-            [ivr.db :as db]
-            [ivr.routes.url :as url]))
+            [re-frame.core :as re-frame]))
 
 
 (defn- conform-case-no-answer

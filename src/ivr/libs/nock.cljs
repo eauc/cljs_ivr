@@ -69,7 +69,13 @@
                                            :dest "dest-sda"
                                            :case {:noanswer "42"
                                                   :busy "71"
-                                                  :other "3"}}}}))
+                                                  :other "3"}}
+                                      :11 {:type "voicerecord"
+                                           :varname "record"
+                                           :validateKey "4"
+                                           :cancelKey "#"
+                                           :case {:cancel "4"
+                                                  :validate "7"}}}}))
         (.get "/account/0007/file")
         (.query true)
         (.reply 200 (clj->js {:meta {:total_count 1}

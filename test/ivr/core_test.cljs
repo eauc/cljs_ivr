@@ -10,6 +10,7 @@
             ivr.models.node.transfert-list-test
             ivr.models.node.transfert-queue-test
             ivr.models.node.transfert-sda-test
+            ivr.models.node.voice-record-test
             ivr.models.script-test
             ivr.models.store-test
             ivr.models.verbs-test
@@ -33,6 +34,7 @@
                   'ivr.models.node.transfert-list-test
                   'ivr.models.node.transfert-queue-test
                   'ivr.models.node.transfert-sda-test
+                  'ivr.models.node.voice-record-test
                   'ivr.models.script-test
                   'ivr.models.store-test
                   'ivr.models.verbs-test

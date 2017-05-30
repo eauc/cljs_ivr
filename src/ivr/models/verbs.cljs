@@ -7,6 +7,7 @@
             [ivr.models.verbs.hangup]
             [ivr.models.verbs.loop-play]
             [ivr.models.verbs.play]
+            [ivr.models.verbs.record]
             [ivr.models.verbs.redirect]
             [ivr.specs.verb]
             [re-frame.core :as re-frame]))
