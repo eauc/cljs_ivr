@@ -1,4 +1,4 @@
-- helper conform update map if contains? key (update-if :key fn)
+- conform cond->
 - instrumenter ivr.node ns durant les tests node/types
 - factoriser les intercepteurs des events d'action des nodes/types
 - creer un reg-action qui:
@@ -6,3 +6,5 @@
   - vire les coeffects (et l'event ? par l'intercepteur re-frame) des args du handler
 - nettoyer les tests des events
 - callTime
+- multimethod apply-set + set multiple variables
+- do not keywordize json keys everytime
