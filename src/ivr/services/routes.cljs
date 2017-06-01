@@ -1,44 +1,16 @@
 (ns ivr.services.routes
   (:require [cljs.spec :as spec]
-            [clojure.walk :as walk]
-            [cognitect.transit :as transit]
-            [hiccups.runtime :as hiccupsrt]
+            [ivr.libs.json :refer [clj->json json->clj]]
             [ivr.libs.logger :as logger]
+            [ivr.libs.xml :refer [clj->xml]]
             [ivr.services.web :as web]
             [ivr.specs.route]
             [re-frame.core :as re-frame])
-  (:require-macros [cljs.core.async.macros :refer [go]]
-                   [hiccups.core :as hiccup :refer [html]]))
+  (:require-macros [cljs.core.async.macros :refer [go]]))
 
 
 (def log
   (logger/create "routes"))
-
-
-(def json-reader
-  (transit/reader :json))
-
-
-(defn- json->clj [json-string]
-  (->> (log "silly" "json->clj"
-            (or json-string "{}"))
-       (transit/read json-reader)
-       walk/keywordize-keys))
-
-
-(def json-writer
-  (transit/writer :json-verbose))
-
-
-(defn- clj->json [data]
-  (->> data
-       walk/stringify-keys
-       (transit/write json-writer)))
-
-
-(defn- clj->xml [clj-data]
-  (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
-       (html clj-data)))
 
 
 (defn error-response [{:keys [status]

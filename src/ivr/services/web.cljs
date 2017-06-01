@@ -1,35 +1,17 @@
 (ns ivr.services.web
   (:require [cljs.core.async :as async :refer [>!]]
             [cljs.nodejs :as nodejs]
-            [clojure.walk :as walk]
-            [cognitect.transit :as transit]
+            [ivr.libs.json :refer [json->clj clj->json]]
             [ivr.libs.logger :as logger]
             [re-frame.core :as re-frame])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defonce superagent (nodejs/require "superagent"))
 
+
 (def log
   (logger/create "web"))
 
-(def json-reader
-  (transit/reader :json))
-
-(def json-writer
-  (transit/writer :json-verbose))
-
-(defn- json->clj [json-string]
-  (->> (log "silly" "json->clj"
-            (or json-string "{}"))
-       (transit/read json-reader)
-       walk/keywordize-keys))
-
-(defn- clj->json [data]
-  (if-not (nil? data)
-    (->> data
-         walk/stringify-keys
-         (transit/write json-writer)
-         (log "silly" "clj->json"))))
 
 (defn- parse-response-body [response callback]
   (let [text (atom "")]
@@ -46,6 +28,7 @@
                 (catch js/Object error
                   (callback error)))
               (callback))))))
+
 
 (defn request [{:as description
                 :keys [method url accept data type]
@@ -75,12 +58,14 @@
                                  :message (aget error "message")})])))))
     result))
 
+
 (defn- response->event [[success? result]
                         [event-success payload-success]
                         [event-error payload-error]]
   (if (= :ivr.web/success success?)
     [event-success (assoc payload-success :response result)]
     [event-error (assoc payload-error :error result)]))
+
 
 (defn- web-request-fx-run [{:as description
                             :keys [url on-success on-error]}
@@ -97,6 +82,7 @@
        (response->event on-success on-error)
        (insert-route-in-event)
        re-frame/dispatch))))
+
 
 (defn request-fx [value {:keys [config] :as options}]
   (let [descriptions (if (vector? value) value [value])
