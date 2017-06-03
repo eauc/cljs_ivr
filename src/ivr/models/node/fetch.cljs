@@ -34,11 +34,9 @@
               :data (assoc action-data var-name value)}}
             (node/go-to-next node (dissoc options :node)))))
 
-(re-frame/reg-event-fx
- ::apply-routing-rule
- [routes/interceptor
-  db/default-interceptors]
- apply-routing-rule)
+(routes/reg-action
+  ::apply-routing-rule
+  apply-routing-rule)
 
 
 (defn- error-routing-rule
@@ -52,11 +50,9 @@
              :data (assoc action-data var-name "__FAILED__")}}
            (node/go-to-next node (dissoc options :node)))))
 
-(re-frame/reg-event-fx
- ::error-routing-rule
- [routes/interceptor
-  db/default-interceptors]
- error-routing-rule)
+(routes/reg-action
+  ::error-routing-rule
+  error-routing-rule)
 
 
 (defmethod node/leave-type "fetch"

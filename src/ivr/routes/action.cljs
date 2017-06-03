@@ -4,7 +4,7 @@
             [ivr.models.script :as script]
             [ivr.models.store :as store]
             [ivr.routes.url :as url]
-            [ivr.services.routes :as routes]
+            [ivr.services.routes.dispatch :as routes-dispatch]
             [ivr.services.calls]
             [re-frame.core :as re-frame]))
 
@@ -24,22 +24,22 @@
   (get-in url/config [:apis :v1 :action :script-leave-node]))
 
 (def resolve-or-create-call-middleware
-  (routes/dispatch [:ivr.services.calls/resolve {:create? true}]))
+  (routes-dispatch/dispatch [:ivr.call/resolve {:create? true}]))
 
 (def resolve-call-middleware
-  (routes/dispatch [:ivr.services.calls/resolve {:create? false}]))
+  (routes-dispatch/dispatch [:ivr.call/resolve {:create? false}]))
 
 (def resolve-script-middleware
-  (routes/dispatch [:ivr.models.script/resolve]))
+  (routes-dispatch/dispatch [:ivr.script/resolve]))
 
 (def script-start-route
-  (routes/dispatch [:ivr.models.script/start-route]))
+  (routes-dispatch/dispatch [:ivr.script/start-route]))
 
 (def script-enter-node-route
-  (routes/dispatch [:ivr.models.script/enter-node-route]))
+  (routes-dispatch/dispatch [:ivr.script/enter-node-route]))
 
 (def script-leave-node-route
-  (routes/dispatch [:ivr.models.script/leave-node-route]))
+  (routes-dispatch/dispatch [:ivr.script/leave-node-route]))
 
 (def router
   (doto (.Router express #js {:mergeParams true})

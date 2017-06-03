@@ -51,7 +51,7 @@
                                :case {:validate {:set {:varname "to_var"
                                                        :value "$from_var"}}}}))))
   (testing "enter"
-    (is (= {:dispatch
+    (is (= {:ivr.routes/dispatch
             [:ivr.models.node.voice-record/record-with-config
              {:node {:type "voicerecord"}
               :options {:options "options"}}]}

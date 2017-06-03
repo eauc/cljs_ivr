@@ -22,11 +22,11 @@
                  (node/go-to-next node options)
                  {:ivr.web/request
                   (store
-                   {:type :ivr.store/get-sound-by-name
-                    :name soundname
-                    :account-id account-id
-                    :script-id script-id
-                    :on-success [::play-sound (assoc options :node node)]})})]
+                    {:type :ivr.store/get-sound-by-name
+                     :name soundname
+                     :account-id account-id
+                     :script-id script-id
+                     :on-success [::play-sound (assoc options :node node)]})})]
     (merge update-action-data result)))
 
 
@@ -51,12 +51,10 @@
                 :callbackurl callback-url
                 :play [sound-url]}])})))
 
-(re-frame/reg-event-fx
- ::play-sound
- [routes/interceptor
-  db/default-interceptors]
- (fn play-sound-fx [_ [_ {:keys [node verbs sound-url]}]]
-   (play-sound sound-url node verbs)))
+(routes/reg-action
+  ::play-sound
+  (fn play-sound-fx [_ [_ {:keys [node verbs sound-url]}]]
+    (play-sound sound-url node verbs)))
 
 
 (defmethod node/leave-type "announcement"

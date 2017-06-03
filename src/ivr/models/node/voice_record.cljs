@@ -36,7 +36,8 @@
 
 (defmethod node/enter-type "voicerecord"
   [node options]
-  {:dispatch [::record-with-config {:node node :options options}]})
+  {:ivr.routes/dispatch
+   [::record-with-config {:node node :options options}]})
 
 
 (defn- record-with-config
@@ -48,22 +49,22 @@
                                    {:script-id script-id :node-id id})]
     {:ivr.routes/response
      (verbs
-      [{:type :ivr.verbs/record
-        :maxlength (:maxlength config)
-        :finishonkey (str validateKey cancelKey)
-        :callbackurl callback-url}])}))
+       [{:type :ivr.verbs/record
+         :maxlength (:maxlength config)
+         :finishonkey (str validateKey cancelKey)
+         :callbackurl callback-url}])}))
 
-(re-frame/reg-event-fx
- ::record-with-config
- [routes/interceptor
-  db/default-interceptors
-  (re-frame/inject-cofx :ivr.config/cofx [:ivr :voicerecord])]
- record-with-config)
+(routes/reg-action
+  ::record-with-config
+  [(re-frame/inject-cofx :ivr.config/cofx [:ivr :voicerecord])]
+  record-with-config)
 
 
 (defn- record-canceled?
   [{:keys [cancelKey] :as node}
-   {:keys [record_cause record_digits] :as params}]
+   {:keys [record_cause record_digits]
+    :or {record_digits ""}
+    :as params}]
   (and (= "digit-a" record_cause)
        (re-find (re-pattern (str cancelKey "$")) record_digits)))
 

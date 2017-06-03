@@ -1,8 +1,10 @@
 (ns ivr.services.web
   (:require [cljs.core.async :as async :refer [>!]]
             [cljs.nodejs :as nodejs]
-            [ivr.libs.json :refer [json->clj clj->json]]
+            [ivr.libs.json :refer [clj->json json->clj]]
             [ivr.libs.logger :as logger]
+            [ivr.services.routes.dispatch :as routes-dispatch]
+            [ivr.services.routes.interceptor :as routes-interceptor]
             [re-frame.core :as re-frame])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
@@ -44,18 +46,18 @@
         (.parse parse-response-body)
         (.send (clj->json data))
         (.then
-         (fn [response]
-           (log "info" "request success"
-                {:method method
-                 :url url
-                 :status (aget response "status")})
-           (go (>! result [:ivr.web/success response])))
-         (fn [error]
-           (go (>! result [:ivr.web/error
-                           (log "warn" "request failed"
-                                {:method method
-                                 :url url
-                                 :message (aget error "message")})])))))
+          (fn [response]
+            (log "info" "request success"
+                 {:method method
+                  :url url
+                  :status (aget response "status")})
+            (go (>! result [:ivr.web/success response])))
+          (fn [error]
+            (go (>! result [:ivr.web/error
+                            (log "warn" "request failed"
+                                 {:method method
+                                  :url url
+                                  :message (aget error "message")})])))))
     result))
 
 
@@ -67,24 +69,21 @@
     [event-error (assoc payload-error :error result)]))
 
 
-(defn- web-request-fx-run [{:as description
-                            :keys [url on-success on-error]}
-                           dispatch_url
-                           {:keys [config insert-route-in-event]}]
-  (go
-    (let [absolute-url (str dispatch_url url)
-          response (-> description
-                       (assoc :url absolute-url)
-                       request
-                       <!)]
-      (->
-       response
-       (response->event on-success on-error)
-       (insert-route-in-event)
-       re-frame/dispatch))))
+(defn- request-fx [context route
+                   {:keys [url on-success on-error] :as description}]
+  (let [config (get-in context [:coeffects :db :config-info :config])
+        dispatch-url (get-in config [:environment :dispatch_url :internal])
+        absolute-url (str dispatch-url url)]
+    (go
+      (let [response (-> description
+                         (assoc :url absolute-url)
+                         request
+                         <!)]
+        (-> response
+            (response->event on-success on-error)
+            (routes-dispatch/insert-route-in-event route)
+            re-frame/dispatch)))))
 
-
-(defn request-fx [value {:keys [config] :as options}]
-  (let [descriptions (if (vector? value) value [value])
-        dispatch_url (get-in config [:environment :dispatch_url :internal])]
-    (mapv #(web-request-fx-run % dispatch_url options) descriptions)))
+(routes-interceptor/reg-fx
+  :ivr.web/request
+  request-fx)

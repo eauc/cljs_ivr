@@ -4,6 +4,7 @@
             [cljs.spec :as spec]
             [clojure.string :as str]
             [ivr.db :as db]
+            [ivr.libs.logger :as logger]
             [ivr.routes.url :as url]
             [ivr.services.config.base :as base :refer [log]]
             [ivr.services.config.file]
@@ -70,17 +71,16 @@
     {:ivr.routes/response
      {:data explanation
       :link link}}))
-(re-frame/reg-event-fx
- ::explain-route
- [routes/interceptor
-  db/default-interceptors]
- explain-route)
+
+(routes/reg-action
+  :ivr.config/explain-route
+  explain-route)
 
 
 (re-frame/reg-cofx
- :ivr.config/cofx
- (fn config-cofx [{:keys [db] :as coeffects} path]
-   (->> path
-        (concat [:config-info :config])
-        (get-in db)
-        (assoc coeffects :config))))
+  :ivr.config/cofx
+  (fn config-cofx [{:keys [db] :as coeffects} path]
+    (->> path
+         (concat [:config-info :config])
+         (get-in db)
+         (assoc coeffects :config))))

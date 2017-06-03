@@ -57,8 +57,9 @@
           (let [response #js {:body {:meta {:total_count 2}
                                      :objects [{:_id "42"}
                                                {:_id "54"}]}}]
-            (is (= {:dispatch [:success {:payload "data"
-                                         :sound-url "/cloudstore/file/42"}]}
+            (is (= {:ivr.routes/dispatch
+                    [:success {:payload "data"
+                               :sound-url "/cloudstore/file/42"}]}
                    (store/get-sound-success query response)))))))
     (testing "get-file-error"
       (is (= {:ivr.routes/response

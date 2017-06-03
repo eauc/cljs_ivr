@@ -39,14 +39,12 @@
   (let [wait-sound (:waitSound (aget response "body"))]
     {:ivr.routes/response
      (verbs
-      [{:type :ivr.verbs/loop-play
-        :path (str "/cloudstore/file/" wait-sound)}])}))
+       [{:type :ivr.verbs/loop-play
+         :path (str "/cloudstore/file/" wait-sound)}])}))
 
-(re-frame/reg-event-fx
- ::play-waiting-sound
- [routes/interceptor
-  db/default-interceptors]
- play-waiting-sound)
+(routes/reg-action
+  ::play-waiting-sound
+  play-waiting-sound)
 
 
 (defn- error-acd-enqueue
@@ -55,13 +53,11 @@
        {:error error :node node})
   {:ivr.routes/response
    (verbs
-    [{:type :ivr.verbs/hangup}])})
+     [{:type :ivr.verbs/hangup}])})
 
-(re-frame/reg-event-fx
- ::error-acd-enqueue
- [routes/interceptor
-  db/default-interceptors]
- error-acd-enqueue)
+(routes/reg-action
+  ::error-acd-enqueue
+  error-acd-enqueue)
 
 (defmethod node/leave-type "transferqueue"
   [node options]

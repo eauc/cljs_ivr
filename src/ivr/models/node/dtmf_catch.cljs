@@ -76,13 +76,13 @@
                           "?retries=" retries)]
     {:ivr.routes/response
      (verbs
-      [(merge {:numdigits -1}
-              (select-keys node [:finishonkey :timeout :numdigits])
-              {:type :ivr.verbs/gather
-               :callbackurl callback-url
-               :play plays})
-       {:type :ivr.verbs/redirect
-        :path callback-url}])}))
+       [(merge {:numdigits -1}
+               (select-keys node [:finishonkey :timeout :numdigits])
+               {:type :ivr.verbs/gather
+                :callbackurl callback-url
+                :play plays})
+        {:type :ivr.verbs/redirect
+         :path callback-url}])}))
 
 
 (spec/fdef play-sound-name-request
@@ -98,15 +98,15 @@
    {:keys [store] :as options}]
   {:ivr.web/request
    (store
-    {:type :ivr.store/get-sound-by-name
-     :name (:soundname sound)
-     :account-id account-id
-     :script-id script-id
-     :on-success [::play-sound
-                  {:options options
-                   :node node
-                   :loaded loaded
-                   :rest rest}]})})
+     {:type :ivr.store/get-sound-by-name
+      :name (:soundname sound)
+      :account-id account-id
+      :script-id script-id
+      :on-success [::play-sound
+                   {:options options
+                    :node node
+                    :loaded loaded
+                    :rest rest}]})})
 
 
 (spec/fdef play-resolve-sounds
@@ -152,11 +152,10 @@
 
 (defn play-sound-event [_ [_ {:keys [loaded node options rest sound-url]}]]
   (play-resolve-sounds (conj loaded sound-url) rest node options))
-(re-frame/reg-event-fx
- ::play-sound
- [routes/interceptor
-  db/default-interceptors]
- play-sound-event)
+
+(routes/reg-action
+  ::play-sound
+  play-sound-event)
 
 
 (spec/fdef validate-digits-pattern

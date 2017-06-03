@@ -32,11 +32,9 @@
        :on-success on-success
        :on-error on-error})}))
 
-(re-frame/reg-event-fx
- ::resolve
- [routes/interceptor
-  db/default-interceptors
-  (re-frame/inject-cofx :ivr.store/cofx)]
+(routes/reg-action
+ :ivr.script/resolve
+ [(re-frame/inject-cofx :ivr.store/cofx)]
  resolve-event)
 
 
@@ -59,10 +57,8 @@
     {:ivr.routes/params (assoc params :script script)
      :ivr.routes/next nil}))
 
-(re-frame/reg-event-fx
- ::resolve-success
- [routes/interceptor
-  db/default-interceptors]
+(routes/reg-action
+  ::resolve-success
  resolve-success)
 
 
@@ -74,10 +70,8 @@
      :message "Script not found"
      :cause (assoc error :scriptid script-id)})})
 
-(re-frame/reg-event-fx
- ::resolve-error
- [routes/interceptor
-  db/default-interceptors]
+(routes/reg-action
+  ::resolve-error
  resolve-error)
 
 
@@ -113,11 +107,9 @@
       (enter-node-id script start-index
                      (assoc coeffects :call call)))))
 
-(re-frame/reg-event-fx
- ::start-route
- [routes/interceptor
-  db/default-interceptors
-  (re-frame/inject-cofx :ivr.node/enter-cofx)
+(routes/reg-action
+ :ivr.script/start-route
+ [(re-frame/inject-cofx :ivr.node/enter-cofx)
   (re-frame/inject-cofx :ivr.store/cofx)
   (re-frame/inject-cofx :ivr.verbs/cofx)]
  start-route)
@@ -129,11 +121,9 @@
     (enter-node-id script (keyword node_id)
                    (assoc coeffects :call call))))
 
-(re-frame/reg-event-fx
- ::enter-node-route
- [routes/interceptor
-  db/default-interceptors
-  (re-frame/inject-cofx :ivr.node/enter-cofx)
+(routes/reg-action
+ :ivr.script/enter-node-route
+ [(re-frame/inject-cofx :ivr.node/enter-cofx)
   (re-frame/inject-cofx :ivr.store/cofx)
   (re-frame/inject-cofx :ivr.verbs/cofx)]
  enter-node-route)
@@ -158,11 +148,9 @@
                               :store store
                               :verbs verbs}))))
 
-(re-frame/reg-event-fx
- ::leave-node-route
- [routes/interceptor
-  db/default-interceptors
-  (re-frame/inject-cofx :ivr.node/leave-cofx)
+(routes/reg-action
+ :ivr.script/leave-node-route
+ [(re-frame/inject-cofx :ivr.node/leave-cofx)
   (re-frame/inject-cofx :ivr.store/cofx)
   (re-frame/inject-cofx :ivr.verbs/cofx)]
  leave-node-route)

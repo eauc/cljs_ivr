@@ -46,10 +46,8 @@
              :ivr.routes/next nil})))
 
 
-(re-frame/reg-event-fx
- ::resolve
- [routes/interceptor
-  db/default-interceptors]
+(routes/reg-action
+  :ivr.call/resolve
  (fn calls-resolve [{:keys [db]} [_ {:keys [create?]} {:keys [params]}]]
    (find-or-create-call db create? params)))
 

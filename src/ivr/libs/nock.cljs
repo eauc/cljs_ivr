@@ -112,7 +112,10 @@
                  (js/console.log "mail info" body)
                  true))
         (.reply 201)
-        (.post "/account/0007/destinationlist/3456/eval")
+        (.post "/account/0007/destinationlist/3456/eval"
+               (fn [body]
+                 (js/console.log "dstLst data" body)
+                 true))
         (.reply 200 #js {:sda "list-sda"
                          :param1 "val1"
                          :param2 "val2"}))))

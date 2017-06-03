@@ -2,7 +2,7 @@
   (:require [cljs.nodejs :as nodejs]
             [ivr.routes.url :as url]
             [ivr.services.config :as config]
-            [ivr.services.routes :as routes]
+            [ivr.services.routes.dispatch :as routes-dispatch]
             [re-frame.core :as re-frame]))
 
 (defonce express (nodejs/require "express"))
@@ -15,7 +15,7 @@
   (get-in url/config [:apis :v1 :config :explain]))
 
 (def explain-route
-  (routes/dispatch [:ivr.services.config/explain-route]))
+  (routes-dispatch/dispatch [:ivr.config/explain-route]))
 
 (def router
   (doto (.Router express)

@@ -15,6 +15,6 @@
 
 (spec/def :ivr.route/route
   (spec/keys :req-un [:ivr.route/req
-                      :ivr.route/params]
-             :opt-un [:ivr.route/res
-                      :ivr.route/next]))
+                      :ivr.route/res
+                      :ivr.route/next]
+             :opt-un [:ivr.route/params]))

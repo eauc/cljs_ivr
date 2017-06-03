@@ -36,11 +36,9 @@
   (log "info" "send mail success" (dissoc options :response))
   {})
 
-(re-frame/reg-event-fx
- ::send-mail-success
- [routes/interceptor
-  db/default-interceptors]
- send-mail-success)
+(routes/reg-action
+  ::send-mail-success
+  send-mail-success)
 
 
 (defn- send-mail-error
@@ -48,11 +46,9 @@
   (log "error" "send mail error" options)
   {})
 
-(re-frame/reg-event-fx
- ::send-mail-error
- [routes/interceptor
-  db/default-interceptors]
- send-mail-error)
+(routes/reg-action
+  ::send-mail-error
+  send-mail-error)
 
 
 (defmethod node/leave-type "smtp"

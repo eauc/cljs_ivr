@@ -37,10 +37,10 @@
                  {:node node :options options}]]
     {:ivr.web/request
      (store
-      {:type :ivr.store/get-account
-       :id account-id
-       :on-success finally
-       :on-error finally})}))
+       {:type :ivr.store/get-account
+        :id account-id
+        :on-success finally
+        :on-error finally})}))
 
 
 (defmethod node/enter-type "transferlist"
@@ -65,12 +65,10 @@
       :on-success [::transfert-call-to-list payload]
       :on-error [::eval-list-error payload]}}))
 
-(re-frame/reg-event-fx
- ::eval-list-with-config
- [routes/interceptor
-  db/default-interceptors
-  (re-frame/inject-cofx :ivr.config/cofx [:ivr :transfersda])]
- eval-list-with-config)
+(routes/reg-action
+  ::eval-list-with-config
+  [(re-frame/inject-cofx :ivr.config/cofx [:ivr :transfersda])]
+  eval-list-with-config)
 
 
 (defn- prefix-eval-list-query
@@ -114,17 +112,15 @@
                                  {:script-id script-id})]
     {:ivr.routes/response
      (verbs
-      [(merge {:type :ivr.verbs/dial-number
-               :number (:sda eval-list)
-               :callbackurl (str callback-url callback-query)
-               :statusurl status-url}
-              config)])}))
+       [(merge {:type :ivr.verbs/dial-number
+                :number (:sda eval-list)
+                :callbackurl (str callback-url callback-query)
+                :statusurl status-url}
+               config)])}))
 
-(re-frame/reg-event-fx
- ::transfert-call-to-list
- [routes/interceptor
-  db/default-interceptors]
- transfert-call-to-list)
+(routes/reg-action
+  ::transfert-call-to-list
+  transfert-call-to-list)
 
 
 (defn- eval-list-error
@@ -133,11 +129,9 @@
                             :node node})
   (node/go-to-next node options))
 
-(re-frame/reg-event-fx
- ::eval-list-error
- [routes/interceptor
-  db/default-interceptors]
- eval-list-error)
+(routes/reg-action
+  ::eval-list-error
+  eval-list-error)
 
 
 (defmethod node/leave-type "transferlist"
@@ -145,6 +139,6 @@
   (if (= "completed" (:dialstatus params))
     {:ivr.routes/response
      (verbs
-      [{:type :ivr.verbs/hangup}])}
+       [{:type :ivr.verbs/hangup}])}
     (let [eval-list (callback-query->eval-list params)]
       (play-transfert-list node (assoc options :eval-list eval-list)))))

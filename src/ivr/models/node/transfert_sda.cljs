@@ -9,7 +9,7 @@
 (defn- conform-case-no-answer
   [case]
   (-> (into {} (for [[k v] case] [k (keyword v)]))
-      (assoc :no-answer (:noanswer case))
+      (#(assoc % :no-answer (:noanswer %)))
       (dissoc :noanswer)))
 
 
@@ -33,10 +33,10 @@
                  {:node node :options options}]]
     {:ivr.web/request
      (store
-      {:type :ivr.store/get-account
-       :id account-id
-       :on-success finally
-       :on-error finally})}))
+       {:type :ivr.store/get-account
+        :id account-id
+        :on-success finally
+        :on-error finally})}))
 
 
 (defn transfert-sda-with-config
@@ -53,18 +53,16 @@
                                  {:script-id script-id})]
     {:ivr.routes/response
      (verbs
-      [(merge {:type :ivr.verbs/dial-number
-               :number dest
-               :callbackurl callback-url
-               :statusurl status-url}
-              transfert-config)])}))
+       [(merge {:type :ivr.verbs/dial-number
+                :number dest
+                :callbackurl callback-url
+                :statusurl status-url}
+               transfert-config)])}))
 
-(re-frame/reg-event-fx
- ::transfert-sda-with-config
- [routes/interceptor
-  db/default-interceptors
-  (re-frame/inject-cofx :ivr.config/cofx [:ivr :transfersda])]
- transfert-sda-with-config)
+(routes/reg-action
+  ::transfert-sda-with-config
+  [(re-frame/inject-cofx :ivr.config/cofx [:ivr :transfersda])]
+  transfert-sda-with-config)
 
 (defmethod node/leave-type "transfersda"
   [node
@@ -72,7 +70,7 @@
   (if (= "completed" (:dialstatus params))
     {:ivr.routes/response
      (verbs
-      [{:type :ivr.verbs/hangup}])}
+       [{:type :ivr.verbs/hangup}])}
     (let [dialstatus (or (#{"no-answer" "busy"} (:dialstatus params))
                          "other")
           next (get-in node [:case (keyword dialstatus)])]
