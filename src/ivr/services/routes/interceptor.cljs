@@ -1,8 +1,8 @@
 (ns ivr.services.routes.interceptor
-  (:require [re-frame.core :as re-frame]
+  (:require [cljs.spec :as spec]
             [ivr.libs.logger :as logger]
-            [cljs.spec :as spec]))
-
+            [ivr.services.routes.dispatch :as dispatch]
+            [re-frame.core :as re-frame]))
 
 (def log
   (logger/create "routes"))
@@ -28,6 +28,17 @@
     context))
 
 
+(defn before-route
+  [context]
+  (let [event (get-in context [:coeffects :event])
+        route (peek event)
+        event-base (subvec event 1 (dec (count event)))]
+    (->> (dispatch/get-route-params route)
+         (assoc route :params)
+         (conj event-base)
+         (assoc-in context [:coeffects :event]))))
+
+
 (defn- after-route [context effects]
   (let [route (get-context-route context)
         route? (spec/valid? :ivr.route/route route)]
@@ -38,8 +49,9 @@
 
 (def interceptor
   (re-frame/->interceptor
-   :id :ivr.routes/interceptor
-   :after #(after-route % @effects)))
+    :id :ivr.routes/interceptor
+    :before before-route
+    :after #(after-route % @effects)))
 
 
 (defn reg-fx

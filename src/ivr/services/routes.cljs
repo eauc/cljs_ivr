@@ -12,9 +12,10 @@
   (logger/create "routes"))
 
 
-(defn error-response [{:keys [status]
-                       :or {status 500}
-                       :as data}]
+(defn error-response
+  [{:keys [status]
+    :or {status 500}
+    :as data}]
   {:status status
    :data data})
 
@@ -31,14 +32,18 @@
      (concat default-interceptors interceptors)
      (fn action-handler
        [coeffects event]
-       (let [route (peek event)
-             event-base (subvec event 1 (dec (count event)))]
-         (->> (dispatch/get-route-params route)
-              (assoc route :params)
-              (conj event-base)
-              (#(if with-cofx?
-                  (apply handler coeffects %)
-                  (apply handler %))))))))
+       (try
+         (if with-cofx?
+           (apply handler coeffects event)
+           (apply handler event))
+         (catch js/Object error
+           {:ivr.routes/response
+            (error-response
+              {:status 500
+               :statusCode "internal_error"
+               :message "Internal error"
+               :cause {:message (aget error "message")
+                       :stack (aget error "stack")}})})))))
   ([id interceptors handler]
    (reg-action id interceptors handler false))
   ([id handler]
