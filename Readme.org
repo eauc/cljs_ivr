@@ -4,7 +4,6 @@
 - creer un reg-action qui:
   - injecte store/verbs/acd/services dans les options
   - catch les exceptions
-- nettoyer les tests des events
 - callTime
 - multimethod apply-set + set multiple variables
 - do not keywordize json keys everytime
