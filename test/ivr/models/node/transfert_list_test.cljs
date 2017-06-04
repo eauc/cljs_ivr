@@ -58,17 +58,17 @@
                               :record false
                               :waitingurl "/smartccivr/twimlets/loopPlay/ringing"}}]}}
                  (tl-node/eval-list-with-config
-                  {:config config} [:event
-                                    {:node node :options options :response response}
-                                    {:params params}])))
+                   {:config config}
+                   {:node node :options options :response response}
+                   {:params params})))
           (let [options (merge options {:eval-list {:eval :list}})]
             (is (= {:eval :list}
                    (get-in
-                    (tl-node/eval-list-with-config
-                     {:config config} [:event
-                                       {:node node :options options :response response}
-                                       {:params params}])
-                    [:ivr.web/request :data]))))
+                     (tl-node/eval-list-with-config
+                       {:config config}
+                       {:node node :options options :response response}
+                       {:params params})
+                     [:ivr.web/request :data]))))
           (let [config (merge config {:ringingTimeoutSec 5
                                       :fromSda "CALLER"})
                 params (merge params {:from "from-number"
@@ -78,11 +78,11 @@
                     :record false
                     :waitingurl "/smartccivr/twimlets/loopPlay/ringing"}
                    (get-in
-                    (tl-node/eval-list-with-config
-                     {:config config} [:event
-                                       {:node node :options options :response response}
-                                       {:params params}])
-                    [:ivr.web/request :on-success 1 :config]))))
+                     (tl-node/eval-list-with-config
+                       {:config config}
+                       {:node node :options options :response response}
+                       {:params params})
+                     [:ivr.web/request :on-success 1 :config]))))
           (let [config (merge config {:ringingTimeoutSec 5
                                       :fromSda "CALLER"})
                 response #js {:body {:ringingTimeoutSec 15
@@ -96,11 +96,11 @@
                     :record true
                     :waitingurl "/smartccivr/twimlets/loopPlay/account-ringing"}
                    (get-in
-                    (tl-node/eval-list-with-config
-                     {:config config} [:event
-                                       {:node node :options options :response response}
-                                       {:params params}])
-                    [:ivr.web/request :on-success 1 :config]))))))
+                     (tl-node/eval-list-with-config
+                       {:config config}
+                       {:node node :options options :response response}
+                       {:params params})
+                     [:ivr.web/request :on-success 1 :config]))))))
       (testing "transfert-call-to-list"
         (let [config {:from "from-number"
                       :timeout 15
@@ -121,8 +121,8 @@
                            :record true
                            :waitingurl "/url/waiting"}]}}
                  (tl-node/transfert-call-to-list
-                  {} [:event {:config config :node node
-                              :options options :response response}])))))
+                   {:config config :node node
+                    :options options :response response})))))
       (testing "eval-list-error"
         (let [node (merge base-node {:next :42})]
           (is (= {:ivr.routes/response
@@ -130,13 +130,13 @@
                    :data [{:type :ivr.verbs/redirect
                            :path "/smartccivr/script/script-id/node/42"}]}}
                  (tl-node/eval-list-error
-                  {} [:event {:node node :options options}]))))
+                   {:node node :options options}))))
         (let [node base-node]
           (is (= {:ivr.routes/response
                   {:verbs :create
                    :data [{:type :ivr.verbs/hangup}]}}
                  (tl-node/eval-list-error
-                  {} [:event {:node node :options options}])))))))
+                   {:node node :options options})))))))
   (testing "leave"
     (let [store #(assoc % :store :query)
           verbs (fn [vs] {:verbs :create :data vs})

@@ -1,9 +1,9 @@
 - conform cond->
 - instrumenter ivr.node ns durant les tests node/types
-- factoriser les intercepteurs des events d'action des nodes/types
+  - spec des methods des nodes
 - creer un reg-action qui:
   - injecte store/verbs/acd/services dans les options
-  - vire les coeffects (et l'event ? par l'intercepteur re-frame) des args du handler
+  - catch les exceptions
 - nettoyer les tests des events
 - callTime
 - multimethod apply-set + set multiple variables

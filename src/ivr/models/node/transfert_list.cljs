@@ -50,8 +50,9 @@
 
 (defn- eval-list-with-config
   [{:keys [config] :as coeffects}
-   [_ {:keys [node options response]
-       :or {response #js {}}} {:keys [params]}]]
+   {:keys [node options response]
+    :or {response #js {}}}
+   {:keys [params]}]
   (let [account (or (aget response "body") {})
         transfert-config (node/->transfert-config config account params)
         {account-id :account-id list-id :dest} node
@@ -68,7 +69,8 @@
 (routes/reg-action
   ::eval-list-with-config
   [(re-frame/inject-cofx :ivr.config/cofx [:ivr :transfersda])]
-  eval-list-with-config)
+  eval-list-with-config
+  {:with-cofx? true})
 
 
 (defn- prefix-eval-list-query
@@ -100,7 +102,7 @@
 
 
 (defn- transfert-call-to-list
-  [_ [_ {:keys [config node options response]}]]
+  [{:keys [config node options response]}]
   (let [{:keys [id script-id]} node
         {:keys [verbs]} options
         eval-list (aget response "body")
@@ -124,7 +126,7 @@
 
 
 (defn- eval-list-error
-  [_ [_ {:keys [node options error]}]]
+  [{:keys [node options error]}]
   (log "error" "eval-list" {:error error
                             :node node})
   (node/go-to-next node options))

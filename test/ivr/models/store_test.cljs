@@ -52,7 +52,7 @@
                             :cause {:account-id "account-id"
                                     :script-id "script-id"
                                     :name "sound"}}}}
-                   (store/get-sound-success query response)))))
+                   (store/get-sound-success {:query query :response response})))))
         (testing "ok"
           (let [response #js {:body {:meta {:total_count 2}
                                      :objects [{:_id "42"}
@@ -60,7 +60,7 @@
             (is (= {:ivr.routes/dispatch
                     [:success {:payload "data"
                                :sound-url "/cloudstore/file/42"}]}
-                   (store/get-sound-success query response)))))))
+                   (store/get-sound-success {:query query :response response})))))))
     (testing "get-file-error"
       (is (= {:ivr.routes/response
               {:status 404
@@ -69,5 +69,5 @@
                       :message "File not found"
                       :cause {:query "query"
                               :message "error message"}}}}
-             (store/get-file-error {:query "query"}
-                                   {:message "error message"}))))))
+             (store/get-file-error {:query {:query "query"}
+                                    :error {:message "error message"}}))))))

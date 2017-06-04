@@ -73,7 +73,7 @@
                          :callbackurl "/smartccivr/script/script-id/node/node-id/callback"}]}}
                (vr-node/record-with-config
                 {:config config}
-                [:event {:node node :options options}]))))))
+                {:node node :options options}))))))
   (testing "leave"
     (let [verbs (fn [vs] {:verbs :create :data vs})
           options {:verbs verbs}

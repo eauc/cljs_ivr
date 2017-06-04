@@ -31,14 +31,14 @@
                          :voice "thomas"
                          :pronounce "phone"}]}
              (node/conform
-              {:type "dtmfcatch"
-               :welcome [{:varname "son1"
-                          :voice "alice"}
-                         {:soundname "son1"}
-                         {:varname "toto"
-                          :voice "thomas"
-                          :pronounce "phone"}]}
-              options)))
+               {:type "dtmfcatch"
+                :welcome [{:varname "son1"
+                           :voice "alice"}
+                          {:soundname "son1"}
+                          {:varname "toto"
+                           :voice "thomas"
+                           :pronounce "phone"}]}
+               options)))
       (testing ":welcome is nil"
         (is (= {:type "dtmfcatch"
                 :id "node-id"
@@ -49,9 +49,9 @@
                 :retry 0
                 :welcome []}
                (node/conform
-                {:type "dtmfcatch"
-                 :max_attempts "5"}
-                options)))))
+                 {:type "dtmfcatch"
+                  :max_attempts "5"}
+                 options)))))
     (let [base-node {:type "dtmfcatch"
                      :id "node-id"
                      :account-id "account-id"
@@ -92,16 +92,16 @@
                           {:type :ivr.verbs/redirect
                            :path "/smartccivr/script/script-id/node/node-id/callback?retries=1"}]}}
                  (node/enter-type
-                  (merge base-node {:welcome [{:type :ivr.node.dtmf-catch/speak
-                                               :varname "titi"
-                                               :voice "alice"
-                                               :pronounce "normal"}
-                                              {:type :ivr.node.dtmf-catch/speak
-                                               :varname "toto"
-                                               :voice "alice"
-                                               :pronounce "phone"}]})
-                  (merge options {:action-data {:titi "key"
-                                                :toto "+33478597106"}})))))
+                   (merge base-node {:welcome [{:type :ivr.node.dtmf-catch/speak
+                                                :varname "titi"
+                                                :voice "alice"
+                                                :pronounce "normal"}
+                                               {:type :ivr.node.dtmf-catch/speak
+                                                :varname "toto"
+                                                :voice "alice"
+                                                :pronounce "phone"}]})
+                   (merge options {:action-data {:titi "key"
+                                                 :toto "+33478597106"}})))))
         (testing "store request for file sounds, current progress is saved in success event"
           (let [node (merge base-node
                             {:welcome [{:type :ivr.node.dtmf-catch/speak
@@ -122,7 +122,7 @@
                      :name "son1"
                      :account-id "account-id"
                      :script-id "script-id"
-                     :on-success [:ivr.models.node.dtmf-catch/play-sound
+                     :on-success [:ivr.models.node.dtmf-catch/sound-name-success
                                   {:options (assoc options :retries 1)
                                    :node node
                                    :loaded [{:text "hey", :voice "alice"}]
@@ -143,14 +143,14 @@
                           {:type :ivr.verbs/redirect
                            :path "/smartccivr/script/script-id/node/node-id/callback?retries=1"}]}}
                  (node/enter-type
-                  (merge base-node {:finishonkey "42"
-                                    :numdigits 5
-                                    :timeout 4
-                                    :welcome [{:type :ivr.node.dtmf-catch/speak
-                                               :varname "titi"
-                                               :voice "alice"
-                                               :pronounce "normal"}]})
-                  (merge options {:action-data {:titi "key"}}))))))
+                   (merge base-node {:finishonkey "42"
+                                     :numdigits 5
+                                     :timeout 4
+                                     :welcome [{:type :ivr.node.dtmf-catch/speak
+                                                :varname "titi"
+                                                :voice "alice"
+                                                :pronounce "normal"}]})
+                   (merge options {:action-data {:titi "key"}}))))))
       (testing "play-sound-event"
         (let [options (merge options {:action-data {:titi "hey"
                                                     :toto "bye"}})]
@@ -165,16 +165,15 @@
                                     {:text "bye", :voice "alice"}]}
                             {:type :ivr.verbs/redirect,
                              :path "/smartccivr/script/script-id/node/node-id/callback?retries=1"}]}}
-                   (dtmf-catch-node/play-sound-event
-                    {}
-                    [:event {:sound-url "/url/son1"
-                             :options (assoc options :retries 1)
-                             :node base-node
-                             :loaded [{:text "hey", :voice "alice"}]
-                             :rest [{:type :ivr.node.dtmf-catch/speak
-                                     :varname "toto"
-                                     :voice "alice"
-                                     :pronounce "normal"}]}]))))
+                   (dtmf-catch-node/sound-name-success
+                     {:sound-url "/url/son1"
+                      :options (assoc options :retries 1)
+                      :node base-node
+                      :loaded [{:text "hey", :voice "alice"}]
+                      :rest [{:type :ivr.node.dtmf-catch/speak
+                              :varname "toto"
+                              :voice "alice"
+                              :pronounce "normal"}]}))))
           (testing "continue from saved progress, another request for file sound"
             (is (= {:ivr.web/request
                     {:store :query
@@ -182,24 +181,23 @@
                      :name "son2"
                      :account-id "account-id"
                      :script-id "script-id"
-                     :on-success [:ivr.models.node.dtmf-catch/play-sound
+                     :on-success [:ivr.models.node.dtmf-catch/sound-name-success
                                   {:options (assoc options :retries 3)
                                    :node base-node
                                    :loaded ["/url/son1"
                                             {:text "bye" :voice "alice"}]
                                    :rest nil}]}}
-                   (dtmf-catch-node/play-sound-event
-                    {}
-                    [:event {:sound-url "/url/son1"
-                             :options (assoc options :retries 3)
-                             :node base-node
-                             :loaded []
-                             :rest [{:type :ivr.node.dtmf-catch/speak
-                                     :varname "toto"
-                                     :voice "alice"
-                                     :pronounce "normal"}
-                                    {:type :ivr.node.dtmf-catch/sound
-                                     :soundname "son2"}]}]))))))
+                   (dtmf-catch-node/sound-name-success
+                     {:sound-url "/url/son1"
+                      :options (assoc options :retries 3)
+                      :node base-node
+                      :loaded []
+                      :rest [{:type :ivr.node.dtmf-catch/speak
+                              :varname "toto"
+                              :voice "alice"
+                              :pronounce "normal"}
+                             {:type :ivr.node.dtmf-catch/sound
+                              :soundname "son2"}]}))))))
       (testing "leave"
         (let [node (merge base-node {:finishonkey "2"
                                      :numdigits 2
@@ -224,10 +222,10 @@
                         {:verbs :create
                          :data [{:type :ivr.verbs/hangup}]}}
                        (node/leave-type
-                        (merge node {:case {:dtmf_ok {:set {:type :ivr.node.preset/set
-                                                            :to :set_var
-                                                            :value "set_value"}}}})
-                        options))))
+                         (merge node {:case {:dtmf_ok {:set {:type :ivr.node.preset/set
+                                                             :to :set_var
+                                                             :value "set_value"}}}})
+                         options))))
               (testing "dtmf_ok.next"
                 (is (= {:ivr.call/action-data
                         {:call-id "call-id"
@@ -238,8 +236,8 @@
                          :data [{:type :ivr.verbs/redirect
                                  :path "/smartccivr/script/script-id/node/42"}]}}
                        (node/leave-type
-                        (merge node {:case {:dtmf_ok {:next :42}}})
-                        options))))))
+                         (merge node {:case {:dtmf_ok {:next :42}}})
+                         options))))))
           (testing "retry"
             (let [node (merge node {:max_attempts 1
                                     :case {:max_attempt_reached :42}})]
@@ -250,7 +248,7 @@
                   (is (= {:ivr.routes/response
                           {:verbs :create
                            :data [{:type :ivr.verbs/redirect
-                                  :path "/smartccivr/script/script-id/node/42"}]}}
+                                   :path "/smartccivr/script/script-id/node/42"}]}}
                          (node/leave-type node options)))))
               (testing "invalid finishonkey"
                 (let [options (merge options {:params {:digits ["2" "4"]
@@ -259,7 +257,7 @@
                   (is (= {:ivr.routes/response
                           {:verbs :create
                            :data [{:type :ivr.verbs/redirect
-                                  :path "/smartccivr/script/script-id/node/42"}]}}
+                                   :path "/smartccivr/script/script-id/node/42"}]}}
                          (node/leave-type node options)))))
               (testing "invalid pattern"
                 (let [options (merge options {:params {:digits ["5" "2"]
@@ -268,7 +266,7 @@
                   (is (= {:ivr.routes/response
                           {:verbs :create
                            :data [{:type :ivr.verbs/redirect
-                                  :path "/smartccivr/script/script-id/node/42"}]}}
+                                   :path "/smartccivr/script/script-id/node/42"}]}}
                          (node/leave-type node options))))))
             (let [options (merge options {:params {:digits ["5" "2"]
                                                    :termdigit "2"}})]
@@ -277,14 +275,14 @@
                         {:verbs :create
                          :data [{:type :ivr.verbs/hangup}]}}
                        (node/leave-type
-                        (merge node {:max_attempts 1})
-                        (merge options {:params {:retries 1}}))))
+                         (merge node {:max_attempts 1})
+                         (merge options {:params {:retries 1}}))))
                 (is (= {:ivr.routes/response
                         {:verbs :create
                          :data [{:type :ivr.verbs/hangup}]}}
                        (node/leave-type
-                        (merge node {:max_attempts 5})
-                        (merge options {:params {:retries 5}})))))
+                         (merge node {:max_attempts 5})
+                         (merge options {:params {:retries 5}})))))
               (testing "retry possible"
                 (is (= {:ivr.routes/response
                         {:verbs :create
@@ -296,10 +294,10 @@
                                 {:type :ivr.verbs/redirect
                                  :path "/smartccivr/script/script-id/node/node-id/callback?retries=5"}]}}
                        (node/leave-type
-                        (merge node {:max_attempts 5
-                                     :welcome [{:type :ivr.node.dtmf-catch/speak
-                                                :varname "toto"
-                                                :voice "alice"
-                                                :pronounce "normal"}]})
-                        (merge options {:params {:retries 4}
-                                        :action-data {:toto "hey"}}))))))))))))
+                         (merge node {:max_attempts 5
+                                      :welcome [{:type :ivr.node.dtmf-catch/speak
+                                                 :varname "toto"
+                                                 :voice "alice"
+                                                 :pronounce "normal"}]})
+                         (merge options {:params {:retries 4}
+                                         :action-data {:toto "hey"}}))))))))))))

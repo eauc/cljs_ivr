@@ -32,7 +32,7 @@
                :on-error
                [:ivr.models.node.fetch/error-routing-rule {:options "options"
                                                            :node node}]}}
-             (node/enter-type node {:options "options"})))))
+             (node/enter-type node "options")))))
   (testing "apply-routing-rule"
     (let [node {:type "fetch"
                 :account-id "account-id"
@@ -40,10 +40,10 @@
                 :varname :to_fetch}
           response #js {:body "rule_value"}
           options {:node node
-                   :call-id "call-id"
-                   :action-data {:action :data}
-                   :response response
-                   :verbs (fn [vs] {:verbs :create :data vs})}]
+                   :options {:call-id "call-id"
+                             :action-data {:action :data}
+                             :verbs (fn [vs] {:verbs :create :data vs})}
+                   :response response}]
       (is (= {:ivr.call/action-data
               {:call-id "call-id"
                :data {:action :data
@@ -51,8 +51,7 @@
               :ivr.routes/response
               {:verbs :create
                :data [{:type :ivr.verbs/hangup}]}}
-             (fetch-node/apply-routing-rule
-              {} [:event options])))))
+             (fetch-node/apply-routing-rule options)))))
   (testing "error-routing-rule"
     (let [node {:type "fetch"
                 :account-id "account-id"
@@ -62,10 +61,10 @@
                 :varname :to_fetch}
           error {:message "rule_error"}
           options {:node node
-                   :call-id "call-id"
-                   :action-data {:action :data}
-                   :error error
-                   :verbs (fn [vs] {:verbs :create :data vs})}]
+                   :options {:call-id "call-id"
+                             :action-data {:action :data}
+                             :verbs (fn [vs] {:verbs :create :data vs})}
+                   :error error}]
       (is (= {:ivr.call/action-data
               {:call-id "call-id"
                :data {:action :data
@@ -74,5 +73,4 @@
               {:verbs :create
                :data [{:type :ivr.verbs/redirect
                        :path "/smartccivr/script/script-id/node/42"}]}}
-             (fetch-node/error-routing-rule
-              {} [:event options]))))))
+             (fetch-node/error-routing-rule options))))))

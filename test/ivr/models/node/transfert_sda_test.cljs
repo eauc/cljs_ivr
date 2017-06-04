@@ -57,10 +57,9 @@
                            :statusurl "/smartccivr/script/script-id/dialstatus"
                            :waitingurl "/smartccivr/twimlets/loopPlay/ringing"}]}}
                  (ts-node/transfert-sda-with-config
-                  {:config config}
-                  [:event
+                   {:config config}
                    {:node node :options options :response response}
-                   {:params params}]))))))
+                   {:params params}))))))
     (testing "leave"
       (let [node (merge node {:next :42})
             params {:dialstatus "completed"}

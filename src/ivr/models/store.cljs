@@ -45,9 +45,10 @@
      :on-error [::get-file-error {:query (assoc query :url url)}]}))
 
 
-(defn get-sound-success [{:keys [account-id script-id name on-success] :as query}
-                         response]
-  (let [body (aget response "body")]
+(defn get-sound-success
+  [{:keys [query response]}]
+  (let [{:keys [account-id script-id name on-success]} query
+        body (aget response "body")]
     (if (= 0 (or (get-in body [:meta :total_count]) 0))
       {:ivr.routes/response
        (routes/error-response
@@ -65,11 +66,11 @@
 
 (routes/reg-action
   ::get-sound-success
-  (fn get-sound-success-fx [_ [_ {:keys [query response]}]]
-    (get-sound-success query response)))
+  get-sound-success)
 
 
-(defn get-file-error [query error]
+(defn get-file-error
+  [{:keys [query error]}]
   {:ivr.routes/response
    (routes/error-response
      {:status 404
@@ -81,5 +82,4 @@
 
 (routes/reg-action
   ::get-file-error
-  (fn get-file-error-fx [_ [_ {:keys [query error]}]]
-    (get-file-error query error)))
+  get-file-error)

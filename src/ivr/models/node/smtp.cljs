@@ -32,7 +32,7 @@
 
 
 (defn- send-mail-success
-  [_ [_ options]]
+  [options]
   (log "info" "send mail success" (dissoc options :response))
   {})
 
@@ -42,7 +42,7 @@
 
 
 (defn- send-mail-error
-  [_ [_ options]]
+  [options]
   (log "error" "send mail error" options)
   {})
 

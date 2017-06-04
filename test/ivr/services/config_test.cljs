@@ -128,4 +128,4 @@
                               {:config {}}]}
                :link "/smartccivr/config/"}}
              (config/explain-route {:db {:config-info config-info}}
-                                   [:explain {:params {:path "port"}}]))))))
+                                   {:params {:path "port"}}))))))

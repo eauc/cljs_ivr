@@ -35,7 +35,7 @@
 
 
 (defn- play-waiting-sound
-  [_ [_ {:keys [response] {:keys [verbs]} :options}]]
+  [{:keys [response] {:keys [verbs]} :options}]
   (let [wait-sound (:waitSound (aget response "body"))]
     {:ivr.routes/response
      (verbs
@@ -48,9 +48,8 @@
 
 
 (defn- error-acd-enqueue
-  [_ [_ {:keys [error node] {:keys [verbs]} :options}]]
-  (log "error" "enqueue ACD"
-       {:error error :node node})
+  [{:keys [error node] {:keys [verbs]} :options}]
+  (log "error" "enqueue ACD" {:error error :node node})
   {:ivr.routes/response
    (verbs
      [{:type :ivr.verbs/hangup}])})

@@ -21,18 +21,19 @@
   {:ivr.web/request
    {:method "POST"
     :url (str "/smartccivrservices/account/" account-id "/routingrule/" id_routing_rule "/eval")
-    :on-success [::apply-routing-rule (assoc options :node node)]
-    :on-error [::error-routing-rule (assoc options :node node)]}})
+    :on-success [::apply-routing-rule {:options options :node node}]
+    :on-error [::error-routing-rule {:options options :node node}]}})
 
 
 (defn- apply-routing-rule
-  [_ [_ {:keys [action-data call-id node response] :as options}]]
-  (let [var-name (:varname node)
+  [{:keys [node options response]}]
+  (let [{:keys [action-data call-id]} options
+        var-name (:varname node)
         value (aget response "body")]
     (merge  {:ivr.call/action-data
              {:call-id call-id
               :data (assoc action-data var-name value)}}
-            (node/go-to-next node (dissoc options :node)))))
+            (node/go-to-next node options))))
 
 (routes/reg-action
   ::apply-routing-rule
@@ -40,15 +41,15 @@
 
 
 (defn- error-routing-rule
-  [_ [_ {:keys [call-id action-data error node] :as options}]]
-  (let [var-name (:varname node)
+  [{:keys [node options error]}]
+  (let [{:keys [action-data call-id]} options
+        var-name (:varname node)
         rule-id (:id_routing_rule node)]
-    (log "error" "routing rule" {:error error
-                                 :id rule-id})
+    (log "warn" "routing rule" {:error error :id rule-id})
     (merge {:ivr.call/action-data
             {:call-id call-id
              :data (assoc action-data var-name "__FAILED__")}}
-           (node/go-to-next node (dissoc options :node)))))
+           (node/go-to-next node options))))
 
 (routes/reg-action
   ::error-routing-rule

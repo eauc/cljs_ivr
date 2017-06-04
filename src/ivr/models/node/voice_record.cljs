@@ -42,7 +42,7 @@
 
 (defn- record-with-config
   [{:keys [config] :as coeffects}
-   [_ {:keys [node options]}]]
+   {:keys [node options]}]
   (let [{:keys [verbs]} options
         {:keys [id script-id validateKey cancelKey]} node
         callback-url (url/absolute [:v1 :action :script-leave-node]
@@ -57,7 +57,8 @@
 (routes/reg-action
   ::record-with-config
   [(re-frame/inject-cofx :ivr.config/cofx [:ivr :voicerecord])]
-  record-with-config)
+  record-with-config
+  {:with-cofx? true})
 
 
 (defn- record-canceled?

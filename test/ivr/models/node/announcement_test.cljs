@@ -41,7 +41,7 @@
                              :script-id "script-id"
                              :on-success
                              [:ivr.models.node.announcement/play-sound
-                              (assoc options :node node)]}}}
+                              {:options options :node node}]}}}
                    (node/enter-type node options)))))
         (testing "disabled - no next"
           (let [node {:type "announcement"
@@ -77,7 +77,9 @@
                      :actions [{:type :ivr.verbs/play
                                 :path "sound-url"}]}}
                    (announcement-node/play-sound
-                    "sound-url" (merge node {:no_barge true}) verbs))))
+                     {:sound-url "sound-url"
+                      :node (merge node {:no_barge true})
+                      :options {:verbs verbs}}))))
           (testing "with dtmf catch"
             (is (= {:ivr.routes/response
                     {:verbs "mock"
@@ -87,7 +89,9 @@
                                 :callbackurl "/smartccivr/script/script-id/node/node-id/callback"
                                 :play ["sound-url"]}]}}
                    (announcement-node/play-sound
-                    "sound-url" node verbs))))))
+                     {:sound-url "sound-url"
+                      :node node
+                      :options {:verbs verbs}}))))))
       (testing "leave"
         (testing "no next"
           (let [node {:type "announcement"

@@ -26,35 +26,36 @@
                      :name soundname
                      :account-id account-id
                      :script-id script-id
-                     :on-success [::play-sound (assoc options :node node)]})})]
+                     :on-success [::play-sound {:options options :node node}]})})]
     (merge update-action-data result)))
 
 
-
-(spec/fdef play-sound
-           :args (spec/cat :sound-url string?
-                           :node :ivr.node.announcement/node
-                           :options :ivr.node/verbs)
-           :ret map?)
-(defn play-sound [sound-url {:keys [id no_barge script-id]} verbs]
-  (if no_barge
-    {:ivr.routes/response
-     (verbs [{:type :ivr.verbs/play
-              :path sound-url}])}
-    (let [callback-url (url/absolute [:v1 :action :script-leave-node]
-                                     {:script-id script-id
-                                      :node-id id})]
+;; (spec/fdef play-sound
+;;            :args (spec/cat :sound-url string?
+;;                            :node :ivr.node.announcement/node
+;;                            :options :ivr.node/verbs)
+;;            :ret map?)
+(defn play-sound
+  [{:keys [sound-url node options]}]
+  (let [{:keys [id no_barge script-id]} node
+        {:keys [verbs]} options]
+    (if no_barge
       {:ivr.routes/response
-       (verbs [{:type :ivr.verbs/gather
-                :numdigits 1
-                :timeout 1
-                :callbackurl callback-url
-                :play [sound-url]}])})))
+       (verbs [{:type :ivr.verbs/play
+                :path sound-url}])}
+      (let [callback-url (url/absolute [:v1 :action :script-leave-node]
+                                       {:script-id script-id
+                                        :node-id id})]
+        {:ivr.routes/response
+         (verbs [{:type :ivr.verbs/gather
+                  :numdigits 1
+                  :timeout 1
+                  :callbackurl callback-url
+                  :play [sound-url]}])}))))
 
 (routes/reg-action
   ::play-sound
-  (fn play-sound-fx [_ [_ {:keys [node verbs sound-url]}]]
-    (play-sound sound-url node verbs)))
+  play-sound)
 
 
 (defmethod node/leave-type "announcement"

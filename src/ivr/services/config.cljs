@@ -65,7 +65,7 @@
        :loads (explain-loads loads path-keys)})))
 
 
-(defn explain-route [{:keys [db]} [_ {:keys [params]}]]
+(defn explain-route [{:keys [db]} {:keys [params]}]
   (let [explanation (explain (:config-info db) params)
         link (url/absolute [:v1 :config :explain])]
     {:ivr.routes/response
@@ -74,7 +74,9 @@
 
 (routes/reg-action
   :ivr.config/explain-route
-  explain-route)
+  []
+  explain-route
+  {:with-cofx? true})
 
 
 (re-frame/reg-cofx

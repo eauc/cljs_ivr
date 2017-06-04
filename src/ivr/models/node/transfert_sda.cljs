@@ -41,8 +41,9 @@
 
 (defn transfert-sda-with-config
   [{:keys [config] :as coeffects}
-   [_ {:keys [node options response]
-       :or {response #js {}}} {:keys [params]}]]
+   {:keys [node options response]
+    :or {response #js {}}}
+   {:keys [params]}]
   (let [account (or (aget response "body") {})
         transfert-config (node/->transfert-config config account params)
         {:keys [dest id script-id]} node
@@ -62,7 +63,8 @@
 (routes/reg-action
   ::transfert-sda-with-config
   [(re-frame/inject-cofx :ivr.config/cofx [:ivr :transfersda])]
-  transfert-sda-with-config)
+  transfert-sda-with-config
+  {:with-cofx? true})
 
 (defmethod node/leave-type "transfersda"
   [node

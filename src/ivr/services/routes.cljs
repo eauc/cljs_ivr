@@ -25,17 +25,21 @@
 
 
 (defn reg-action
-  ([id interceptors handler]
+  ([id interceptors handler {:keys [with-cofx?]}]
    (re-frame/reg-event-fx
      id
      (concat default-interceptors interceptors)
      (fn action-handler
        [coeffects event]
        (let [route (peek event)
-             event-base (subvec event 0 (dec (count event)))]
+             event-base (subvec event 1 (dec (count event)))]
          (->> (dispatch/get-route-params route)
               (assoc route :params)
               (conj event-base)
-              (handler coeffects))))))
+              (#(if with-cofx?
+                  (apply handler coeffects %)
+                  (apply handler %))))))))
+  ([id interceptors handler]
+   (reg-action id interceptors handler false))
   ([id handler]
-   (reg-action id [] handler)))
+   (reg-action id [] handler false)))

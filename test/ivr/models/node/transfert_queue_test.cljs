@@ -39,11 +39,11 @@
                    :data [{:type :ivr.verbs/loop-play
                            :path "/cloudstore/file/waiting"}]}}
                  (tq-node/play-waiting-sound
-                  {} [:event {:options options
-                              :response response}])))))
+                   {:options options
+                    :response response})))))
       (testing "error-acd-enqueue"
         (is (= {:ivr.routes/response
                 {:verbs :create
                  :data [{:type :ivr.verbs/hangup}]}}
                (tq-node/error-acd-enqueue
-                {} [:event {:options options}])))))))
+                 {:options options})))))))

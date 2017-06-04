@@ -18,8 +18,8 @@
                  :on-error [:ivr.models.script/resolve-error
                             {:script-id "script-id"}]}}
                (script/resolve-event
-                {:store store}
-                [:resolve {:params route-params}])))))
+                 {:store store}
+                 {:params route-params})))))
     (testing "resolve-success"
       (let [response #js {:body {:start "42"}}]
         (is (= {:ivr.routes/params {:route :params
@@ -28,9 +28,8 @@
                                              :nodes {}}}
                 :ivr.routes/next nil}
                (script/resolve-success
-                {}
-                [:success {:account-id "account-id"
-                           :response response} {:params {:route :params}}])))))
+                 {:account-id "account-id" :response response}
+                 {:params {:route :params}})))))
     (testing "resolve-error"
       (let [response #js {:body {:start "42"}}]
         (is (= {:ivr.routes/response {:status 404
@@ -40,9 +39,8 @@
                                              :cause {:message "error"
                                                      :scriptid "script-id"}}}}
                (script/resolve-error
-                {}
-                [:success {:script-id "script-id"
-                           :error {:message "error"}}])))))
+                 {:script-id "script-id"
+                  :error {:message "error"}})))))
     (testing "start-route"
       (let [enter-node #(assoc %1 :node :enter :params %2)
             coeffects {:enter-node enter-node :store "store" :verbs "verbs"}
@@ -55,8 +53,8 @@
                         :message "Invalid script - missing start index"
                         :cause {}}}}
                (script/start-route
-                coeffects
-                [:enter {:params {:script {}}}])))
+                 coeffects
+                 {:params {:script {}}})))
         (let [script {:id "script-id"
                       :nodes {:1 {}}}]
           (is (= {:ivr.routes/response
@@ -66,8 +64,8 @@
                           :message "Invalid script - missing start index"
                           :cause script}}}
                  (script/start-route
-                  coeffects
-                  [:enter {:params {:script script}}]))))
+                   coeffects
+                   {:params {:script script}}))))
         (let [script {:id "script-id"
                       :start "toto"
                       :nodes {:1 {}}}]
@@ -78,8 +76,8 @@
                           :message "Invalid script - missing node"
                           :cause script}}}
                  (script/start-route
-                  coeffects
-                  [:enter {:params {:script script}}]))))
+                   coeffects
+                   {:params {:script script}}))))
         (let [script {:id "script-id"
                       :start :1
                       :nodes {:1 {:type "announcement"}}}]
@@ -90,9 +88,9 @@
                            :store "store"
                            :verbs "verbs"}}
                  (script/start-route
-                  coeffects
-                  [:enter {:params {:script script
-                                    :call call}}]))))))
+                   coeffects
+                   {:params {:script script
+                             :call call}}))))))
     (testing "enter-node-route"
       (let [enter-node #(assoc %1 :node :enter :params %2)
             coeffects {:enter-node enter-node :store "store" :verbs "verbs"}
@@ -107,10 +105,10 @@
                           :message "Invalid script - missing node"
                           :cause script}}}
                  (script/enter-node-route
-                  coeffects
-                  [:enter {:params {:script script
-                                    :node_id "42"
-                                    :call call}}]))))
+                   coeffects
+                   {:params {:script script
+                             :node_id "42"
+                             :call call}}))))
         (let [script {:id "script-id"
                       :nodes {:42 {:type "announcement"}}}]
           (is (= {:type "announcement"
@@ -120,10 +118,10 @@
                            :store "store"
                            :verbs "verbs"}}
                  (script/enter-node-route
-                  coeffects
-                  [:enter {:params {:script script
-                                    :node_id "42"
-                                    :call call}}]))))))
+                   coeffects
+                   {:params {:script script
+                             :node_id "42"
+                             :call call}}))))))
     (testing "leave-node-route"
       (let [leave-node #(assoc %1 :node :leave :params %2)
             coeffects {:leave-node leave-node :store "store" :verbs "verbs"}
@@ -137,10 +135,10 @@
                           :message "Invalid script - missing node"
                           :cause script}}}
                  (script/leave-node-route
-                  coeffects
-                  [:leave {:params {:script script
-                                    :node_id "42"
-                                    :call call}}]))))
+                   coeffects
+                   {:params {:script script
+                             :node_id "42"
+                             :call call}}))))
         (let [script {:nodes {:42 {:type "announcement"}}}
               params {:script script
                       :node_id "42"
@@ -153,8 +151,8 @@
                            :store "store"
                            :verbs "verbs"}}
                  (script/leave-node-route
-                  coeffects
-                  [:leave {:params params}])))))))
+                   coeffects
+                   {:params params})))))))
   (testing "conform"
     (let [options {:account-id "account-id"}]
       (testing "start"
