@@ -42,9 +42,9 @@
       (testing "transfert-sda-with-config"
         (let [config {:fromSda "CALLEE"
                       :ringingTimeoutSec 15}
-              response #js {:body {:fromSda "CALLER"
-                                   :record_enabled true
-                                   :ringing_tone "ringing"}}
+              account {:fromSda "CALLER"
+                       :record_enabled true
+                       :ringing_tone "ringing"}
               params {:from "from-number"
                       :to "to-number"}]
           (is (= {:ivr.routes/response
@@ -59,7 +59,7 @@
                            :waitingurl "/smartccivr/twimlets/loopPlay/ringing"}]}}
                  (ts-node/transfert-sda-with-config
                    (merge deps {:config config})
-                   {:node node :response response}
+                   {:node node :account account}
                    {:params params}))))))
     (testing "leave"
       (let [node (merge node {:next :42})

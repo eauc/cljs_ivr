@@ -46,3 +46,11 @@
                        :stack (aget error "stack")}})})))))
   ([id handler]
    (reg-action id [] handler)))
+
+
+(reg-action
+  :ivr.routes/error
+  (fn routes-error
+    [_ error]
+    {:ivr.routes/response
+     (error-response error)}))

@@ -52,9 +52,8 @@
 
 
 (defn resolve-success
-  [_ {:keys [account-id response]} {:keys [params]}]
-  (let [script (-> (aget response "body")
-                   (conform {:account-id account-id}))]
+  [_ {:keys [account-id script]} {:keys [params]}]
+  (let [script (conform script {:account-id account-id})]
     {:ivr.routes/params (assoc params :script script)
      :ivr.routes/next nil}))
 

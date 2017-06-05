@@ -40,11 +40,9 @@
 
 (defn transfert-sda-with-config
   [{:keys [config verbs] :as coeffects}
-   {:keys [node response]
-    :or {response #js {}}}
+   {:keys [node account]}
    {:keys [params]}]
-  (let [account (or (aget response "body") {})
-        transfert-config (node/->transfert-config config account params)
+  (let [transfert-config (node/->transfert-config config account params)
         {:keys [dest id script-id]} node
         callback-url (url/absolute [:v1 :action :script-leave-node]
                                    {:script-id script-id :node-id id})

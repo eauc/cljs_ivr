@@ -21,7 +21,7 @@
                  {:store store}
                  {:params route-params})))))
     (testing "resolve-success"
-      (let [response #js {:body {:start "42"}}]
+      (let [result {:start "42"}]
         (is (= {:ivr.routes/params {:route :params
                                     :script {:start :42
                                              :account-id "account-id"
@@ -29,7 +29,7 @@
                 :ivr.routes/next nil}
                (script/resolve-success
                  {}
-                 {:account-id "account-id" :response response}
+                 {:account-id "account-id" :script result}
                  {:params {:route :params}})))))
     (testing "resolve-error"
       (let [response #js {:body {:start "42"}}]

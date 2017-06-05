@@ -50,11 +50,9 @@
 
 (defn- eval-list-with-config
   [{:keys [config] :as coeffects}
-   {:keys [node eval-list response]
-    :or {response #js {}}}
+   {:keys [node eval-list account]}
    {:keys [params]}]
-  (let [account (or (aget response "body") {})
-        transfert-config (node/->transfert-config config account params)
+  (let [transfert-config (node/->transfert-config config account params)
         {account-id :account-id list-id :dest} node
         payload {:node node :config transfert-config}]
     {:ivr.web/request

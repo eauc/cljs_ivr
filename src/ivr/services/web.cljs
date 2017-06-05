@@ -8,6 +8,7 @@
             [re-frame.core :as re-frame])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
+
 (defonce superagent (nodejs/require "superagent"))
 
 
@@ -61,12 +62,18 @@
     result))
 
 
+(defn- handler->event [handler as result]
+  (if (vector? handler)
+    (let [[event-name event-payload] handler]
+      [event-name (assoc event-payload as result)])
+    (handler result)))
+
+
 (defn- response->event [[success? result]
-                        [event-success payload-success]
-                        [event-error payload-error]]
+                        on-success on-error]
   (if (= :ivr.web/success success?)
-    [event-success (assoc payload-success :response result)]
-    [event-error (assoc payload-error :error result)]))
+    (handler->event on-success :response result)
+    (handler->event on-error :error result)))
 
 
 (defn- request-fx [context route

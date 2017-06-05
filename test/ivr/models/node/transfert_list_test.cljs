@@ -38,7 +38,6 @@
       (testing "eval-list-with-config"
         (let [node base-node
               config {:ringing_tone "ringing"}
-              response #js {}
               params {}]
           (is (= {:ivr.web/request
                   {:method "POST"
@@ -60,13 +59,13 @@
                               :waitingurl "/smartccivr/twimlets/loopPlay/ringing"}}]}}
                  (tl-node/eval-list-with-config
                    {:config config}
-                   {:node node :response response}
+                   {:node node :account {}}
                    {:params params})))
           (is (= {:eval :list}
                  (get-in
                    (tl-node/eval-list-with-config
                      {:config config}
-                     {:node node :eval-list {:eval :list} :response response}
+                     {:node node :eval-list {:eval :list} :account {}}
                      {:params params})
                    [:ivr.web/request :data])))
           (let [config (merge config {:ringingTimeoutSec 5
@@ -80,15 +79,15 @@
                    (get-in
                      (tl-node/eval-list-with-config
                        {:config config}
-                       {:node node :response response}
+                       {:node node :account {}}
                        {:params params})
                      [:ivr.web/request :on-success 1 :config]))))
           (let [config (merge config {:ringingTimeoutSec 5
                                       :fromSda "CALLER"})
-                response #js {:body {:ringingTimeoutSec 15
-                                     :fromSda "CALLEE"
-                                     :record_enabled true
-                                     :ringing_tone "account-ringing"}}
+                account {:ringingTimeoutSec 15
+                         :fromSda "CALLEE"
+                         :record_enabled true
+                         :ringing_tone "account-ringing"}
                 params (merge params {:from "from-number"
                                       :to "to-number"})]
             (is (= {:from "to-number"
@@ -98,7 +97,7 @@
                    (get-in
                      (tl-node/eval-list-with-config
                        {:config config}
-                       {:node node :response response}
+                       {:node node :account account}
                        {:params params})
                      [:ivr.web/request :on-success 1 :config]))))))
       (testing "transfert-call-to-list"
