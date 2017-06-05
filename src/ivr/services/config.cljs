@@ -74,9 +74,7 @@
 
 (routes/reg-action
   :ivr.config/explain-route
-  []
-  explain-route
-  {:with-cofx? true})
+  explain-route)
 
 
 (re-frame/reg-cofx

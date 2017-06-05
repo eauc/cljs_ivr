@@ -13,7 +13,8 @@
 (def log
   (logger/create "node.dtmf-catch"))
 
-(defn- conform-sound [sound]
+(defn- conform-sound
+  [sound]
   (if (and (string? (:varname sound))
            (string? (:voice sound)))
     (-> sound
@@ -22,7 +23,8 @@
     (assoc sound :type :ivr.node.dtmf-catch/sound)))
 
 
-(defn- conform-welcome [node]
+(defn- conform-welcome
+  [node]
   (-> node
       (update :retry #(if-not (integer? %) 0 %))
       (update :welcome #(or % []))
@@ -30,7 +32,8 @@
       (update :welcome #(mapv conform-sound %))))
 
 
-(defn- conform-dtmf-ok [case]
+(defn- conform-dtmf-ok
+  [case]
   (if (contains? case :dtmf_ok)
     (-> case
         (update :dtmf_ok node/conform-set :set)
@@ -38,13 +41,15 @@
     case))
 
 
-(defn- conform-max-attempt-reached [case]
+(defn- conform-max-attempt-reached
+  [case]
   (if (contains? case :max_attempt_reached)
     (update case :max_attempt_reached keyword)
     case))
 
 
-(defn- conform-case [node]
+(defn- conform-case
+  [node]
   (if (contains? node :case)
     (-> node
         (update :case conform-dtmf-ok)
@@ -61,15 +66,15 @@
       conform-case))
 
 
-(spec/fdef gather
-           :args (spec/cat :plays (spec/coll-of :ivr.node.dtmf-catch.sound/play)
-                           :node :ivr.node.dtmf-catch/node
-                           :options :ivr.node.dtmf-catch/options)
-           :ret map?)
+;; (spec/fdef gather
+;;            :args (spec/cat :plays (spec/coll-of :ivr.node.dtmf-catch.sound/play)
+;;                            :node :ivr.node.dtmf-catch/node
+;;                            :options :ivr.node.dtmf-catch/options)
+;;            :ret map?)
 (defn- gather
   [plays
    {:keys [id account-id script-id] :as node}
-   {:keys [retries verbs] :as options}]
+   {:keys [retries] {:keys [verbs]} :deps}]
   (let [callback-url (str (url/absolute [:v1 :action :script-leave-node]
                                         {:script-id script-id
                                          :node-id id})
@@ -85,17 +90,17 @@
          :path callback-url}])}))
 
 
-(spec/fdef sound-name-request
-           :args (spec/cat :sound :ivr.node.dtmf-catch/sound
-                           :loaded (spec/coll-of :ivr.node.dtmf-catch.sound/play)
-                           :rest (spec/nilable (spec/coll-of :ivr.node.dtmf-catch/sound))
-                           :node :ivr.node.dtmf-catch/node
-                           :options :ivr.node.dtmf-catch/options)
-           :ret map?)
+;; (spec/fdef sound-name-request
+;;            :args (spec/cat :sound :ivr.node.dtmf-catch/sound
+;;                            :loaded (spec/coll-of :ivr.node.dtmf-catch.sound/play)
+;;                            :rest (spec/nilable (spec/coll-of :ivr.node.dtmf-catch/sound))
+;;                            :node :ivr.node.dtmf-catch/node
+;;                            :options :ivr.node.dtmf-catch/options)
+;;            :ret map?)
 (defn- sound-name-request
   [sound loaded rest
    {:keys [account-id script-id] :as node}
-   {:keys [store] :as options}]
+   {:keys [call retries] {:keys [store]} :deps}]
   {:ivr.web/request
    (store
      {:type :ivr.store/get-sound-by-name
@@ -103,54 +108,58 @@
       :account-id account-id
       :script-id script-id
       :on-success [::sound-name-success
-                   {:options options
+                   {:call call
                     :node node
+                    :retries retries
                     :loaded loaded
                     :rest rest}]})})
 
 
-(spec/fdef resolve-sounds
-           :args (spec/cat :loaded (spec/coll-of :ivr.node.dtmf-catch.sound/play)
-                           :sounds (spec/coll-of :ivr.node.dtmf-catch/sound)
-                           :node :ivr.node.dtmf-catch/node
-                           :options :ivr.node.dtmf-catch/options)
-           :ret map?)
+;; (spec/fdef resolve-sounds
+;;            :args (spec/cat :loaded (spec/coll-of :ivr.node.dtmf-catch.sound/play)
+;;                            :sounds (spec/coll-of :ivr.node.dtmf-catch/sound)
+;;                            :node :ivr.node.dtmf-catch/node
+;;                            :options :ivr.node.dtmf-catch/options)
+;;            :ret map?)
 (defn- resolve-sounds
   [already-loaded sounds
    {:keys [id account-id script-id] :as node}
-   {:keys [action-data retries store verbs] :as options}]
+   {:keys [call] :as context}]
   (loop [loaded already-loaded
          [sound & rest] sounds]
     (cond
-      (nil? sound) (gather loaded node options)
+      (nil? sound) (gather loaded node context)
       (= :ivr.node.dtmf-catch/speak (:type sound))
-      (let [speak-sound (dc-speak/speak-action-var action-data sound)]
+      (let [speak-sound (-> (:action-data call)
+                            (dc-speak/speak-action-var sound))]
         (recur (vec (concat loaded speak-sound)) rest))
-      :else (sound-name-request sound loaded rest node options))))
+      :else (sound-name-request sound loaded rest node context))))
 
 
-(spec/fdef retry
-           :args (spec/cat :node :ivr.node.dtmf-catch/node
-                           :retries :ivr.node.dtmf-catch/retries
-                           :options :ivr.node.dtmf-catch/options)
-           :ret map?)
-(defn- retry [{:keys [retry welcome] :as node}
-              retries options]
+;; (spec/fdef retry
+;;            :args (spec/cat :node :ivr.node.dtmf-catch/node
+;;                            :retries :ivr.node.dtmf-catch/retries
+;;                            :options :ivr.node.dtmf-catch/options)
+;;            :ret map?)
+(defn- retry
+  [{:keys [retry welcome] :as node}
+   {:keys [retries] :as context}]
   (let [sounds (if (> retries 1) (drop retry welcome) welcome)]
-    (resolve-sounds [] sounds node (assoc options :retries retries))))
+    (resolve-sounds [] sounds node context)))
 
 
 (defmethod node/enter-type "dtmfcatch"
-  [node {:keys [action-data] :as options}]
-  (let [update-action-data (node/apply-preset node options)
-        new-action-data (or (get-in update-action-data [:ivr.call/action-data :data])
-                            action-data)
-        result (retry node 1 (assoc options :action-data new-action-data))]
+  [node {:keys [call deps] :as context}]
+  (let [update-action-data (node/apply-preset node call)
+        updated-call (or (get update-action-data :ivr.call/action-data) call)
+        result (retry node {:deps deps :call updated-call :retries 1})]
     (merge update-action-data result)))
 
 
-(defn sound-name-success [{:keys [loaded node options rest sound-url]}]
-  (resolve-sounds (conj loaded sound-url) rest node options))
+(defn sound-name-success
+  [deps {:keys [call node retries loaded rest sound-url]}]
+  (resolve-sounds (conj loaded sound-url) rest node
+                  {:deps deps :call call :retries retries}))
 
 (routes/reg-action
   ::sound-name-success
@@ -183,62 +192,60 @@
     (and num-digits-ok? term-digit-ok? pattern-ok?)))
 
 
-(spec/fdef save-action-data
-           :args (spec/cat :node :ivr.node.dtmf-catch/node
-                           :options :ivr.node/options)
-           :ret map?)
+;; (spec/fdef save-action-data
+;;            :args (spec/cat :node :ivr.node.dtmf-catch/node
+;;                            :options :ivr.node/options)
+;;            :ret map?)
 (defn- save-action-data
   [{:keys [varname] :as node}
-   {:keys [action-data call-id params] :as options}]
+   params
+   {:keys [action-data] :as call}]
   (let [{:keys [digits]} params
         {:keys [set]} (get-in node [:case :dtmf_ok])
         new-data (-> action-data
                      (assoc (keyword varname) digits)
                      (node/apply-data-set set))]
-    {:ivr.call/action-data {:call-id call-id
-                            :data new-data}}))
+    {:ivr.call/action-data (assoc call :action-data new-data)}))
 
 
-(spec/fdef leave-success
-           :args (spec/cat :node :ivr.node.dtmf-catch/node
-                           :options :ivr.node/options)
-           :ret map?)
+;; (spec/fdef leave-success
+;;            :args (spec/cat :node :ivr.node.dtmf-catch/node
+;;                            :options :ivr.node/options)
+;;            :ret map?)
 (defn- leave-success
-  [node {:keys [] :as options}]
-  (let [update-action-data (save-action-data node options)
+  [node {:keys [call deps params] :as context}]
+  (let [update-action-data (save-action-data node params call)
         {:keys [next]} (get-in node [:case :dtmf_ok])
-        result (node/go-to-next (assoc node :next next) options)]
-    (log "debug" "leave-success" {:next next})
+        result (node/go-to-next (assoc node :next next) deps)]
     (merge update-action-data result)))
 
 
-(spec/fdef leave-max-attempts-reached
-           :args (spec/cat :node :ivr.node.dtmf-catch/node
-                           :options :ivr.node/options)
-           :ret map?)
+;; (spec/fdef leave-max-attempts-reached
+;;            :args (spec/cat :node :ivr.node.dtmf-catch/node
+;;                            :options :ivr.node/options)
+;;            :ret map?)
 (defn- leave-max-attempts-reached
-  [node options]
+  [node {:keys [deps]}]
   (log "debug" "leave-max-attempts-reached")
   (let [next (get-in node [:case :max_attempt_reached])]
-    (node/go-to-next (assoc node :next next) options)))
+    (node/go-to-next (assoc node :next next) deps)))
 
 
-(spec/fdef leave-retry
-           :args (spec/cat :node :ivr.node.dtmf-catch/node
-                           :options :ivr.node/options)
-           :ret map?)
+;; (spec/fdef leave-retry
+;;            :args (spec/cat :node :ivr.node.dtmf-catch/node
+;;                            :options :ivr.node/options)
+;;            :ret map?)
 (defn- leave-retry
   [{:keys [max_attempts] :as node}
-   {:keys [params] :as options}]
-  (log "debug" "leave-retry")
+   {:keys [call deps params] :as context}]
   (let [retries (int (:retries params))]
     (if (<= max_attempts retries)
-      (leave-max-attempts-reached node options)
-      (retry node (inc retries) options))))
+      (leave-max-attempts-reached node context)
+      (retry node {:call call :deps deps :retries (inc retries)}))))
 
 
 (defmethod node/leave-type "dtmfcatch"
-  [node {:keys [params] :as options}]
+  [node {:keys [params] :as context}]
   (if (digits-valid? node params)
-    (leave-success node options)
-    (leave-retry node options)))
+    (leave-success node context)
+    (leave-retry node context)))

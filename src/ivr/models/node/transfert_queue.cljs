@@ -17,7 +17,7 @@
 
 (defmethod node/enter-type "transferqueue"
   [{:keys [id script-id queue] :as node}
-   {:keys [call-id call-time params] :as options}]
+   {:keys [call params] :as context}]
   (let [fallback-url (url/absolute [:v1 :action :script-leave-node]
                                    {:script-id script-id
                                     :node-id id})
@@ -25,17 +25,17 @@
                        (select-keys [:account_id :application_id :call_id :to :from])
                        (merge {:queue_id queue
                                :ivr_fallback fallback-url
-                               :callTime call-time}))]
+                               :callTime (get-in call [:info :time])}))]
     {:ivr.web/request
      {:method "POST"
-      :url (str "/smartccacdlink/call/" call-id "/enqueue")
+      :url (str "/smartccacdlink/call/" (get-in call [:info :id]) "/enqueue")
       :data acd-params
-      :on-success [::play-waiting-sound {:options options}]
-      :on-error [::error-acd-enqueue {:node node :options options}]}}))
+      :on-success [::play-waiting-sound {:node node}]
+      :on-error [::error-acd-enqueue {:node node}]}}))
 
 
 (defn- play-waiting-sound
-  [{:keys [response] {:keys [verbs]} :options}]
+  [{:keys [verbs]} {:keys [response]}]
   (let [wait-sound (:waitSound (aget response "body"))]
     {:ivr.routes/response
      (verbs
@@ -48,7 +48,7 @@
 
 
 (defn- error-acd-enqueue
-  [{:keys [error node] {:keys [verbs]} :options}]
+  [{:keys [verbs]} {:keys [error node]}]
   (log "error" "enqueue ACD" {:error error :node node})
   {:ivr.routes/response
    (verbs
@@ -59,5 +59,5 @@
   error-acd-enqueue)
 
 (defmethod node/leave-type "transferqueue"
-  [node options]
-  (node/go-to-next node options))
+  [node {:keys [deps]}]
+  (node/go-to-next node deps))

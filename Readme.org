@@ -1,9 +1,8 @@
 - conform cond->
 - instrumenter ivr.node ns durant les tests node/types
   - spec des methods des nodes
-- creer un reg-action qui:
-  - injecte store/verbs/acd/services dans les options
-  - catch les exceptions
 - callTime
 - multimethod apply-set + set multiple variables
 - do not keywordize json keys everytime
+- web-request-fx fn on-success/error
+- ivrservices/acdlink models

@@ -15,9 +15,10 @@
                 :script-id "script-id"
                 :queue "queue-id"}
           verbs (fn [vs] {:verbs :create :data vs})
-          options {:call-id "call-id"
-                   :call-time "call-time"
-                   :verbs verbs}]
+          deps {:verbs verbs}
+          call {:info {:id "call-id"
+                       :time "call-time"}}
+          context {:call call :deps deps}]
       (is (= {:ivr.web/request
               {:method "POST"
                :url "/smartccacdlink/call/call-id/enqueue"
@@ -27,11 +28,11 @@
                 :callTime "call-time"},
                :on-success
                [:ivr.models.node.transfert-queue/play-waiting-sound
-                {:options options}]
+                {:node node}]
                :on-error
                [:ivr.models.node.transfert-queue/error-acd-enqueue
-                {:node node, :options options}]}}
-             (node/enter-type node options)))
+                {:node node}]}}
+             (node/enter-type node context)))
       (testing "play-waiting-sound"
         (let [response #js {:body {:waitSound "waiting"}}]
           (is (= {:ivr.routes/response
@@ -39,11 +40,14 @@
                    :data [{:type :ivr.verbs/loop-play
                            :path "/cloudstore/file/waiting"}]}}
                  (tq-node/play-waiting-sound
-                   {:options options
+                   deps
+                   {:node node
                     :response response})))))
       (testing "error-acd-enqueue"
         (is (= {:ivr.routes/response
                 {:verbs :create
                  :data [{:type :ivr.verbs/hangup}]}}
                (tq-node/error-acd-enqueue
-                 {:options options})))))))
+                 deps
+                 {:node node
+                  :error {:message "error"}})))))))

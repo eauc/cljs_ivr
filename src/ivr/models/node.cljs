@@ -60,10 +60,10 @@
   (conform-set node :preset))
 
 
-(spec/fdef enter-type
-           :args (spec/cat :node :ivr.script/node
-                           :options :ivr.node/options)
-           :ret map?)
+;; (spec/fdef enter-type
+;;            :args (spec/cat :node :ivr.script/node
+;;                            :options :ivr.node/options)
+;;            :ret map?)
 (defmulti enter-type #(node-type %))
 
 
@@ -82,10 +82,10 @@
    (assoc coeffects :enter-node enter-type)))
 
 
-(spec/fdef leave-type
-           :args (spec/cat :node :ivr.script/node
-                           :options :ivr.node/options)
-           :ret map?)
+;; (spec/fdef leave-type
+;;            :args (spec/cat :node :ivr.script/node
+;;                            :options :ivr.node/options)
+;;            :ret map?)
 (defmulti leave-type #(node-type %))
 
 
@@ -117,27 +117,26 @@
     data))
 
 
-(spec/fdef apply-preset
-           :args (spec/cat :node :ivr.script/node
-                           :options :ivr.node/options)
-           :ret map?)
+;; (spec/fdef apply-preset
+;;            :args (spec/cat :node :ivr.script/node
+;;                            :options :ivr.node/options)
+;;            :ret map?)
 (defn apply-preset
   [{:keys [preset] :as node}
-   {:keys [call-id action-data]}]
+   {:keys [action-data] :as call}]
   (let [new-data (apply-data-set action-data preset)]
     (if-not (= new-data action-data)
-      {:ivr.call/action-data {:call-id call-id
-                              :data new-data}}
+      {:ivr.call/action-data (assoc call :action-data new-data)}
       {})))
 
 
-(spec/fdef go-to-next
-           :args (spec/cat :node :ivr.script/node
-                           :options :ivr.node/options)
-           :ret map?)
+;; (spec/fdef go-to-next
+;;            :args (spec/cat :node :ivr.script/node
+;;                            :options :ivr.node/options)
+;;            :ret map?)
 (defn- go-to-next
   [{:keys [script-id next] :as node}
-   {:keys [verbs] :as options}]
+   {:keys [verbs] :as deps}]
   (if next
     {:ivr.routes/response
      (verbs [{:type :ivr.verbs/redirect

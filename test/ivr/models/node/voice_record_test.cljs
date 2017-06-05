@@ -53,16 +53,15 @@
   (testing "enter"
     (is (= {:ivr.routes/dispatch
             [:ivr.models.node.voice-record/record-with-config
-             {:node {:type "voicerecord"}
-              :options {:options "options"}}]}
-           (node/enter-type {:type "voicerecord"} {:options "options"})))
+             {:node {:type "voicerecord"}}]}
+           (node/enter-type {:type "voicerecord"} "context")))
     (let [node {:type "voicerecord"
                 :id "node-id"
                 :script-id "script-id"
                 :validateKey "4"
                 :cancelKey "5"}
           verbs (fn [vs] {:verbs :create :data vs})
-          options {:verbs verbs}
+          deps {:verbs verbs}
           config {:maxlength 245}]
       (testing "record-with-config"
         (is (= {:ivr.routes/response
@@ -72,11 +71,12 @@
                          :finishonkey "45"
                          :callbackurl "/smartccivr/script/script-id/node/node-id/callback"}]}}
                (vr-node/record-with-config
-                {:config config}
-                {:node node :options options}))))))
+                 (merge deps {:config config})
+                 {:node node}))))))
   (testing "leave"
     (let [verbs (fn [vs] {:verbs :create :data vs})
-          options {:verbs verbs}
+          deps {:verbs verbs}
+          context {:deps deps}
           node {:type "voicerecord"
                 :id "node-id"
                 :script-id "script-id"
@@ -85,59 +85,59 @@
                 :varname :record_var}]
       (testing "cancel"
         (let [params {:record_cause "digit-a" :record_digits "435"}
-              options (merge options {:params params})]
+              context (merge context {:params params})]
           (is (= {:ivr.routes/response
                   {:verbs :create, :data [{:type :ivr.verbs/hangup}]}}
-                 (node/leave-type node options)))
+                 (node/leave-type node context)))
           (let [node (merge node {:case {:cancel :42}})]
             (is (= {:ivr.routes/response
                     {:verbs :create
                      :data [{:type :ivr.verbs/redirect
                              :path "/smartccivr/script/script-id/node/42"}]}}
-                   (node/leave-type node options))))))
+                   (node/leave-type node context))))))
       (testing "validate"
         (let [params {:record_cause "digit-a"
                       :record_digits "53"
                       :record_url "/record/url"}
               action-data {:action :data}
-              options (merge options {:action-data action-data
-                                      :call-id "call-id"
+              context (merge context {:call {:action-data action-data
+                                             :info {:id "call-id"}}
                                       :params params})]
           (is (= {:ivr.call/action-data
-                  {:call-id "call-id"
-                   :data {:action :data
-                          :record_var "/record/url"}}
+                  {:info {:id "call-id"}
+                   :action-data {:action :data
+                                 :record_var "/record/url"}}
                   :ivr.routes/response
                   {:verbs :create, :data [{:type :ivr.verbs/hangup}]}}
-                 (node/leave-type node options))))
+                 (node/leave-type node context))))
         (let [params {:record_cause "hangup"
                       :record_digits "435"
                       :record_url "/record/url"}
               action-data {:action :data}
-              options (merge options {:action-data action-data
-                                      :call-id "call-id"
+              context (merge context {:call {:action-data action-data
+                                             :info {:id "call-id"}}
                                       :params params})]
           (let [node (merge node {:case {:validate {:next :44
                                                     :set {:type :ivr.node.preset/copy
                                                           :from :record_var
                                                           :to :to_var}}}})]
             (is (= {:ivr.call/action-data
-                    {:call-id "call-id"
-                     :data {:action :data
-                            :record_var "/record/url"
-                            :to_var "/record/url"}}
+                    {:info {:id "call-id"}
+                     :action-data {:action :data
+                                   :record_var "/record/url"
+                                   :to_var "/record/url"}}
                     :ivr.routes/response
                     {:verbs :create, :data [{:type :ivr.verbs/redirect
                                              :path "/smartccivr/script/script-id/node/44"}]}}
-                   (node/leave-type node options))))
+                   (node/leave-type node context))))
           (let [node (merge node {:case {:validate {:set {:type :ivr.node.preset/set
                                                           :value "set_value"
                                                           :to :to_var}}}})]
             (is (= {:ivr.call/action-data
-                    {:call-id "call-id"
-                     :data {:action :data
-                            :record_var "/record/url"
-                            :to_var "set_value"}}
+                    {:info {:id "call-id"}
+                     :action-data {:action :data
+                                   :record_var "/record/url"
+                                   :to_var "set_value"}}
                     :ivr.routes/response
                     {:verbs :create, :data [{:type :ivr.verbs/hangup}]}}
-                   (node/leave-type node options)))))))))
+                   (node/leave-type node context)))))))))

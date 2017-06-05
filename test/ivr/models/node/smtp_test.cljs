@@ -10,10 +10,11 @@
 
 (deftest smtp-node-model
   (testing "enter"
-    (let [action-data {:action :data}
-          verbs (fn [vs] {:verbs :create :data vs})
-          options {:action-data action-data
-                   :verbs verbs}
+    (let [verbs (fn [vs] {:verbs :create :data vs})
+          deps {:verbs verbs}
+          call {:action-data {:action :data}}
+          context {:call call
+                   :deps deps}
           node {:type "smtp"
                 :account-id "account-id"
                 :script-id "script-id"
@@ -24,7 +25,7 @@
       (is (= {:ivr.web/request
               {:method "POST"
                :url "/smartccivrservices/account/account-id/mail"
-               :data {:context action-data
+               :data {:context {:action :data}
                       :mailOptions {:subject "subject"
                                     :to "to"
                                     :attachment "attachment"
@@ -38,11 +39,11 @@
               :ivr.routes/response
               {:verbs :create
                :data [{:type :ivr.verbs/hangup}]}}
-             (node/enter-type node options)))
+             (node/enter-type node context)))
       (is (= {:verbs :create
               :data [{:type :ivr.verbs/redirect
                       :path "/smartccivr/script/script-id/node/42"}]}
              (:ivr.routes/response
               (node/enter-type
-               (merge node {:next :42})
-               options)))))))
+                (merge node {:next :42})
+                context)))))))

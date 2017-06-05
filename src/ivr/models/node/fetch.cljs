@@ -17,23 +17,22 @@
 
 (defmethod node/enter-type "fetch"
   [{:keys [account-id id_routing_rule varname] :as node}
-   options]
+   {:keys [call] :as context}]
   {:ivr.web/request
    {:method "POST"
     :url (str "/smartccivrservices/account/" account-id "/routingrule/" id_routing_rule "/eval")
-    :on-success [::apply-routing-rule {:options options :node node}]
-    :on-error [::error-routing-rule {:options options :node node}]}})
+    :on-success [::apply-routing-rule {:call call :node node}]
+    :on-error [::error-routing-rule {:call call :node node}]}})
 
 
 (defn- apply-routing-rule
-  [{:keys [node options response]}]
-  (let [{:keys [action-data call-id]} options
+  [deps {:keys [call node response]}]
+  (let [{:keys [action-data]} call
         var-name (:varname node)
-        value (aget response "body")]
-    (merge  {:ivr.call/action-data
-             {:call-id call-id
-              :data (assoc action-data var-name value)}}
-            (node/go-to-next node options))))
+        value (aget response "body")
+        new-data (assoc action-data var-name value)]
+    (merge {:ivr.call/action-data (assoc call :action-data new-data)}
+           (node/go-to-next node deps))))
 
 (routes/reg-action
   ::apply-routing-rule
@@ -41,15 +40,14 @@
 
 
 (defn- error-routing-rule
-  [{:keys [node options error]}]
-  (let [{:keys [action-data call-id]} options
+  [deps {:keys [call node error]}]
+  (let [{:keys [action-data]} call
         var-name (:varname node)
+        new-data (assoc action-data var-name "__FAILED__")
         rule-id (:id_routing_rule node)]
     (log "warn" "routing rule" {:error error :id rule-id})
-    (merge {:ivr.call/action-data
-            {:call-id call-id
-             :data (assoc action-data var-name "__FAILED__")}}
-           (node/go-to-next node options))))
+    (merge {:ivr.call/action-data (assoc call :action-data new-data)}
+           (node/go-to-next node deps))))
 
 (routes/reg-action
   ::error-routing-rule
@@ -57,5 +55,5 @@
 
 
 (defmethod node/leave-type "fetch"
-  [node options]
-  (node/go-to-next node options))
+  [node {:keys [deps]}]
+  (node/go-to-next node deps))

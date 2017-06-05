@@ -52,15 +52,14 @@
 
 (routes/reg-action
   :ivr.call/resolve
-  []
-  find-or-create-call
-  {:with-cofx? true})
+  find-or-create-call)
 
 
 (re-frame/reg-fx
   :ivr.call/action-data
-  (fn call-action-data-fx [{:keys [call-id data] :as params}]
-    (let [call (get-in @re-frame.db/app-db [:calls call-id])]
+  (fn call-action-data-fx [{:keys [info action-data] :as call}]
+    (let [call-id (:id info)
+          call (get-in @re-frame.db/app-db [:calls call-id])]
       (when call
-        (log "info" "update call action-data" params)
-        (swap! re-frame.db/app-db assoc-in [:calls call-id :action-data] data)))))
+        (log "info" "update call action-data" call)
+        (swap! re-frame.db/app-db assoc-in [:calls call-id :action-data] action-data)))))

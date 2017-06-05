@@ -45,19 +45,20 @@
                             :set {:type :ivr.node.preset/copy
                                   :from :toto :to :tutu}}}}
            (node/conform-type
-            {:type "route"
-             :varname "toto"
-             :case {:value1 {:next "42"}
-                    :value2 {:set {:varname "toto"
-                                   :value "titi"}}
-                    :value3 {:next "56"
-                             :set {:varname "tutu"
-                                   :value "$toto"}}}}))))
+             {:type "route"
+              :varname "toto"
+              :case {:value1 {:next "42"}
+                     :value2 {:set {:varname "toto"
+                                    :value "titi"}}
+                     :value3 {:next "56"
+                              :set {:varname "tutu"
+                                    :value "$toto"}}}}))))
   (testing "enter"
     (let [verbs (fn [vs] {:verbs :create :data vs})
-          options {:action-data {:action :data}
-                   :call-id "call-id"
-                   :verbs verbs}
+          deps {:verbs verbs}
+          call {:action-data {:action :data}
+                :info {:id "call-id"}}
+          context {:call call :deps deps}
           base-node {:type "route"
                      :script-id "script-id"
                      :varname :toto
@@ -75,44 +76,44 @@
       (is (= {:ivr.routes/response
               {:verbs :create
                :data [{:type :ivr.verbs/hangup}]}}
-             (node/enter-type base-node options)))
+             (node/enter-type base-node context)))
       (is (= {:ivr.routes/response
               {:verbs :create
                :data [{:type :ivr.verbs/redirect
                        :path "/smartccivr/script/script-id/node/42"}]}}
              (node/enter-type
-              base-node
-              (merge options {:action-data {:toto "value1"}}))))
+               base-node
+               (assoc context :call (merge call {:action-data {:toto "value1"}})))))
       (is (= {:ivr.call/action-data
-              {:call-id "call-id"
-               :data {:toto "value2"
-                      :titi "hello"
-                      :to_fetch "hello"}}
+              {:info {:id "call-id"}
+               :action-data {:toto "value2"
+                             :titi "hello"
+                             :to_fetch "hello"}}
               :ivr.routes/response
               {:verbs :create
                :data [{:type :ivr.verbs/hangup}]}}
              (node/enter-type
-              base-node
-              (merge options {:action-data {:toto "value2"
-                                            :titi "hello"}}))))
+               base-node
+               (assoc context :call (merge call {:action-data {:toto "value2"
+                                                               :titi "hello"}})))))
       (is (= {:ivr.call/action-data
-              {:call-id "call-id"
-               :data {:toto "value3"
-                      :to_fetch "val3"}}
+              {:info {:id "call-id"}
+               :action-data {:toto "value3"
+                             :to_fetch "val3"}}
               :ivr.routes/response
               {:verbs :create
                :data [{:type :ivr.verbs/hangup}]}}
              (node/enter-type
-              base-node
-              (merge options {:action-data {:toto "value3"}}))))
+               base-node
+               (assoc context :call (merge call {:action-data {:toto "value3"}})))))
       (is (= {:ivr.call/action-data
-              {:call-id "call-id"
-               :data {:toto "value4"
-                      :to_fetch "val4"}}
+              {:info {:id "call-id"}
+               :action-data {:toto "value4"
+                             :to_fetch "val4"}}
               :ivr.routes/response
               {:verbs :create
                :data [{:type :ivr.verbs/redirect
                        :path "/smartccivr/script/script-id/node/44"}]}}
              (node/enter-type
-              base-node
-              (merge options {:action-data {:toto "value4"}})))))))
+               base-node
+               (assoc context :call (merge call {:action-data {:toto "value4"}}))))))))

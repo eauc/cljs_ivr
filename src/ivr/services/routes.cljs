@@ -22,20 +22,20 @@
 
 (def default-interceptors
   [db/default-interceptors
-   interceptor/interceptor])
+   interceptor/interceptor
+   (re-frame/inject-cofx :ivr.store/cofx)
+   (re-frame/inject-cofx :ivr.verbs/cofx)])
 
 
 (defn reg-action
-  ([id interceptors handler {:keys [with-cofx?]}]
+  ([id interceptors handler]
    (re-frame/reg-event-fx
      id
      (concat default-interceptors interceptors)
      (fn action-handler
        [coeffects event]
        (try
-         (if with-cofx?
-           (apply handler coeffects event)
-           (apply handler event))
+         (apply handler coeffects event)
          (catch js/Object error
            {:ivr.routes/response
             (error-response
@@ -44,7 +44,5 @@
                :message "Internal error"
                :cause {:message (aget error "message")
                        :stack (aget error "stack")}})})))))
-  ([id interceptors handler]
-   (reg-action id interceptors handler false))
   ([id handler]
-   (reg-action id [] handler false)))
+   (reg-action id [] handler)))

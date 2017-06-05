@@ -28,6 +28,7 @@
                                              :nodes {}}}
                 :ivr.routes/next nil}
                (script/resolve-success
+                 {}
                  {:account-id "account-id" :response response}
                  {:params {:route :params}})))))
     (testing "resolve-error"
@@ -39,10 +40,11 @@
                                              :cause {:message "error"
                                                      :scriptid "script-id"}}}}
                (script/resolve-error
+                 {}
                  {:script-id "script-id"
                   :error {:message "error"}})))))
     (testing "start-route"
-      (let [enter-node #(assoc %1 :node :enter :params %2)
+      (let [enter-node #(assoc %1 :node :enter :context %2)
             coeffects {:enter-node enter-node :store "store" :verbs "verbs"}
             call {:info {:id "call-id"}
                   :action-data {:action :data}}]
@@ -80,19 +82,17 @@
                    {:params {:script script}}))))
         (let [script {:id "script-id"
                       :start :1
-                      :nodes {:1 {:type "announcement"}}}]
+                      :nodes {:1 {:type "announcement"}}}
+              params {:script script :call call}]
           (is (= {:type "announcement"
                   :node :enter
-                  :params {:action-data {:action :data}
-                           :call-id "call-id"
-                           :store "store"
-                           :verbs "verbs"}}
-                 (script/start-route
-                   coeffects
-                   {:params {:script script
-                             :call call}}))))))
+                  :context {:call {:action-data {:action :data}
+                                   :info {:id "call-id"}}
+                            :deps coeffects
+                            :params params}}
+                 (script/start-route coeffects {:params params}))))))
     (testing "enter-node-route"
-      (let [enter-node #(assoc %1 :node :enter :params %2)
+      (let [enter-node #(assoc %1 :node :enter :context %2)
             coeffects {:enter-node enter-node :store "store" :verbs "verbs"}
             call {:info {:id "call-id"}
                   :action-data {:action :data}}]
@@ -110,20 +110,19 @@
                              :node_id "42"
                              :call call}}))))
         (let [script {:id "script-id"
-                      :nodes {:42 {:type "announcement"}}}]
+                      :nodes {:42 {:type "announcement"}}}
+              params {:script script
+                      :node_id "42"
+                      :call call}]
           (is (= {:type "announcement"
                   :node :enter
-                  :params {:action-data {:action :data}
-                           :call-id "call-id"
-                           :store "store"
-                           :verbs "verbs"}}
-                 (script/enter-node-route
-                   coeffects
-                   {:params {:script script
-                             :node_id "42"
-                             :call call}}))))))
+                  :context {:call {:action-data {:action :data}
+                                   :info {:id "call-id"}}
+                            :deps coeffects
+                            :params params}}
+                 (script/enter-node-route coeffects {:params params}))))))
     (testing "leave-node-route"
-      (let [leave-node #(assoc %1 :node :leave :params %2)
+      (let [leave-node #(assoc %1 :node :leave :context %2)
             coeffects {:leave-node leave-node :store "store" :verbs "verbs"}
             call {:info {:id "call-id"}
                   :action-data {:action :data}}]
@@ -145,14 +144,11 @@
                       :call call}]
           (is (= {:type "announcement"
                   :node :leave
-                  :params {:action-data {:action :data}
-                           :call-id "call-id"
-                           :params params
-                           :store "store"
-                           :verbs "verbs"}}
-                 (script/leave-node-route
-                   coeffects
-                   {:params params})))))))
+                  :context {:call {:action-data {:action :data}
+                                   :info {:id "call-id"}}
+                            :deps coeffects
+                            :params params}}
+                 (script/leave-node-route coeffects {:params params})))))))
   (testing "conform"
     (let [options {:account-id "account-id"}]
       (testing "start"

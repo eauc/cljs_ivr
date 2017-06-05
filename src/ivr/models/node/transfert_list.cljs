@@ -32,9 +32,9 @@
 
 (defn- play-transfert-list
   [{:keys [account-id] :as node}
-   {:keys [store] :as options}]
-  (let [finally [::eval-list-with-config
-                 {:node node :options options}]]
+   eval-list
+   {:keys [store] :as deps}]
+  (let [finally [::eval-list-with-config {:node node :eval-list eval-list}]]
     {:ivr.web/request
      (store
        {:type :ivr.store/get-account
@@ -44,33 +44,30 @@
 
 
 (defmethod node/enter-type "transferlist"
-  [node options]
-  (play-transfert-list node options))
+  [node {:keys [deps]}]
+  (play-transfert-list node {} deps))
 
 
 (defn- eval-list-with-config
   [{:keys [config] :as coeffects}
-   {:keys [node options response]
+   {:keys [node eval-list response]
     :or {response #js {}}}
    {:keys [params]}]
   (let [account (or (aget response "body") {})
         transfert-config (node/->transfert-config config account params)
         {account-id :account-id list-id :dest} node
-        payload {:node node
-                 :options options
-                 :config transfert-config}]
+        payload {:node node :config transfert-config}]
     {:ivr.web/request
      {:method "POST"
       :url (str "/smartccivrservices/account/" account-id "/destinationlist/" list-id "/eval")
-      :data (or (:eval-list options) {})
+      :data (or eval-list {})
       :on-success [::transfert-call-to-list payload]
       :on-error [::eval-list-error payload]}}))
 
 (routes/reg-action
   ::eval-list-with-config
   [(re-frame/inject-cofx :ivr.config/cofx [:ivr :transfersda])]
-  eval-list-with-config
-  {:with-cofx? true})
+  eval-list-with-config)
 
 
 (defn- prefix-eval-list-query
@@ -102,9 +99,8 @@
 
 
 (defn- transfert-call-to-list
-  [{:keys [config node options response]}]
+  [{:keys [verbs]} {:keys [config node response]}]
   (let [{:keys [id script-id]} node
-        {:keys [verbs]} options
         eval-list (aget response "body")
         callback-query (eval-list->callback-query eval-list)
         callback-url (url/absolute [:v1 :action :script-leave-node]
@@ -126,10 +122,10 @@
 
 
 (defn- eval-list-error
-  [{:keys [node options error]}]
-  (log "error" "eval-list" {:error error
-                            :node node})
-  (node/go-to-next node options))
+  [deps {:keys [node error]}]
+  (log "error" "eval-list"
+       {:error error :node node})
+  (node/go-to-next node deps))
 
 (routes/reg-action
   ::eval-list-error
@@ -137,10 +133,11 @@
 
 
 (defmethod node/leave-type "transferlist"
-  [node {:keys [params verbs] :as options}]
+  [node {:keys [deps params]}]
   (if (= "completed" (:dialstatus params))
-    {:ivr.routes/response
-     (verbs
-       [{:type :ivr.verbs/hangup}])}
+    (let [{:keys [verbs]} deps]
+      {:ivr.routes/response
+       (verbs
+         [{:type :ivr.verbs/hangup}])})
     (let [eval-list (callback-query->eval-list params)]
-      (play-transfert-list node (assoc options :eval-list eval-list)))))
+      (play-transfert-list node eval-list deps))))

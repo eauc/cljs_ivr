@@ -46,7 +46,7 @@
 
 
 (defn get-sound-success
-  [{:keys [query response]}]
+  [_ {:keys [query response]}]
   (let [{:keys [account-id script-id name on-success]} query
         body (aget response "body")]
     (if (= 0 (or (get-in body [:meta :total_count]) 0))
@@ -70,7 +70,7 @@
 
 
 (defn get-file-error
-  [{:keys [query error]}]
+  [_ {:keys [query error]}]
   {:ivr.routes/response
    (routes/error-response
      {:status 404

@@ -27,31 +27,32 @@
               {:method "POST"
                :url "/smartccivrservices/account/account-id/routingrule/rule-id/eval"
                :on-success
-               [:ivr.models.node.fetch/apply-routing-rule {:options "options"
+               [:ivr.models.node.fetch/apply-routing-rule {:call "call"
                                                            :node node}]
                :on-error
-               [:ivr.models.node.fetch/error-routing-rule {:options "options"
+               [:ivr.models.node.fetch/error-routing-rule {:call "call"
                                                            :node node}]}}
-             (node/enter-type node "options")))))
+             (node/enter-type node {:call "call"})))))
   (testing "apply-routing-rule"
     (let [node {:type "fetch"
                 :account-id "account-id"
                 :id_routing_rule "rule-id"
                 :varname :to_fetch}
+          call {:info {:id "call-id"}
+                :action-data {:action :data}}
+          deps {:verbs (fn [vs] {:verbs :create :data vs})}
           response #js {:body "rule_value"}
-          options {:node node
-                   :options {:call-id "call-id"
-                             :action-data {:action :data}
-                             :verbs (fn [vs] {:verbs :create :data vs})}
+          context {:node node
+                   :call call
                    :response response}]
       (is (= {:ivr.call/action-data
-              {:call-id "call-id"
-               :data {:action :data
-                      :to_fetch "rule_value"}}
+              {:info {:id "call-id"}
+               :action-data {:action :data
+                             :to_fetch "rule_value"}}
               :ivr.routes/response
               {:verbs :create
                :data [{:type :ivr.verbs/hangup}]}}
-             (fetch-node/apply-routing-rule options)))))
+             (fetch-node/apply-routing-rule deps context)))))
   (testing "error-routing-rule"
     (let [node {:type "fetch"
                 :account-id "account-id"
@@ -59,18 +60,19 @@
                 :id_routing_rule "rule-id"
                 :next :42
                 :varname :to_fetch}
+          call {:info {:id "call-id"}
+                :action-data {:action :data}}
+          deps {:verbs (fn [vs] {:verbs :create :data vs})}
           error {:message "rule_error"}
-          options {:node node
-                   :options {:call-id "call-id"
-                             :action-data {:action :data}
-                             :verbs (fn [vs] {:verbs :create :data vs})}
+          context {:node node
+                   :call call
                    :error error}]
       (is (= {:ivr.call/action-data
-              {:call-id "call-id"
-               :data {:action :data
-                      :to_fetch "__FAILED__"}}
+              {:info {:id "call-id"}
+               :action-data {:action :data
+                             :to_fetch "__FAILED__"}}
               :ivr.routes/response
               {:verbs :create
                :data [{:type :ivr.verbs/redirect
                        :path "/smartccivr/script/script-id/node/42"}]}}
-             (fetch-node/error-routing-rule options))))))
+             (fetch-node/error-routing-rule deps context))))))

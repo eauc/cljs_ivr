@@ -16,17 +16,18 @@
 
 (defmethod node/enter-type "announcement"
   [{:keys [account-id script-id disabled soundname] :as node}
-   {:keys [store] :as options}]
-  (let [update-action-data (node/apply-preset node options)
+   {:keys [call deps] :as context}]
+  (let [{:keys [store]} deps
+        update-action-data (node/apply-preset node call)
         result (if disabled
-                 (node/go-to-next node options)
+                 (node/go-to-next node deps)
                  {:ivr.web/request
                   (store
                     {:type :ivr.store/get-sound-by-name
                      :name soundname
                      :account-id account-id
                      :script-id script-id
-                     :on-success [::play-sound {:options options :node node}]})})]
+                     :on-success [::play-sound {:node node}]})})]
     (merge update-action-data result)))
 
 
@@ -36,9 +37,8 @@
 ;;                            :options :ivr.node/verbs)
 ;;            :ret map?)
 (defn play-sound
-  [{:keys [sound-url node options]}]
-  (let [{:keys [id no_barge script-id]} node
-        {:keys [verbs]} options]
+  [{:keys [verbs]} {:keys [sound-url node]}]
+  (let [{:keys [id no_barge script-id]} node]
     (if no_barge
       {:ivr.routes/response
        (verbs [{:type :ivr.verbs/play
@@ -59,5 +59,5 @@
 
 
 (defmethod node/leave-type "announcement"
-  [node options]
-  (node/go-to-next node options))
+  [node {:keys [deps] :as context}]
+  (node/go-to-next node deps))

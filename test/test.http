@@ -93,13 +93,13 @@ GET http://localhost:3000/smartccivr/script/1234/node/5/callback?account_id=0007
 # TransferList
 # Dial list-sda
 
-GET http://localhost:3000/smartccivr/script/1234/node/6?account_id=0007&call_id=2234
+GET http://localhost:3000/smartccivr/script/1234/node/6?account_id=0007&call_id=2234&from=from-sda&to=to-sda
 
 # TransferList leave
 # Dial list-sda
 # envoi des params list a ivrservices
 
-GET http://localhost:3000/smartccivr/script/1234/node/6/callback?account_id=0007&call_id=2234&_dstLst_param1=value1&_dstLst_param2=value2
+GET http://localhost:3000/smartccivr/script/1234/node/6/callback?account_id=0007&call_id=2234&_dstLst_param1=value1&_dstLst_param2=value2&from=from-sda&to=to-sda
 
 # TransferList leave completed
 # Hangup

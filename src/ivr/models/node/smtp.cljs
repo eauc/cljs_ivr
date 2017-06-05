@@ -17,7 +17,7 @@
 
 (defmethod node/enter-type "smtp"
   [{:keys [account-id] :as node}
-   {:keys [action-data] :as options}]
+   {{:keys [action-data]} :call deps :deps}]
   (let [mail-options (select-keys node [:subject :to :attachment :text])
         mail-request
         {:ivr.web/request
@@ -28,12 +28,12 @@
           :on-success [::send-mail-success {:node node}]
           :on-error [::send-mail-error {:node node}]}}]
     (merge mail-request
-           (node/go-to-next node options))))
+           (node/go-to-next node deps))))
 
 
 (defn- send-mail-success
-  [options]
-  (log "info" "send mail success" (dissoc options :response))
+  [_ info]
+  (log "info" "send mail success" (dissoc info :response))
   {})
 
 (routes/reg-action
@@ -42,8 +42,8 @@
 
 
 (defn- send-mail-error
-  [options]
-  (log "error" "send mail error" options)
+  [_ info]
+  (log "error" "send mail error" info)
   {})
 
 (routes/reg-action
@@ -52,5 +52,5 @@
 
 
 (defmethod node/leave-type "smtp"
-  [node options]
-  (node/go-to-next node options))
+  [node {:keys [deps]}]
+  (node/go-to-next node deps))
