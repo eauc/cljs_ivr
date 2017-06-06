@@ -1,6 +1,10 @@
 (ns ivr.services.routes
   (:require [ivr.db :as db]
             [ivr.libs.logger :as logger]
+            [ivr.models.acd]
+            [ivr.models.ivrservices]
+            [ivr.models.store]
+            [ivr.models.verbs]
             [ivr.services.routes.dispatch :as dispatch]
             [ivr.services.routes.effects]
             [ivr.services.routes.interceptor :as interceptor]
@@ -23,6 +27,8 @@
 (def default-interceptors
   [db/default-interceptors
    interceptor/interceptor
+   (re-frame/inject-cofx :ivr.acd/cofx)
+   (re-frame/inject-cofx :ivr.services/cofx)
    (re-frame/inject-cofx :ivr.store/cofx)
    (re-frame/inject-cofx :ivr.verbs/cofx)])
 

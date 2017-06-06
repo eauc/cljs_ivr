@@ -17,20 +17,22 @@
 
 (defmethod node/enter-type "fetch"
   [{:keys [account-id id_routing_rule varname] :as node}
-   {:keys [call] :as context}]
-  {:ivr.web/request
-   {:method "POST"
-    :url (str "/smartccivrservices/account/" account-id "/routingrule/" id_routing_rule "/eval")
-    :on-success [::apply-routing-rule {:call call :node node}]
-    :on-error [::error-routing-rule {:call call :node node}]}})
+   {:keys [call deps] :as context}]
+  (let [{:keys [services]} deps]
+    {:ivr.web/request
+     (services
+       {:type :ivr.services/eval-routing-rule
+        :account-id account-id
+        :route-id id_routing_rule
+        :on-success [::apply-routing-rule {:call call :node node}]
+        :on-error [::error-routing-rule {:call call :node node}]})}))
 
 
 (defn- apply-routing-rule
-  [deps {:keys [call node response]}]
+  [deps {:keys [call node route-value]}]
   (let [{:keys [action-data]} call
         var-name (:varname node)
-        value (aget response "body")
-        new-data (assoc action-data var-name value)]
+        new-data (assoc action-data var-name route-value)]
     (merge {:ivr.call/action-data (assoc call :action-data new-data)}
            (node/go-to-next node deps))))
 

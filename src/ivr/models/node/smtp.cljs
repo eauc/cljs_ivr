@@ -18,15 +18,17 @@
 (defmethod node/enter-type "smtp"
   [{:keys [account-id] :as node}
    {{:keys [action-data]} :call deps :deps}]
-  (let [mail-options (select-keys node [:subject :to :attachment :text])
+  (let [{:keys [services]} deps
+        mail-options (select-keys node [:subject :to :attachment :text])
         mail-request
         {:ivr.web/request
-         {:method "POST"
-          :url (str "/smartccivrservices/account/" account-id "/mail")
-          :data {:context action-data
-                 :mailOptions mail-options}
-          :on-success [::send-mail-success {:node node}]
-          :on-error [::send-mail-error {:node node}]}}]
+         (services
+           {:type :ivr.services/send-mail
+            :account-id account-id
+            :context action-data
+            :options mail-options
+            :on-success [::send-mail-success {:node node}]
+            :on-error [::send-mail-error {:node node}]})}]
     (merge mail-request
            (node/go-to-next node deps))))
 

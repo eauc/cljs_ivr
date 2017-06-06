@@ -62,11 +62,18 @@
     result))
 
 
+(defn- default-handler
+  [as result]
+  (log "warn" (str "Undefined " as " result handler") {:result result}))
+
+
 (defn- handler->event [handler as result]
   (if (vector? handler)
     (let [[event-name event-payload] handler]
       [event-name (assoc event-payload as result)])
-    (handler result)))
+    (if (nil? handler)
+      (default-handler as result)
+      (handler result))))
 
 
 (defn- response->event [[success? result]

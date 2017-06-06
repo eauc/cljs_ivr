@@ -2,7 +2,6 @@
   (:require [cljs.spec :as spec]
             [ivr.db :as db]
             [ivr.libs.logger :as logger]
-            [ivr.services.routes :as routes]
             [ivr.specs.store]
             [re-frame.core :as re-frame]))
 

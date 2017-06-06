@@ -14,35 +14,35 @@
                 :id "node-id"
                 :script-id "script-id"
                 :queue "queue-id"}
+          acd #(assoc % :acd :query)
           verbs (fn [vs] {:verbs :create :data vs})
-          deps {:verbs verbs}
+          deps {:acd acd :verbs verbs}
           call {:info {:id "call-id"
                        :time "call-time"}}
           context {:call call :deps deps}]
       (is (= {:ivr.web/request
-              {:method "POST"
-               :url "/smartccacdlink/call/call-id/enqueue"
-               :data
-               {:queue_id "queue-id"
-                :ivr_fallback "/smartccivr/script/script-id/node/node-id/callback",
-                :callTime "call-time"},
+              {:acd :query
+               :type :ivr.acd/enqueue-call
+               :call call
+               :node_id "node-id",
+               :script_id "script-id",
+               :queue_id "queue-id",
                :on-success
                [:ivr.models.node.transfert-queue/play-waiting-sound
-                {:node node}]
+                {:node node}],
                :on-error
                [:ivr.models.node.transfert-queue/error-acd-enqueue
                 {:node node}]}}
              (node/enter-type node context)))
       (testing "play-waiting-sound"
-        (let [response #js {:body {:waitSound "waiting"}}]
-          (is (= {:ivr.routes/response
-                  {:verbs :create
-                   :data [{:type :ivr.verbs/loop-play
-                           :path "/cloudstore/file/waiting"}]}}
-                 (tq-node/play-waiting-sound
-                   deps
-                   {:node node
-                    :response response})))))
+        (is (= {:ivr.routes/response
+                {:verbs :create
+                 :data [{:type :ivr.verbs/loop-play
+                         :path "/cloudstore/file/waiting"}]}}
+               (tq-node/play-waiting-sound
+                 deps
+                 {:node node
+                  :wait-sound "waiting"}))))
       (testing "error-acd-enqueue"
         (is (= {:ivr.routes/response
                 {:verbs :create

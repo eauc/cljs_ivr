@@ -38,38 +38,39 @@
       (testing "eval-list-with-config"
         (let [node base-node
               config {:ringing_tone "ringing"}
-              params {}]
+              services #(assoc % :services :query)
+              deps {:config config
+                    :services services}
+              params {}
+              expected-config {:from "sip:anonymous@anonymous.invalid",
+                               :timeout 10,
+                               :record false,
+                               :waitingurl "/smartccivr/twimlets/loopPlay/ringing"}]
           (is (= {:ivr.web/request
-                  {:method "POST"
-                   :url "/smartccivrservices/account/account-id/destinationlist/list-id/eval",
-                   :data {}
+                  {:services :query
+                   :type :ivr.services/eval-destination-list
+                   :account-id "account-id"
+                   :list-id "list-id"
+                   :data nil
                    :on-success
                    [:ivr.models.node.transfert-list/transfert-call-to-list
-                    {:node node
-                     :config {:from "sip:anonymous@anonymous.invalid"
-                              :timeout 10
-                              :record false
-                              :waitingurl "/smartccivr/twimlets/loopPlay/ringing"}}]
+                    {:node node :config expected-config}],
                    :on-error
                    [:ivr.models.node.transfert-list/eval-list-error
-                    {:node node
-                     :config {:from "sip:anonymous@anonymous.invalid"
-                              :timeout 10
-                              :record false
-                              :waitingurl "/smartccivr/twimlets/loopPlay/ringing"}}]}}
+                    {:node node :config expected-config}]}}
                  (tl-node/eval-list-with-config
-                   {:config config}
+                   deps
                    {:node node :account {}}
                    {:params params})))
           (is (= {:eval :list}
                  (get-in
                    (tl-node/eval-list-with-config
-                     {:config config}
+                     deps
                      {:node node :eval-list {:eval :list} :account {}}
                      {:params params})
                    [:ivr.web/request :data])))
-          (let [config (merge config {:ringingTimeoutSec 5
-                                      :fromSda "CALLER"})
+          (let [deps (update deps :config merge {:ringingTimeoutSec 5
+                                                 :fromSda "CALLER"})
                 params (merge params {:from "from-number"
                                       :to "to-number"})]
             (is (= {:from "from-number"
@@ -78,12 +79,12 @@
                     :waitingurl "/smartccivr/twimlets/loopPlay/ringing"}
                    (get-in
                      (tl-node/eval-list-with-config
-                       {:config config}
+                       deps
                        {:node node :account {}}
                        {:params params})
                      [:ivr.web/request :on-success 1 :config]))))
-          (let [config (merge config {:ringingTimeoutSec 5
-                                      :fromSda "CALLER"})
+          (let [deps (update deps :config merge {:ringingTimeoutSec 5
+                                                 :fromSda "CALLER"})
                 account {:ringingTimeoutSec 15
                          :fromSda "CALLEE"
                          :record_enabled true
@@ -96,7 +97,7 @@
                     :waitingurl "/smartccivr/twimlets/loopPlay/account-ringing"}
                    (get-in
                      (tl-node/eval-list-with-config
-                       {:config config}
+                       deps
                        {:node node :account account}
                        {:params params})
                      [:ivr.web/request :on-success 1 :config]))))))
@@ -106,9 +107,9 @@
                       :record true
                       :waitingurl "/url/waiting"}
               node base-node
-              response #js {:body {:sda "eval-sda"
-                                   :param1 "val1"
-                                   :param2 "val2"}}]
+              list-value {:sda "eval-sda"
+                          :param1 "val1"
+                          :param2 "val2"}]
           (is (= {:ivr.routes/response
                   {:verbs :create
                    :data [{:type :ivr.verbs/dial-number
@@ -122,7 +123,7 @@
                  (tl-node/transfert-call-to-list
                    deps
                    {:config config :node node
-                    :response response})))))
+                    :list-value list-value})))))
       (testing "eval-list-error"
         (let [node (merge base-node {:next :42})]
           (is (= {:ivr.routes/response

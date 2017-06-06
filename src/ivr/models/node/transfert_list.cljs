@@ -49,18 +49,20 @@
 
 
 (defn- eval-list-with-config
-  [{:keys [config] :as coeffects}
+  [{:keys [config services] :as coeffects}
    {:keys [node eval-list account]}
    {:keys [params]}]
   (let [transfert-config (node/->transfert-config config account params)
         {account-id :account-id list-id :dest} node
         payload {:node node :config transfert-config}]
     {:ivr.web/request
-     {:method "POST"
-      :url (str "/smartccivrservices/account/" account-id "/destinationlist/" list-id "/eval")
-      :data (or eval-list {})
-      :on-success [::transfert-call-to-list payload]
-      :on-error [::eval-list-error payload]}}))
+     (services
+       {:type :ivr.services/eval-destination-list
+        :account-id account-id
+        :list-id list-id
+        :data eval-list
+        :on-success [::transfert-call-to-list payload]
+        :on-error [::eval-list-error payload]})}))
 
 (routes/reg-action
   ::eval-list-with-config
@@ -97,10 +99,9 @@
 
 
 (defn- transfert-call-to-list
-  [{:keys [verbs]} {:keys [config node response]}]
+  [{:keys [verbs]} {:keys [config node list-value]}]
   (let [{:keys [id script-id]} node
-        eval-list (aget response "body")
-        callback-query (eval-list->callback-query eval-list)
+        callback-query (eval-list->callback-query list-value)
         callback-url (url/absolute [:v1 :action :script-leave-node]
                                    {:script-id script-id
                                     :node-id id})
@@ -109,7 +110,7 @@
     {:ivr.routes/response
      (verbs
        [(merge {:type :ivr.verbs/dial-number
-                :number (:sda eval-list)
+                :number (:sda list-value)
                 :callbackurl (str callback-url callback-query)
                 :statusurl status-url}
                config)])}))

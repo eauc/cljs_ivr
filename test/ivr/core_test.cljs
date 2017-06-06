@@ -1,5 +1,7 @@
 (ns ivr.core-test
   (:require [clojure.test :as test]
+            ivr.models.acd-test
+            ivr.models.ivrservices-test
             ivr.models.node-test
             ivr.models.node.announcement-test
             ivr.models.node.dtmf-catch-test
@@ -24,7 +26,9 @@
 (enable-console-print!)
 
 (defn run-tests []
-  (test/run-tests 'ivr.models.node-test
+  (test/run-tests 'ivr.models.acd-test
+                  'ivr.models.ivrservices-test
+                  'ivr.models.node-test
                   'ivr.models.node.announcement-test
                   'ivr.models.node.dtmf-catch-test
                   'ivr.models.node.dtmf-catch-speak-test

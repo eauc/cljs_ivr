@@ -10,8 +10,10 @@
 
 (deftest smtp-node-model
   (testing "enter"
-    (let [verbs (fn [vs] {:verbs :create :data vs})
-          deps {:verbs verbs}
+    (let [services #(assoc % :services :query)
+          verbs (fn [vs] {:verbs :create :data vs})
+          deps {:services services
+                :verbs verbs}
           call {:action-data {:action :data}}
           context {:call call
                    :deps deps}
@@ -23,16 +25,17 @@
                 :text "text"
                 :attachment "attachment"}]
       (is (= {:ivr.web/request
-              {:method "POST"
-               :url "/smartccivrservices/account/account-id/mail"
-               :data {:context {:action :data}
-                      :mailOptions {:subject "subject"
-                                    :to "to"
-                                    :attachment "attachment"
-                                    :text "text"}}
+              {:services :query
+               :type :ivr.services/send-mail
+               :account-id "account-id"
+               :context {:action :data}
+               :options {:subject "subject"
+                         :to "to"
+                         :attachment "attachment"
+                         :text "text"}
                :on-success
                [:ivr.models.node.smtp/send-mail-success
-                {:node node}]
+                {:node node}],
                :on-error
                [:ivr.models.node.smtp/send-mail-error
                 {:node node}]}

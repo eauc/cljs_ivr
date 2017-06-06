@@ -20,19 +20,23 @@
               :varname :toto}
              (node/conform-type node)))))
   (testing "enter"
-    (let [node {:type "fetch"
+    (let [services #(assoc % :services :query)
+          deps {:services services}
+          node {:type "fetch"
                 :account-id "account-id"
                 :id_routing_rule "rule-id"}]
       (is (= {:ivr.web/request
-              {:method "POST"
-               :url "/smartccivrservices/account/account-id/routingrule/rule-id/eval"
+              {:services :query
+               :type :ivr.services/eval-routing-rule
+               :account-id "account-id"
+               :route-id "rule-id"
                :on-success
-               [:ivr.models.node.fetch/apply-routing-rule {:call "call"
-                                                           :node node}]
+               [:ivr.models.node.fetch/apply-routing-rule
+                {:call "call" :node node}]
                :on-error
-               [:ivr.models.node.fetch/error-routing-rule {:call "call"
-                                                           :node node}]}}
-             (node/enter-type node {:call "call"})))))
+               [:ivr.models.node.fetch/error-routing-rule
+                {:call "call" :node node}]}}
+             (node/enter-type node {:call "call" :deps deps})))))
   (testing "apply-routing-rule"
     (let [node {:type "fetch"
                 :account-id "account-id"
@@ -41,14 +45,14 @@
           call {:info {:id "call-id"}
                 :action-data {:action :data}}
           deps {:verbs (fn [vs] {:verbs :create :data vs})}
-          response #js {:body "rule_value"}
+          route-value "route_value"
           context {:node node
                    :call call
-                   :response response}]
+                   :route-value route-value}]
       (is (= {:ivr.call/action-data
               {:info {:id "call-id"}
                :action-data {:action :data
-                             :to_fetch "rule_value"}}
+                             :to_fetch "route_value"}}
               :ivr.routes/response
               {:verbs :create
                :data [{:type :ivr.verbs/hangup}]}}

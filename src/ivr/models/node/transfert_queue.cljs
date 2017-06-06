@@ -17,30 +17,27 @@
 
 (defmethod node/enter-type "transferqueue"
   [{:keys [id script-id queue] :as node}
-   {:keys [call params] :as context}]
-  (let [fallback-url (url/absolute [:v1 :action :script-leave-node]
-                                   {:script-id script-id
-                                    :node-id id})
+   {:keys [call deps params] :as context}]
+  (let [{:keys [acd]} deps
         acd-params (-> params
-                       (select-keys [:account_id :application_id :call_id :to :from])
-                       (merge {:queue_id queue
-                               :ivr_fallback fallback-url
-                               :callTime (get-in call [:info :time])}))]
+                       (select-keys [:account_id :application_id :to :from])
+                       (merge {:type :ivr.acd/enqueue-call
+                               :call call
+                               :node_id id
+                               :script_id script-id
+                               :queue_id queue
+                               :on-success [::play-waiting-sound {:node node}]
+                               :on-error [::error-acd-enqueue {:node node}]}))]
     {:ivr.web/request
-     {:method "POST"
-      :url (str "/smartccacdlink/call/" (get-in call [:info :id]) "/enqueue")
-      :data acd-params
-      :on-success [::play-waiting-sound {:node node}]
-      :on-error [::error-acd-enqueue {:node node}]}}))
+     (acd acd-params)}))
 
 
 (defn- play-waiting-sound
-  [{:keys [verbs]} {:keys [response]}]
-  (let [wait-sound (:waitSound (aget response "body"))]
-    {:ivr.routes/response
-     (verbs
-       [{:type :ivr.verbs/loop-play
-         :path (str "/cloudstore/file/" wait-sound)}])}))
+  [{:keys [verbs]} {:keys [wait-sound]}]
+  {:ivr.routes/response
+   (verbs
+     [{:type :ivr.verbs/loop-play
+       :path (str "/cloudstore/file/" wait-sound)}])})
 
 (routes/reg-action
   ::play-waiting-sound
