@@ -8,7 +8,9 @@
 	 :after (fn [] (stest/unstrument 'ivr.models.acd))})
 
 (deftest acd-model-test
-	(testing "enqueue call"
+
+
+  (testing "enqueue call"
 		(let [request (acd/query {:type :ivr.acd/enqueue-call
                               :call {:info {:id "call-id" :time "call-time"}}
                               :account_id "account-id"
@@ -32,7 +34,9 @@
                      :ivr_fallback "/smartccivr/script/script-id/node/node-id/callback"}
               :on-error [:error]}
              (dissoc request :on-success)))
+
+
       (testing "enqueue call success"
         (let [on-success (:on-success request)]
           (is (= [:success {:wait-sound "wait-sound"}]
-                 (on-success #js {:body {:waitSound "wait-sound"}}))))))))
+                 (on-success #js {:body {"waitSound" "wait-sound"}}))))))))

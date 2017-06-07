@@ -1,9 +1,7 @@
 (ns ivr.models.node.fetch
-  (:require [ivr.db :as db]
-            [ivr.libs.logger :as logger]
+  (:require [ivr.libs.logger :as logger]
             [ivr.models.node :as node]
-            [ivr.services.routes :as routes]
-            [re-frame.core :as re-frame]))
+            [ivr.services.routes :as routes]))
 
 (def log
   (logger/create "node.fetch"))
@@ -11,18 +9,17 @@
 
 (defmethod node/conform-type "fetch"
   [node]
-  (-> node
-      (update :varname keyword)))
+  node)
 
 
 (defmethod node/enter-type "fetch"
-  [{:keys [account-id id_routing_rule varname] :as node}
+  [{:strs [account_id id_routing_rule varname] :as node}
    {:keys [call deps] :as context}]
   (let [{:keys [services]} deps]
     {:ivr.web/request
      (services
        {:type :ivr.services/eval-routing-rule
-        :account-id account-id
+        :account-id account_id
         :route-id id_routing_rule
         :on-success [::apply-routing-rule {:call call :node node}]
         :on-error [::error-routing-rule {:call call :node node}]})}))
@@ -31,7 +28,7 @@
 (defn- apply-routing-rule
   [deps {:keys [call node route-value]}]
   (let [{:keys [action-data]} call
-        var-name (:varname node)
+        var-name (get node "varname")
         new-data (assoc action-data var-name route-value)]
     (merge {:ivr.call/action-data (assoc call :action-data new-data)}
            (node/go-to-next node deps))))
@@ -44,9 +41,9 @@
 (defn- error-routing-rule
   [deps {:keys [call node error]}]
   (let [{:keys [action-data]} call
-        var-name (:varname node)
+        var-name (get node "varname")
         new-data (assoc action-data var-name "__FAILED__")
-        rule-id (:id_routing_rule node)]
+        rule-id (get node "id_routing_rule")]
     (log "warn" "routing rule" {:error error :id rule-id})
     (merge {:ivr.call/action-data (assoc call :action-data new-data)}
            (node/go-to-next node deps))))

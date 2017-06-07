@@ -1,6 +1,7 @@
 (ns ivr.services.config.http
-  (:require [cljs.core.async :as async :refer [>!]]
+  (:require [cljs.core.async :as async]
             [cljs.nodejs :as nodejs]
+            [clojure.walk :as walk]
             [ivr.services.config.base :as base :refer [log]]
             [ivr.services.web :as web])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
@@ -20,7 +21,8 @@
         stop (atom false)
         on-http-success
         (fn [response]
-          (let [config (aget response "body")]
+          (let [config (-> (aget response "body")
+                           (walk/keywordize-keys))]
             (reset! stop true)
             {:desc (:path layer)
              :config config}))

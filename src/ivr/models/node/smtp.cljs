@@ -1,10 +1,7 @@
 (ns ivr.models.node.smtp
-  (:require [ivr.db :as db]
-            [ivr.libs.logger :as logger]
+  (:require [ivr.libs.logger :as logger]
             [ivr.models.node :as node]
-            [ivr.services.routes :as routes]
-            [re-frame.core :as re-frame]))
-
+            [ivr.services.routes :as routes]))
 
 (def log
   (logger/create "node.smtp"))
@@ -16,15 +13,15 @@
 
 
 (defmethod node/enter-type "smtp"
-  [{:keys [account-id] :as node}
+  [{:strs [account_id] :as node}
    {{:keys [action-data]} :call deps :deps}]
   (let [{:keys [services]} deps
-        mail-options (select-keys node [:subject :to :attachment :text])
+        mail-options (select-keys node ["subject" "to" "attachment" "text"])
         mail-request
         {:ivr.web/request
          (services
            {:type :ivr.services/send-mail
-            :account-id account-id
+            :account-id account_id
             :context action-data
             :options mail-options
             :on-success [::send-mail-success {:node node}]

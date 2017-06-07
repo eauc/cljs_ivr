@@ -14,25 +14,25 @@
           verbs (fn [vs] {:verbs :create :data vs})
           deps {:services services
                 :verbs verbs}
-          call {:action-data {:action :data}}
+          call {:action-data {"action" "data"}}
           context {:call call
                    :deps deps}
-          node {:type "smtp"
-                :account-id "account-id"
-                :script-id "script-id"
-                :to "to"
-                :subject "subject"
-                :text "text"
-                :attachment "attachment"}]
+          node {"type" "smtp"
+                "account_id" "account-id"
+                "script_id" "script-id"
+                "to" "to"
+                "subject" "subject"
+                "text" "text"
+                "attachment" "attachment"}]
       (is (= {:ivr.web/request
               {:services :query
                :type :ivr.services/send-mail
                :account-id "account-id"
-               :context {:action :data}
-               :options {:subject "subject"
-                         :to "to"
-                         :attachment "attachment"
-                         :text "text"}
+               :context {"action" "data"}
+               :options {"subject" "subject"
+                         "to" "to"
+                         "attachment" "attachment"
+                         "text" "text"}
                :on-success
                [:ivr.models.node.smtp/send-mail-success
                 {:node node}],
@@ -48,5 +48,5 @@
                       :path "/smartccivr/script/script-id/node/42"}]}
              (:ivr.routes/response
               (node/enter-type
-                (merge node {:next :42})
+                (merge node {"next" "42"})
                 context)))))))

@@ -10,10 +10,10 @@
 
 (deftest transfert-queue-node
   (testing "enter"
-    (let [node {:type "transferqueue"
-                :id "node-id"
-                :script-id "script-id"
-                :queue "queue-id"}
+    (let [node {"type" "transferqueue"
+                "id" "node-id"
+                "script_id" "script-id"
+                "queue" "queue-id"}
           acd #(assoc % :acd :query)
           verbs (fn [vs] {:verbs :create :data vs})
           deps {:acd acd :verbs verbs}
@@ -34,6 +34,8 @@
                [:ivr.models.node.transfert-queue/error-acd-enqueue
                 {:node node}]}}
              (node/enter-type node context)))
+
+
       (testing "play-waiting-sound"
         (is (= {:ivr.routes/response
                 {:verbs :create
@@ -43,6 +45,8 @@
                  deps
                  {:node node
                   :wait-sound "waiting"}))))
+
+
       (testing "error-acd-enqueue"
         (is (= {:ivr.routes/response
                 {:verbs :create

@@ -12,8 +12,7 @@
   [json-string & args]
   (->> (or json-string "{}")
        (logger/default "silly" "json->clj")
-       (transit/read json-reader)
-       walk/keywordize-keys))
+       (transit/read json-reader)))
 
 
 (def json-writer

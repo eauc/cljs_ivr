@@ -1,69 +1,58 @@
 (ns ivr.models.node
   (:require [cljs.spec :as spec]
-            [ivr.models.store :as store]
-            [ivr.models.verbs :as verbs]
+            [clojure.walk :as walk]
+            [ivr.libs.logger :as logger]
             [ivr.routes.url :as url]
             [ivr.services.routes :as routes]
             [ivr.specs.node :as node-specs]
-            [ivr.specs.script]
             [re-frame.core :as re-frame]))
+
+(def log
+  (logger/create "node"))
 
 
 (defn- node-type [node]
-  (or (node-specs/known-types (:type node))
+  (or (node-specs/known-types (get node "type"))
       :unknown))
 
 
-(spec/fdef conform-type
-           :args (spec/cat :data map?)
-           :ret :ivr.script/node)
 (defmulti conform-type node-type)
 
 
 (defmethod conform-type :unknown
-  [node] node)
+  [node]
+  (log "warn" "conform-unknown" node))
 
 
-(spec/fdef conform
-           :args (spec/cat :node map?
-                           :options map?)
-           :ret :ivr.script/node)
 (defn conform [node {:keys [id account-id script-id]}]
-  (if (map? node)
-    (-> node
-        (merge {:id id
-                :account-id account-id
-                :script-id script-id})
-        (update :next keyword)
-        (conform-type))
-    node))
+  (cond-> node
+    (map? node) (-> (merge {"id" id
+                            "account_id" account-id
+                            "script_id" script-id})
+                    (conform-type))))
 
 
 (defn conform-set [map key]
   (let [set (get map key)
-        value (:value set)
-        varname (:varname set)]
+        value (get set "value")
+        varname (get set "varname")]
     (if (and set
              (string? value)
              (string? varname) (not (empty? varname)))
       (if (re-find #"^\$" value)
         (assoc map key {:type :ivr.node.preset/copy
-                        :from (keyword (subs value 1))
-                        :to (keyword varname)})
+                        :from (subs value 1)
+                        :to varname})
         (assoc map key {:type :ivr.node.preset/set
-                        :value value
-                        :to (keyword varname)}))
+                        :to varname
+                        :value value}))
       (dissoc map key))))
 
 
 (defn conform-preset [node]
-  (conform-set node :preset))
+  (conform-set node "preset"))
 
 
-;; (spec/fdef enter-type
-;;            :args (spec/cat :node :ivr.script/node
-;;                            :options :ivr.node/options)
-;;            :ret map?)
 (defmulti enter-type #(node-type %))
 
 
@@ -82,10 +71,6 @@
    (assoc coeffects :enter-node enter-type)))
 
 
-;; (spec/fdef leave-type
-;;            :args (spec/cat :node :ivr.script/node
-;;                            :options :ivr.node/options)
-;;            :ret map?)
 (defmulti leave-type #(node-type %))
 
 
@@ -117,33 +102,28 @@
     data))
 
 
-;; (spec/fdef apply-preset
-;;            :args (spec/cat :node :ivr.script/node
-;;                            :options :ivr.node/options)
-;;            :ret map?)
 (defn apply-preset
-  [{:keys [preset] :as node}
+  [{:strs [preset] :as node}
    {:keys [action-data] :as call}]
   (let [new-data (apply-data-set action-data preset)]
+    (log "debug" "preset"
+         {:node node :call call
+          :new-data new-data})
     (if-not (= new-data action-data)
       {:ivr.call/action-data (assoc call :action-data new-data)}
       {})))
 
 
-;; (spec/fdef go-to-next
-;;            :args (spec/cat :node :ivr.script/node
-;;                            :options :ivr.node/options)
-;;            :ret map?)
 (defn- go-to-next
-  [{:keys [script-id next] :as node}
+  [{:strs [script_id next] :as node}
    {:keys [verbs] :as deps}]
   (if next
     {:ivr.routes/response
      (verbs [{:type :ivr.verbs/redirect
               :path (url/absolute
-                     [:v1 :action :script-enter-node]
-                     {:script-id script-id
-                      :node-id (subs (str next) 1)})}])}
+                      [:v1 :action :script-enter-node]
+                      {:script-id script_id
+                       :node-id next})}])}
     {:ivr.routes/response
      (verbs [{:type :ivr.verbs/hangup}])}))
 
@@ -153,13 +133,13 @@
   (let [config (merge {:fromSda "CALLEE"
                        :ringingTimeoutSec 10}
                       ivr-config
-                      account)
+                      (walk/keywordize-keys account))
         from (or (if (= "CALLER" (:fromSda config))
-                   (:from params)
-                   (:to params))
+                   (get params "from")
+                   (get params "to"))
                  "sip:anonymous@anonymous.invalid")
-        record-enabled (if (contains? account :record_enabled)
-                         (:record_enabled account)
+        record-enabled (if (contains? account "record_enabled")
+                         (get account "record_enabled")
                          false)
         waiting-url (str "/smartccivr/twimlets/loopPlay/" (:ringing_tone config))]
     {:from from

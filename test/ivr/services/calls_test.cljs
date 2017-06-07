@@ -6,9 +6,11 @@
 (deftest calls-service
   (testing "find-or-create-call"
     (let [db {:calls {"call1" {:id "call1"}}}
-          params {:account_id "account-id"
-                  :call_id "new-call"
-                  :script_id "script-id"}]
+          params {"account_id" "account-id"
+                  "call_id" "new-call"
+                  "script_id" "script-id"}]
+
+
       (testing "call does not exists, no create?"
         (is (= {:ivr.routes/response
                 {:status 404
@@ -17,6 +19,8 @@
                         :message "Call not found"
                         :cause {:call-id "new-call"}}}}
                (calls/find-or-create-call {:db db} {:create? false} {:params params}))))
+
+
       (testing "call does not exists, missing params for creation"
         (is (= {:ivr.routes/response
                 {:status 400
@@ -27,7 +31,7 @@
                                 :account-id "missing"
                                 :script-id "script-id"}}}}
                (calls/find-or-create-call {:db db} {:create? true}
-                                          {:params (merge params {:account_id nil})})))
+                                          {:params (merge params {"account_id" nil})})))
         (is (= {:ivr.routes/response
                 {:status 400
                  :data {:status 400
@@ -37,7 +41,7 @@
                                 :account-id "account-id"
                                 :script-id "missing"}}}}
                (calls/find-or-create-call {:db db} {:create? true}
-                                          {:params (merge params {:script_id nil})})))
+                                          {:params (merge params {"script_id" nil})})))
         (is (= {:ivr.routes/response
                 {:status 400
                  :data {:status 400
@@ -47,27 +51,31 @@
                                 :account-id "account-id"
                                 :script-id "script-id"}}}}
                (calls/find-or-create-call {:db db} {:create? true}
-                                          {:params (merge params {:call_id nil})}))))
+                                          {:params (merge params {"call_id" nil})}))))
+
+
       (testing "call does not exits, create success"
         (is (= {:db {:calls {"call1" {:id "call1"}
                              "new-call" {:info {:id "new-call"
                                                 :account-id "account-id"
                                                 :script-id "script-id"}
                                          :action-data {}}}}
-                :ivr.routes/params {:account_id "account-id"
-                                    :call_id "new-call"
-                                    :script_id "script-id"
-                                    :call {:info {:id "new-call"
-                                                  :account-id "account-id"
-                                                  :script-id "script-id"}
-                                           :action-data {}}}
+                :ivr.routes/params {"account_id" "account-id"
+                                    "call_id" "new-call"
+                                    "script_id" "script-id"
+                                    "call" {:info {:id "new-call"
+                                                   :account-id "account-id"
+                                                   :script-id "script-id"}
+                                            :action-data {}}}
                 :ivr.routes/next nil}
                (calls/find-or-create-call {:db db} {:create? true} {:params params}))))
+
+
       (testing "call exits, proceed"
-        (is (= {:ivr.routes/params {:account_id "account-id"
-                                    :call_id "call1"
-                                    :script_id "script-id"
-                                    :call {:id "call1"}}
+        (is (= {:ivr.routes/params {"account_id" "account-id"
+                                    "call_id" "call1"
+                                    "script_id" "script-id"
+                                    "call" {:id "call1"}}
                 :ivr.routes/next nil}
                (calls/find-or-create-call {:db db} {:create? true}
-                                          {:params (merge params {:call_id "call1"})})))))))
+                                          {:params (merge params {"call_id" "call1"})})))))))

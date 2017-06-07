@@ -13,7 +13,7 @@
 
 
 (defn- try-to-create-call
-  [db {:keys [account_id call_id script_id] :as params}]
+  [db {:strs [account_id call_id script_id] :as params}]
   (if (or (nil? account_id)
           (nil? call_id)
           (nil? script_id))
@@ -29,13 +29,13 @@
                                  :account-id account_id
                                  :script-id script_id})]
       {:db (update db :calls assoc call_id call)
-       :ivr.routes/params (assoc params :call call)
+       :ivr.routes/params (assoc params "call" call)
        :ivr.routes/next nil})))
 
 
 (defn find-or-create-call
   [{:keys [db]} {:keys [create?]}
-   {{:keys [call_id] :as params} :params}]
+   {{:strs [call_id] :as params} :params}]
   (let [call (get-in db [:calls call_id])]
     (cond
       (and (nil? call)
@@ -46,7 +46,7 @@
                               :message "Call not found"
                               :cause {:call-id call_id}})}
       (nil? call) (try-to-create-call db params)
-      :else {:ivr.routes/params (assoc params :call call)
+      :else {:ivr.routes/params (assoc params "call" call)
              :ivr.routes/next nil})))
 
 

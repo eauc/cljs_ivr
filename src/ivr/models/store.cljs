@@ -17,9 +17,8 @@
 
 
 (defn- get-account-success
-  [on-success response]
-  (let [account (or (aget response "body") {})
-        [event-name event-payload] on-success]
+  [[event-name event-payload] response]
+  (let [account (or (aget response "body") {})]
     [event-name (assoc event-payload :account account)]))
 
 
@@ -32,9 +31,8 @@
 
 
 (defn- get-script-success
-  [on-success response]
-  (let [script (or (aget response "body") {})
-        [event-name event-payload] on-success]
+  [[event-name event-payload] response]
+  (let [script (or (aget response "body") {})]
     [event-name (assoc event-payload :script script)]))
 
 
@@ -50,7 +48,7 @@
   [query response]
   (let [{:keys [account-id script-id name on-success]} query
         body (or (aget response "body") {})]
-    (if (= 0 (or (get-in body [:meta :total_count]) 0))
+    (if (= 0 (or (get-in body ["meta" "total_count"]) 0))
       [:ivr.routes/error
        {:status 500
         :statusCode "sound_not_found"
@@ -58,7 +56,7 @@
         :cause {:account-id account-id
                 :script-id script-id
                 :name name}}]
-      (let [id (get-in body [:objects 0 :_id])
+      (let [id (get-in body ["objects" 0 "_id"])
             url (str "/cloudstore/file/" id)
             [on-success-event on-success-payload] on-success]
         [on-success-event (assoc on-success-payload :sound-url url)]))))

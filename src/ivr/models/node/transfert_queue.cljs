@@ -1,10 +1,8 @@
 (ns ivr.models.node.transfert-queue
-  (:require [ivr.db :as db]
+  (:require [clojure.walk :as walk]
             [ivr.libs.logger :as logger]
             [ivr.models.node :as node]
-            [ivr.routes.url :as url]
-            [ivr.services.routes :as routes]
-            [re-frame.core :as re-frame]))
+            [ivr.services.routes :as routes]))
 
 (def log
   (logger/create "node.transfert-queue"))
@@ -16,18 +14,20 @@
 
 
 (defmethod node/enter-type "transferqueue"
-  [{:keys [id script-id queue] :as node}
+  [{:strs [id script_id queue] :as node}
    {:keys [call deps params] :as context}]
   (let [{:keys [acd]} deps
-        acd-params (-> params
-                       (select-keys [:account_id :application_id :to :from])
-                       (merge {:type :ivr.acd/enqueue-call
-                               :call call
-                               :node_id id
-                               :script_id script-id
-                               :queue_id queue
-                               :on-success [::play-waiting-sound {:node node}]
-                               :on-error [::error-acd-enqueue {:node node}]}))]
+        acd-params
+        (-> params
+            (select-keys ["account_id" "application_id" "to" "from"])
+            (walk/keywordize-keys)
+            (merge {:type :ivr.acd/enqueue-call
+                    :call call
+                    :node_id id
+                    :script_id script_id
+                    :queue_id queue
+                    :on-success [::play-waiting-sound {:node node}]
+                    :on-error [::error-acd-enqueue {:node node}]}))]
     {:ivr.web/request
      (acd acd-params)}))
 

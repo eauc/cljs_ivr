@@ -55,7 +55,7 @@
 
 
 
-(defn explain [config-info {:keys [path]}]
+(defn explain [config-info {:strs [path]}]
   (if (nil? path)
     config-info
     (let [path-keys (mapv keyword (str/split path #"\."))

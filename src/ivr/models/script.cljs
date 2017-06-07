@@ -21,8 +21,8 @@
 
 (defn- resolve-event
   [{:keys [store]} {:keys [params]}]
-  (let [account-id (:account_id params)
-        script-id (:script_id params)
+  (let [account-id (get params "account_id")
+        script-id (get params "script_id")
         on-success [::resolve-success {:account-id account-id}]
         on-error [::resolve-error {:script-id script-id}]]
     {:ivr.web/request
@@ -44,17 +44,19 @@
            :ret :ivr.script/script)
 (defn conform [script {:keys [account-id]}]
   (-> script
-      (assoc :account-id account-id)
-      (update :start #(if (nil? %) nil (keyword (str %))))
-      (update :nodes #(into {} (for [[k v] %] [k (node/conform v {:id (subs (str k) 1)
-                                                                  :script-id (:id script)
-                                                                  :account-id account-id})])))))
+      (assoc "account_id" account-id)
+      (cond->
+          (contains? script "start") (update "start" str))
+      (update "nodes" #(into {} (for [[k v] %]
+                                  [k (node/conform v {:id k
+                                                      :script-id (get script "id")
+                                                      :account-id account-id})])))))
 
 
 (defn resolve-success
   [_ {:keys [account-id script]} {:keys [params]}]
   (let [script (conform script {:account-id account-id})]
-    {:ivr.routes/params (assoc params :script script)
+    {:ivr.routes/params (assoc params "script" script)
      :ivr.routes/next nil}))
 
 (routes/reg-action
@@ -79,7 +81,7 @@
 (defn- enter-node-id
   [script node-id {:keys [deps] :as context}]
   (let [{:keys [enter-node]} deps
-        node (get-in script [:nodes node-id])]
+        node (get-in script ["nodes" node-id])]
     (if (nil? node)
       {:ivr.routes/response
        (routes/error-response
@@ -92,8 +94,8 @@
 
 (defn start-route
   [deps {:keys [params] :as route}]
-  (let [{:keys [script call]} params
-        start-index (:start script)]
+  (let [{:strs [script call]} params
+        start-index (get script "start")]
     (if (nil? start-index)
       {:ivr.routes/response
        (routes/error-response
@@ -112,8 +114,8 @@
 
 (defn enter-node-route
   [deps {:keys [params] :as route}]
-  (let [{:keys [script call node_id]} params]
-    (enter-node-id script (keyword node_id)
+  (let [{:strs [script call node_id]} params]
+    (enter-node-id script node_id
                    {:call call :params params :deps deps})))
 
 (routes/reg-action
@@ -125,8 +127,8 @@
 (defn leave-node-route
   [{:keys [leave-node] :as deps}
    {:keys [params] :as route}]
-  (let [{:keys [script call node_id]} params
-        node (get-in script [:nodes (keyword node_id)])]
+  (let [{:strs [script call node_id]} params
+        node (get-in script ["nodes" node_id])]
     (if (nil? node)
       {:ivr.routes/response
        (routes/error-response

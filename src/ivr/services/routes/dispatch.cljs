@@ -17,11 +17,10 @@
 
 
 (defn- refresh-route-params [{:keys [req] :as route}]
-  (let [express-params (-> (aget req "params")
-                           (js->clj :keywordize-keys true))
+  (let [express-params (js->clj (aget req "params"))
         params (-> (get-route-params route)
                    (or (let [body (json->clj (aget req "text"))
-                             query (js->clj (aget req "query") :keywordize-keys true)]
+                             query (js->clj (aget req "query"))]
                          (merge body query)))
                    (merge express-params))]
     (->> params

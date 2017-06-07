@@ -12,7 +12,8 @@
 
 (defn- enqueue-call-success
   [[event-name event-payload] response]
-  (let [wait-sound (:waitSound (aget response "body"))]
+  (let [wait-sound (-> (aget response "body")
+                       (get "waitSound"))]
     [event-name (assoc event-payload :wait-sound wait-sound)]))
 
 

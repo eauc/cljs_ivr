@@ -1,7 +1,6 @@
-- conform cond->
-- instrumenter ivr.node ns durant les tests node/types
-  - spec des methods des nodes
+- refonte spec
+  - instrumenter ivr.node ns durant les tests node/types
 - callTime
-- multimethod apply-set + set multiple variables
-- do not keywordize json keys everytime
-- ivrservices/acdlink models
+- multimethod/records apply-set + set multiple variables
+- replace multimethods with records/protocols ?
+- web request replace channel with promise ?

@@ -129,7 +129,7 @@ GET http://localhost:3000/smartccivr/script/1234/node/9?account_id=0007&call_id=
 # TransferSda
 # Dial dest-sda
 
-GET http://localhost:3000/smartccivr/script/1234/node/10?account_id=0007&call_id=2234
+GET http://localhost:3000/smartccivr/script/1234/node/10?account_id=0007&call_id=2234&from=from-sda&to=to-sda
 
 # TransferSda leave completed
 # Hangup
