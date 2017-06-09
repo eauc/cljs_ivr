@@ -2,7 +2,8 @@
 	(:require [clojure.test :as test :refer-macros [async deftest is run-tests testing use-fixtures]]
 						[cljs.spec.test :as stest]
 						[ivr.models.node :as node]
-						[ivr.models.script :as script]))
+						[ivr.models.script :as script]
+            [ivr.models.node-set :as node-set]))
 
 (use-fixtures :once
 	{:before (fn [] (stest/instrument 'ivr.models.node))
@@ -32,9 +33,8 @@
 								"id" "node-id"
 								"account_id" "account-id"
 								"script_id" "script-id"
-								"preset" {:type :ivr.node.preset/set
-													:value "value"
-													:to "to_var"}}
+								"preset" [{:value "value"
+                           :to "to_var"}]}
 							 (node/conform {"type" "announcement"
 															"preset" {"value" "value"
 																				"varname" "to_var"}}
@@ -45,9 +45,8 @@
 								"id" "node-id"
 								"account_id" "account-id"
 								"script_id" "script-id"
-								"preset" {:type :ivr.node.preset/copy
-													:from "from_var"
-													:to "to_var"}}
+								"preset" [{:from "from_var"
+                           :to "to_var"}]}
 							 (node/conform {"type" "announcement"
 															"preset" {"value" "$from_var"
 																				"varname" "to_var"}}
@@ -84,9 +83,9 @@
 											"account_id" "account-id"
 											"script_id" "script-id"
 											"soundname" "sound"
-											"preset" {:type :ivr.node.preset/set
-																:to "to_var"
-																:value "set_value"}}]
+											"preset" [(node-set/map->SetEntry
+                                  {:to "to_var"
+                                   :value "set_value"})]}]
 						(is (= {:info {:id "call-id"}
 										:action-data {"action" "data"
 																	"to_var" "set_value"}}
@@ -97,12 +96,15 @@
 											"account-id" "account-id"
 											"script-id" "script-id"
 											"soundname" "sound"
-											"preset" {:type :ivr.node.preset/copy
-																:to "to_var"
-																:from "action"}}]
+											"preset" [(node-set/map->SetEntry
+                                  {:to "action"
+                                   :value "to_value"})
+                                (node-set/map->CopyEntry
+                                  {:to "to_var"
+                                   :from "action"})]}]
 						(is (= {:info {:id "call-id"}
-										:action-data {"action" "data"
-																	"to_var" "data"}}
+										:action-data {"action" "to_value"
+																	"to_var" "to_value"}}
 									 (:ivr.call/action-data
 										(node/enter-type node options))))))))
 

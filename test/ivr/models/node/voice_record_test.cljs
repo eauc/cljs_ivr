@@ -2,7 +2,8 @@
 	(:require [cljs.spec.test :as stest]
 						[clojure.test :as test :refer-macros [async deftest is run-tests testing use-fixtures]]
 						[ivr.models.node :as node]
-						[ivr.models.node.voice-record :as vr-node]))
+						[ivr.models.node.voice-record :as vr-node]
+            [ivr.models.node-set :as node-set]))
 
 (use-fixtures :once
 	{:before (fn [] (stest/instrument 'ivr.models.node.voice-record))
@@ -29,9 +30,7 @@
 		(is (= {"type" "voicerecord"
 						"varname" "to_record"
 						"case" {"validate" {"next" "43"
-																"set" {:type :ivr.node.preset/set
-																			 :to "to_var"
-																			 :value "value"}}}}
+																"set" [{:to "to_var" :value "value"}]}}}
 					 (node/conform-type {"type" "voicerecord"
 															 "varname" "to_record"
 															 "case" {"validate" {"next" "43"
@@ -39,9 +38,7 @@
 																													"value" "value"}}}})))
 		(is (= {"type" "voicerecord"
 						"varname" "to_record"
-						"case" {"validate" {"set" {:type :ivr.node.preset/copy
-																			 :to "to_var"
-																			 :from "from_var"}}}}
+						"case" {"validate" {"set" [{:to "to_var" :from "from_var"}]}}}
 					 (node/conform-type {"type" "voicerecord"
 															 "varname" "to_record"
 															 "case" {"validate" {"set" {"varname" "to_var"
@@ -126,9 +123,9 @@
 																						 :info {:id "call-id"}}
 																			:params params})]
 					(let [node (merge node {"case" {"validate" {"next" "44"
-																											"set" {:type :ivr.node.preset/copy
-																														 :from "record_var"
-																														 :to "to_var"}}}})]
+																											"set" [(node-set/map->CopyEntry
+                                                               {:from "record_var"
+                                                                :to "to_var"})]}}})]
 						(is (= {:ivr.call/action-data
 										{:info {:id "call-id"}
 										 :action-data {"action" "data"
@@ -140,9 +137,9 @@
 									 (node/leave-type node context))))
 
 
-					(let [node (merge node {"case" {"validate" {"set" {:type :ivr.node.preset/set
-																														 :value "set_value"
-																														 :to "to_var"}}}})]
+					(let [node (merge node {"case" {"validate" {"set" [(node-set/map->SetEntry
+                                                               {:value "set_value"
+                                                                :to "to_var"})]}}})]
 						(is (= {:ivr.call/action-data
 										{:info {:id "call-id"}
 										 :action-data {"action" "data"

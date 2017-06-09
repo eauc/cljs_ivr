@@ -1,10 +1,11 @@
 (ns ivr.models.node.route
-  (:require [ivr.models.node :as node]))
+  (:require [ivr.models.node :as node]
+            [ivr.models.node-set :as node-set]))
 
 (defn- conform-match [match]
   (if (string? match)
     {"next" match}
-    (node/conform-set match "set")))
+    (node-set/conform-set match "set")))
 
 
 (defn- conform-case [node]
@@ -21,13 +22,9 @@
 (defmethod node/enter-type "route"
   [{:strs [varname case] :as node}
    {:keys [call deps] :as context}]
-  (let [action-data (:action-data call)
-        {:strs [next set]} (->> (get action-data varname)
+  (let [{:strs [next set]} (->> (get-in call [:action-data varname])
                                 (get case))
-        new-data (node/apply-data-set action-data set)
-        update-action-data (if-not (= action-data new-data)
-                             {:ivr.call/action-data (assoc call :action-data new-data)}
-                             {})
+        update-action-data (node-set/apply-set set call)
         result (node/go-to-next (assoc node "next" next) deps)]
     (merge update-action-data result)))
 

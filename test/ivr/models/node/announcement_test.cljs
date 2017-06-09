@@ -24,9 +24,7 @@
 							"id" "node-id"
 							"account_id" "account-id"
 							"script_id" "script-id"
-              "preset" {:type :ivr.node.preset/set
-                        :to "to_var"
-                        :value "to_value"}}
+              "preset" [{:to "to_var" :value "to_value"}]}
 						 (node/conform {"type" "announcement"
                             "preset" {"value" "to_value"
                                       "varname" "to_var"}}

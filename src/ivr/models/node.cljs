@@ -32,27 +32,6 @@
                     (conform-type))))
 
 
-(defn conform-set [map key]
-  (let [set (get map key)
-        value (get set "value")
-        varname (get set "varname")]
-    (if (and set
-             (string? value)
-             (string? varname) (not (empty? varname)))
-      (if (re-find #"^\$" value)
-        (assoc map key {:type :ivr.node.preset/copy
-                        :from (subs value 1)
-                        :to varname})
-        (assoc map key {:type :ivr.node.preset/set
-                        :to varname
-                        :value value}))
-      (dissoc map key))))
-
-
-(defn conform-preset [node]
-  (conform-set node "preset"))
-
-
 (defmulti enter-type #(node-type %))
 
 
@@ -87,31 +66,6 @@
  :ivr.node/leave-cofx
  (fn leave-cofx [coeffects _]
    (assoc coeffects :leave-node leave-type)))
-
-
-(defn- apply-data-set
-  [data set]
-  (case (:type set)
-    :ivr.node.preset/copy
-    (let [{:keys [from to]} set
-          value (get data from)]
-      (assoc data to value))
-    :ivr.node.preset/set
-    (let [{:keys [to value]} set]
-      (assoc data to value))
-    data))
-
-
-(defn apply-preset
-  [{:strs [preset] :as node}
-   {:keys [action-data] :as call}]
-  (let [new-data (apply-data-set action-data preset)]
-    (log "debug" "preset"
-         {:node node :call call
-          :new-data new-data})
-    (if-not (= new-data action-data)
-      {:ivr.call/action-data (assoc call :action-data new-data)}
-      {})))
 
 
 (defn- go-to-next

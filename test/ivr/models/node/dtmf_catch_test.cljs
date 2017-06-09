@@ -2,7 +2,8 @@
 	(:require [cljs.spec.test :as stest]
 						[clojure.test :as test :refer-macros [async deftest is run-tests testing use-fixtures]]
 						[ivr.models.node :as node]
-						[ivr.models.node.dtmf-catch :as dtmf-catch-node]))
+						[ivr.models.node.dtmf-catch :as dtmf-catch-node]
+						[ivr.models.node-set :as node-set]))
 
 (use-fixtures :once
 	{:before (fn [] (stest/instrument 'ivr.models.node.dtmf-catch))
@@ -52,7 +53,28 @@
 							 (node/conform
 								 {"type" "dtmfcatch"
 									"max_attempts" "5"}
-								 options)))))
+								 options))))
+
+
+			(testing "case.dtmf_ok"
+				(is (= {"dtmf_ok" {"next" "42"}}
+							 (get
+								 (node/conform
+									 {"type" "dtmfcatch"
+										"case" {"dtmf_ok" "42"}}
+									 options)
+								 "case")))
+				(is (= {"dtmf_ok" {"next" "42"
+													 "set" [{:to "set_var" :value "set_value"}
+																	{:to "copy_to" :from "copy_from"}]}}
+							 (get
+								 (node/conform
+									 {"type" "dtmfcatch"
+										"case" {"dtmf_ok" {"next" "42"
+																			 "set" [{"varname" "set_var" "value" "set_value"}
+																							{"varname" "copy_to" "value" "$copy_from"}]}}}
+									 options)
+								 "case")))))
 
 
 		(let [base-node {"type" "dtmfcatch"
@@ -245,16 +267,15 @@
 
 
 							(testing "dtmf_ok.set"
-								(is (= {:info {:id "call-id"}
-												:action-data {"action" "data"
-																			"to_var" ["4" "2"]
-																			"set_var" "set_value"}}
-											 (get (node/leave-type
-															(merge node {"case" {"dtmf_ok" {"set" {:type :ivr.node.preset/set
-																																		 :to "set_var"
-																																		 :value "set_value"}}}})
-															context)
-														:ivr.call/action-data))))
+								(let [node (merge node {"case" {"dtmf_ok" {"set" [(node-set/map->SetEntry
+																																		{:to "set_var"
+																																		 :value "set_value"})]}}})]
+									(is (= {:info {:id "call-id"}
+													:action-data {"action" "data"
+																				"to_var" ["4" "2"]
+																				"set_var" "set_value"}}
+												 (get (node/leave-type node context)
+															:ivr.call/action-data)))))
 
 
 							(testing "dtmf_ok.next"

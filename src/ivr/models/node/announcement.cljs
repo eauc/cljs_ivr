@@ -1,6 +1,7 @@
 (ns ivr.models.node.announcement
   (:require [ivr.libs.logger :as logger]
             [ivr.models.node :as node]
+            [ivr.models.node-set :as node-set]
             [ivr.routes.url :as url]
             [ivr.services.routes :as routes]))
 
@@ -10,14 +11,14 @@
 
 (defmethod node/conform-type "announcement"
   [node]
-  (node/conform-preset node))
+  (node-set/conform-preset node))
 
 
 (defmethod node/enter-type "announcement"
   [{:strs [account_id script_id disabled soundname] :as node}
    {:keys [call deps] :as context}]
   (let [{:keys [store]} deps
-        update-action-data (node/apply-preset node call)
+        update-action-data (node-set/apply-preset node call)
         result (if disabled
                  (node/go-to-next node deps)
                  {:ivr.web/request

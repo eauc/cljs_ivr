@@ -2,7 +2,8 @@
 	(:require [cljs.spec.test :as stest]
 						[clojure.test :as test :refer-macros [async deftest is run-tests testing use-fixtures]]
 						[ivr.models.node :as node]
-						[ivr.models.node.route :as route-node]))
+						[ivr.models.node.route :as route-node]
+            [ivr.models.node-set :as node-set]))
 
 (use-fixtures :once
 	{:before (fn [] (stest/instrument 'ivr.models.node.route))
@@ -36,12 +37,9 @@
 		(is (= {"type" "route"
 						"varname" "toto"
 						"case" {"value1" {"next" "42"}
-										"value2" {"set" {:type :ivr.node.preset/set
-																		 :value "titi"
-																		 :to "toto"}}
+										"value2" {"set" [{:value "titi" :to "toto"}]}
 										"value3" {"next" "56"
-															"set" {:type :ivr.node.preset/copy
-																		 :from "toto" :to "tutu"}}}}
+															"set" [{:from "toto" :to "tutu"}]}}}
 					 (node/conform-type
 						 {"type" "route"
 							"varname" "toto"
@@ -63,16 +61,16 @@
 										 "script_id" "script-id"
 										 "varname" "toto"
 										 "case" {"value1" {"next" "42"}
-														 "value2" {"set" {:type :ivr.node.preset/copy
-																							:to "to_fetch"
-																							:from "titi"}}
-														 "value3" {"set" {:type :ivr.node.preset/set
-																							:to "to_fetch"
-																							:value "val3"}}
+														 "value2" {"set" [(node-set/map->CopyEntry
+                                                {:to "to_fetch"
+                                                 :from "titi"})]}
+														 "value3" {"set" [(node-set/map->SetEntry
+                                                {:to "to_fetch"
+                                                 :value "val3"})]}
 														 "value4" {"next" "44"
-																			 "set" {:type :ivr.node.preset/set
-																							:to "to_fetch"
-																							:value "val4"}}}}]
+																			 "set" [(node-set/map->SetEntry
+                                                {:to "to_fetch"
+                                                 :value "val4"})]}}}]
 			(is (= {:ivr.routes/response
 							{:verbs :create
 							 :data [{:type :ivr.verbs/hangup}]}}
