@@ -1,8 +1,6 @@
 (ns ivr.models.store
   (:require [cljs.spec :as spec]
-            [ivr.db :as db]
-            [ivr.libs.logger :as logger]
-            [ivr.specs.store]
+            [ivr.services.routes :as routes]
             [re-frame.core :as re-frame]))
 
 (spec/fdef query
@@ -14,6 +12,16 @@
   :ivr.store/cofx
   (fn store-cofx [coeffects _]
     (assoc coeffects :store query)))
+
+
+(defmethod query :default
+  [params]
+  {:ivr.routes/response
+   (routes/error-response
+    {:status 500
+     :status_code "invalid_store_query"
+     :message "Invalid Store query - type"
+     :cause params})})
 
 
 (defn- get-account-success

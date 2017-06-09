@@ -1,30 +1,30 @@
 (ns ivr.models.node
-  (:require [cljs.spec :as spec]
-            [clojure.walk :as walk]
+  (:require [clojure.walk :as walk]
             [ivr.libs.logger :as logger]
             [ivr.routes.url :as url]
             [ivr.services.routes :as routes]
-            [ivr.specs.node :as node-specs]
             [re-frame.core :as re-frame]))
+
 
 (def log
   (logger/create "node"))
 
 
-(defn- node-type [node]
-  (or (node-specs/known-types (get node "type"))
-      :unknown))
+(defn- node-type
+  [node]
+  (get node "type"))
 
 
 (defmulti conform-type node-type)
 
 
-(defmethod conform-type :unknown
+(defmethod conform-type :default
   [node]
   (log "warn" "conform-unknown" node))
 
 
-(defn conform [node {:keys [id account-id script-id]}]
+(defn conform
+  [node {:keys [id account-id script-id]}]
   (cond-> node
     (map? node) (-> (merge {"id" id
                             "account_id" account-id
@@ -35,7 +35,7 @@
 (defmulti enter-type #(node-type %))
 
 
-(defmethod enter-type :unknown
+(defmethod enter-type :default
   [node _]
   {:ivr.routes/response
    (routes/error-response
@@ -53,7 +53,7 @@
 (defmulti leave-type #(node-type %))
 
 
-(defmethod leave-type :unknown
+(defmethod leave-type :default
   [node _]
   {:ivr.routes/response
    (routes/error-response

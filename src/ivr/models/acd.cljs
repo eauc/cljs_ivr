@@ -1,6 +1,7 @@
 (ns ivr.models.acd
-	(:require [re-frame.core :as re-frame]
-            [ivr.routes.url :as url]))
+  (:require [ivr.routes.url :as url]
+            [ivr.services.routes :as routes]
+            [re-frame.core :as re-frame]))
 
 (defmulti query :type)
 
@@ -8,6 +9,16 @@
 	:ivr.acd/cofx
 	(fn acd-cofx [coeffects _]
 		(assoc coeffects :acd query)))
+
+
+(defmethod query :default
+  [params]
+  {:ivr.routes/response
+   (routes/error-response
+    {:status 500
+     :status_code "invalid_acd_query"
+     :message "Invalid ACD query - type"
+     :cause params})})
 
 
 (defn- enqueue-call-success

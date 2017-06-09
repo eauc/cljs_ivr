@@ -1,7 +1,6 @@
 (ns ivr.models.ivrservices
-  (:require [re-frame.core :as re-frame]
-            [ivr.libs.logger :as logger]))
-
+  (:require [ivr.services.routes :as routes]
+            [re-frame.core :as re-frame]))
 
 (defmulti query :type)
 
@@ -10,6 +9,16 @@
   (fn ivrservices-cofx
     [coeffects]
     (assoc coeffects :services query)))
+
+
+(defmethod query :default
+  [params]
+  {:ivr.routes/response
+   (routes/error-response
+    {:status 500
+     :status_code "invalid_services_query"
+     :message "Invalid IVR Services query - type"
+     :cause params})})
 
 
 (defn- eval-routing-rule-success

@@ -1,17 +1,26 @@
 (ns ivr.models.acd-test
-	(:require [clojure.test :as test :refer-macros [async deftest is run-tests testing use-fixtures]]
-						[cljs.spec.test :as stest]
-						[ivr.models.acd :as acd]))
+  (:require [clojure.test :as test :refer-macros [async deftest is run-tests testing use-fixtures]]
+            [cljs.spec.test :as stest]
+            [ivr.models.acd :as acd]))
 
 (use-fixtures :once
-	{:before (fn [] (stest/instrument 'ivr.models.acd))
-	 :after (fn [] (stest/unstrument 'ivr.models.acd))})
+  {:before (fn [] (stest/instrument 'ivr.models.acd))
+   :after (fn [] (stest/unstrument 'ivr.models.acd))})
 
 (deftest acd-model-test
 
+  (testing "unknown query"
+    (is (= {:ivr.routes/response
+            {:status 500
+             :data {:status 500
+                    :status_code "invalid_acd_query"
+                    :message "Invalid ACD query - type"
+                    :cause {:type :ivr.acd/unknown :params :values}}}}
+           (acd/query {:type :ivr.acd/unknown :params :values}))))
+
 
   (testing "enqueue call"
-		(let [request (acd/query {:type :ivr.acd/enqueue-call
+    (let [request (acd/query {:type :ivr.acd/enqueue-call
                               :call {:info {:id "call-id" :time "call-time"}}
                               :account_id "account-id"
                               :application_id "app-id"

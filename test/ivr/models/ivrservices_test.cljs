@@ -1,13 +1,22 @@
 (ns ivr.models.ivrservices-test
   (:require [clojure.test :as test :refer-macros [async deftest is run-tests testing use-fixtures]]
-						[cljs.spec.test :as stest]
-						[ivr.models.ivrservices :as services]))
+            [cljs.spec.test :as stest]
+            [ivr.models.ivrservices :as services]))
 
 (use-fixtures :once
-	{:before (fn [] (stest/instrument 'ivr.models.ivrservices))
-	 :after (fn [] (stest/unstrument 'ivr.models.ivrservices))})
+  {:before (fn [] (stest/instrument 'ivr.models.ivrservices))
+   :after (fn [] (stest/unstrument 'ivr.models.ivrservices))})
 
 (deftest ivrservices-model-test
+
+  (testing "unknown query"
+    (is (= {:ivr.routes/response
+            {:status 500
+             :data {:status 500
+                    :status_code "invalid_services_query"
+                    :message "Invalid IVR Services query - type"
+                    :cause {:type :ivr.services/unknown :params :values}}}}
+           (services/query {:type :ivr.services/unknown :params :values}))))
 
 
   (testing "eval routing rule"

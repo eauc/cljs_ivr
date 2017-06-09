@@ -8,10 +8,18 @@
    :after (fn [] (stest/unstrument 'ivr.models.verbs))})
 
 (deftest verbs-model
+  (testing "unknown"
+    (is (= [:Response `([:Invalid {:type :ivr.verbs/unknown :params :values}])]
+            (:data
+             (verbs/create [{:type :ivr.verbs/unknown :params :values}])))))
+
+
   (testing "hangup"
     (is (= [:Response `([:HangUp])]
            (:data
             (verbs/create [{:type :ivr.verbs/hangup}])))))
+
+
   (testing "gather"
     (is (= [:Response `([:Gather {:callbackmethod "POST"} ()])]
            (:data
@@ -36,11 +44,15 @@
             (verbs/create [{:type :ivr.verbs/gather
                             :play ["sound"
                                    {:voice "alice" :text "text"}]}])))))
+
+
   (testing "play"
     (is (= [:Response `([:Play "sound-path"])]
            (:data
             (verbs/create [{:type :ivr.verbs/play
                             :path "sound-path"}])))))
+
+
   (testing "redirect"
     (is (= [:Response `([:Redirect "path"])]
            (:data
