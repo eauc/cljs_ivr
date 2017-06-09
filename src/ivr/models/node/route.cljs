@@ -22,8 +22,9 @@
 (defmethod node/enter-type "route"
   [{:strs [varname case] :as node}
    {:keys [call deps] :as context}]
-  (let [{:strs [next set]} (->> (get-in call [:action-data varname])
-                                (get case))
+  (let [var-value (get-in call [:action-data varname])
+        {:strs [next set]} (or (get case var-value)
+                               (get case "_other"))
         update-action-data (node-set/apply-set set call)
         result (node/go-to-next (assoc node "next" next) deps)]
     (merge update-action-data result)))
