@@ -6,5 +6,5 @@
            :args (spec/cat :info :ivr.call/info)
            :ret :ivr.call/call)
 (defn info->call [info]
-  {:info (select-keys info [:id :account-id :script-id])
+  {:info (select-keys info [:id :account-id :script-id :time])
    :action-data {}})

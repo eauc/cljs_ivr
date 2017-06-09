@@ -13,7 +13,8 @@
 
 
 (defn- try-to-create-call
-  [db {:strs [account_id call_id script_id] :as params}]
+  [{:keys [db call-time-now] :as coeffects}
+   {:strs [account_id call_id script_id] :as params}]
   (if (or (nil? account_id)
           (nil? call_id)
           (nil? script_id))
@@ -27,14 +28,16 @@
                       :script-id  (or script_id "missing")}})}
     (let [call (call/info->call {:id call_id
                                  :account-id account_id
-                                 :script-id script_id})]
+                                 :script-id script_id
+                                 :time call-time-now})]
       {:db (update db :calls assoc call_id call)
        :ivr.routes/params (assoc params "call" call)
        :ivr.routes/next nil})))
 
 
 (defn find-or-create-call
-  [{:keys [db]} {:keys [create?]}
+  [{:keys [db] :as coeffects}
+   {:keys [create?] :as options}
    {{:strs [call_id] :as params} :params}]
   (let [call (get-in db [:calls call_id])]
     (cond
@@ -45,13 +48,14 @@
                               :status_code "call_not_found"
                               :message "Call not found"
                               :cause {:call-id call_id}})}
-      (nil? call) (try-to-create-call db params)
+      (nil? call) (try-to-create-call coeffects params)
       :else {:ivr.routes/params (assoc params "call" call)
              :ivr.routes/next nil})))
 
 
 (routes/reg-action
   :ivr.call/resolve
+  [(re-frame/inject-cofx :ivr.call/time-now)]
   find-or-create-call)
 
 
@@ -63,3 +67,10 @@
       (when call
         (log "info" "update call action-data" call)
         (swap! re-frame.db/app-db assoc-in [:calls call-id :action-data] action-data)))))
+
+
+(re-frame/reg-cofx
+  :ivr.call/time-now
+  (fn call-time-now
+    [coeffects]
+    (assoc coeffects :call-time-now (.now js/Date))))

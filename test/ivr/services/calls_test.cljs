@@ -6,6 +6,7 @@
 (deftest calls-service
   (testing "find-or-create-call"
     (let [db {:calls {"call1" {:id "call1"}}}
+          coeffects {:db db :call-time-now "call-time-now"}
           params {"account_id" "account-id"
                   "call_id" "new-call"
                   "script_id" "script-id"}]
@@ -18,7 +19,7 @@
                         :status_code "call_not_found"
                         :message "Call not found"
                         :cause {:call-id "new-call"}}}}
-               (calls/find-or-create-call {:db db} {:create? false} {:params params}))))
+               (calls/find-or-create-call coeffects {:create? false} {:params params}))))
 
 
       (testing "call does not exists, missing params for creation"
@@ -30,7 +31,7 @@
                         :cause {:call-id "new-call"
                                 :account-id "missing"
                                 :script-id "script-id"}}}}
-               (calls/find-or-create-call {:db db} {:create? true}
+               (calls/find-or-create-call coeffects {:create? true}
                                           {:params (merge params {"account_id" nil})})))
         (is (= {:ivr.routes/response
                 {:status 400
@@ -40,7 +41,7 @@
                         :cause {:call-id "new-call"
                                 :account-id "account-id"
                                 :script-id "missing"}}}}
-               (calls/find-or-create-call {:db db} {:create? true}
+               (calls/find-or-create-call coeffects {:create? true}
                                           {:params (merge params {"script_id" nil})})))
         (is (= {:ivr.routes/response
                 {:status 400
@@ -50,7 +51,7 @@
                         :cause {:call-id "missing"
                                 :account-id "account-id"
                                 :script-id "script-id"}}}}
-               (calls/find-or-create-call {:db db} {:create? true}
+               (calls/find-or-create-call coeffects {:create? true}
                                           {:params (merge params {"call_id" nil})}))))
 
 
@@ -58,17 +59,19 @@
         (is (= {:db {:calls {"call1" {:id "call1"}
                              "new-call" {:info {:id "new-call"
                                                 :account-id "account-id"
-                                                :script-id "script-id"}
+                                                :script-id "script-id"
+                                                :time "call-time-now"}
                                          :action-data {}}}}
                 :ivr.routes/params {"account_id" "account-id"
                                     "call_id" "new-call"
                                     "script_id" "script-id"
                                     "call" {:info {:id "new-call"
                                                    :account-id "account-id"
-                                                   :script-id "script-id"}
+                                                   :script-id "script-id"
+                                                   :time "call-time-now"}
                                             :action-data {}}}
                 :ivr.routes/next nil}
-               (calls/find-or-create-call {:db db} {:create? true} {:params params}))))
+               (calls/find-or-create-call coeffects {:create? true} {:params params}))))
 
 
       (testing "call exits, proceed"
@@ -77,5 +80,5 @@
                                     "script_id" "script-id"
                                     "call" {:id "call1"}}
                 :ivr.routes/next nil}
-               (calls/find-or-create-call {:db db} {:create? true}
+               (calls/find-or-create-call coeffects {:create? true}
                                           {:params (merge params {"call_id" "call1"})})))))))
