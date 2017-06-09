@@ -1,3 +1,5 @@
 - refonte spec
   - instrumenter ivr.node ns durant les tests node/types
 - multimethods :default
+- implement fetch external url
+  - web request timeout / max body size

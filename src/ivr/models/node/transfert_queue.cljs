@@ -56,5 +56,12 @@
   error-acd-enqueue)
 
 (defmethod node/leave-type "transferqueue"
-  [node {:keys [deps]}]
-  (node/go-to-next node deps))
+  [{:strs [case] :as node}
+   {:keys [deps params] :as context}]
+  (let [{:strs [overflowcause]} params
+        next (cond
+               (= "NO_AGENT" overflowcause) (get case "noagent")
+               (= "QUEUE_FULL" overflowcause) (get case "full")
+               (= "QUEUE_TIMEOUT" overflowcause) (get case "timeout")
+               :else nil)]
+    (node/go-to-next (assoc node "next" next) deps)))
