@@ -8,7 +8,10 @@
     (let [db {:calls {"call1" {:id "call1"}}}
           coeffects {:db db :call-time-now "call-time-now"}
           params {"account_id" "account-id"
+                  "application_id" "application-id"
                   "call_id" "new-call"
+                  "from" "from-sda"
+                  "to" "to-sda"
                   "script_id" "script-id"}]
 
 
@@ -59,14 +62,23 @@
         (is (= {:db {:calls {"call1" {:id "call1"}
                              "new-call" {:info {:id "new-call"
                                                 :account-id "account-id"
+                                                :application-id "application-id"
+                                                :from "from-sda"
+                                                :to "to-sda"
                                                 :script-id "script-id"
                                                 :time "call-time-now"}
                                          :action-data {}}}}
                 :ivr.routes/params {"account_id" "account-id"
+                                    "application_id" "application-id"
+                                    "from" "from-sda"
+                                    "to" "to-sda"
                                     "call_id" "new-call"
                                     "script_id" "script-id"
                                     "call" {:info {:id "new-call"
                                                    :account-id "account-id"
+                                                   :application-id "application-id"
+                                                   :from "from-sda"
+                                                   :to "to-sda"
                                                    :script-id "script-id"
                                                    :time "call-time-now"}
                                             :action-data {}}}
@@ -76,6 +88,9 @@
 
       (testing "call exits, proceed"
         (is (= {:ivr.routes/params {"account_id" "account-id"
+                                    "application_id" "application-id"
+                                    "from" "from-sda"
+                                    "to" "to-sda"
                                     "call_id" "call1"
                                     "script_id" "script-id"
                                     "call" {:id "call1"}}

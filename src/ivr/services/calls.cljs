@@ -14,7 +14,7 @@
 
 (defn- try-to-create-call
   [{:keys [db call-time-now] :as coeffects}
-   {:strs [account_id call_id script_id] :as params}]
+   {:strs [account_id application_id call_id from to script_id] :as params}]
   (if (or (nil? account_id)
           (nil? call_id)
           (nil? script_id))
@@ -28,6 +28,9 @@
                       :script-id  (or script_id "missing")}})}
     (let [call (call/info->call {:id call_id
                                  :account-id account_id
+                                 :application-id application_id
+                                 :from from
+                                 :to to
                                  :script-id script_id
                                  :time call-time-now})]
       {:db (update db :calls assoc call_id call)

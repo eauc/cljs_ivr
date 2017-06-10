@@ -1,5 +1,18 @@
 - refonte spec
   - instrumenter ivr.node ns durant les tests node/types
-- multimethods :default
 - implement fetch external url
   - web request timeout / max body size
+
+* Tickets action
+
+- rajout event/sauvegarder le node dans req.ivr-params lors du start
+- interceptor call-check-action-response:
+  - si node dans req.ivr-params
+  - si ivr.routes/reponse (!!! mettre l'interceptor apres routes/interceptor !!!)
+  - si reponse.status == 200
+  - alors rajoute dispatch-n: [ivr.call/startAction] avec start-action + response.data
+- event ivr.call/emitActionTicket:
+  - extrait les sda de response data
+  - extrait node.type/stat as type/action
+  - si call.action-ongoing -> return fx ivr.ticket/emit avec action ticket
+  - return fx ivr.call/update-action-ongoing
