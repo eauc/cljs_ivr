@@ -19,12 +19,12 @@
             [ivr.libs.logger :as logger]))
 
 
-(defn- resolve-event
+(defn- resolve-script-event
   [{:keys [store]} {:keys [params]}]
   (let [account-id (get params "account_id")
         script-id (get params "script_id")
-        on-success [::resolve-success {:account-id account-id}]
-        on-error [::resolve-error {:script-id script-id}]]
+        on-success [::resolve-script-success {:account-id account-id}]
+        on-error [::resolve-script-error {:script-id script-id}]]
     {:ivr.web/request
      (store
        {:type :ivr.store/get-script
@@ -34,8 +34,8 @@
         :on-error on-error})}))
 
 (routes/reg-action
-  :ivr.script/resolve
-  resolve-event)
+  :ivr.script/resolve-script
+  resolve-script-event)
 
 
 (spec/fdef conform
@@ -53,18 +53,18 @@
                                                       :account-id account-id})])))))
 
 
-(defn resolve-success
+(defn resolve-script-success
   [_ {:keys [account-id script]} {:keys [params]}]
   (let [script (conform script {:account-id account-id})]
     {:ivr.routes/params (assoc params "script" script)
      :ivr.routes/next nil}))
 
 (routes/reg-action
-  ::resolve-success
-  resolve-success)
+  ::resolve-script-success
+  resolve-script-success)
 
 
-(defn resolve-error
+(defn resolve-script-error
   [_ {:keys [script-id error]}]
   {:ivr.routes/response
    (routes/error-response
@@ -74,14 +74,13 @@
       :cause (assoc error :scriptid script-id)})})
 
 (routes/reg-action
-  ::resolve-error
-  resolve-error)
+  ::resolve-script-error
+  resolve-script-error)
 
 
-(defn- enter-node-id
-  [script node-id {:keys [deps] :as context}]
-  (let [{:keys [enter-node]} deps
-        node (get-in script ["nodes" node-id])]
+(defn- resolve-node-id
+  [script node-id params]
+  (let [node (get-in script ["nodes" node-id])]
     (if (nil? node)
       {:ivr.routes/response
        (routes/error-response
@@ -89,12 +88,13 @@
           :status_code "invalid_script"
           :message "Invalid script - missing node"
           :cause script})}
-      (enter-node node context))))
+      {:ivr.routes/params (assoc params "node" node)
+       :ivr.routes/next nil})))
 
 
-(defn start-route
+(defn resolve-start-node
   [deps {:keys [params] :as route}]
-  (let [{:strs [script call]} params
+  (let [{:strs [script]} params
         start-index (get script "start")]
     (if (nil? start-index)
       {:ivr.routes/response
@@ -103,20 +103,28 @@
           :status_code "invalid_script"
           :message "Invalid script - missing start index"
           :cause script})}
-      (enter-node-id script start-index
-                     {:call call :params params :deps deps}))))
+      (resolve-node-id script start-index params))))
 
 (routes/reg-action
-  :ivr.script/start-route
-  [(re-frame/inject-cofx :ivr.node/enter-cofx)]
-  start-route)
+  :ivr.script/resolve-start-node
+  resolve-start-node)
+
+
+(defn resolve-node
+  [deps {:keys [params] :as route}]
+  (let [{:strs [script node_id]} params]
+    (resolve-node-id script node_id params)))
+
+(routes/reg-action
+  :ivr.script/resolve-node
+  resolve-node)
 
 
 (defn enter-node-route
-  [deps {:keys [params] :as route}]
-  (let [{:strs [script call node_id]} params]
-    (enter-node-id script node_id
-                   {:call call :params params :deps deps})))
+  [{:keys [enter-node] :as deps}
+   {:keys [params] :as route}]
+  (let [{:strs [call node]} params]
+    (enter-node node {:call call :deps deps :params params})))
 
 (routes/reg-action
   :ivr.script/enter-node-route
@@ -127,16 +135,8 @@
 (defn leave-node-route
   [{:keys [leave-node] :as deps}
    {:keys [params] :as route}]
-  (let [{:strs [script call node_id]} params
-        node (get-in script ["nodes" node_id])]
-    (if (nil? node)
-      {:ivr.routes/response
-       (routes/error-response
-         {:status 500
-          :status_code "invalid_script"
-          :message "Invalid script - missing node"
-          :cause script})}
-      (leave-node node {:call call :params params :deps deps}))))
+  (let [{:strs [call node]} params]
+    (leave-node node {:call call :deps deps :params params})))
 
 (routes/reg-action
   :ivr.script/leave-node-route
