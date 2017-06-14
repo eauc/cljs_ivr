@@ -7,6 +7,7 @@
             [ivr.models.verbs]
             [ivr.services.routes.dispatch :as dispatch]
             [ivr.services.routes.effects]
+            [ivr.services.routes.error :as error]
             [ivr.services.routes.interceptor :as interceptor]
             [ivr.specs.route]
             [re-frame.core :as re-frame]))
@@ -14,14 +15,6 @@
 
 (def log
   (logger/create "routes"))
-
-
-(defn error-response
-  [{:keys [status]
-    :or {status 500}
-    :as data}]
-  {:status status
-   :data data})
 
 
 (def default-interceptors
@@ -44,7 +37,7 @@
          (apply handler coeffects event)
          (catch js/Object error
            {:ivr.routes/response
-            (error-response
+            (error/error-response
               {:status 500
                :statusCode "internal_error"
                :message "Internal error"
@@ -59,4 +52,4 @@
   (fn routes-error
     [_ error]
     {:ivr.routes/response
-     (error-response error)}))
+     (error/error-response error)}))

@@ -1,6 +1,6 @@
 (ns ivr.models.acd
   (:require [ivr.routes.url :as url]
-            [ivr.services.routes :as routes]
+            [ivr.services.routes.error :as routes-error]
             [re-frame.core :as re-frame]))
 
 (defmulti query :type)
@@ -14,7 +14,7 @@
 (defmethod query :default
   [params]
   {:ivr.routes/response
-   (routes/error-response
+   (routes-error/error-response
     {:status 500
      :status_code "invalid_acd_query"
      :message "Invalid ACD query - type"

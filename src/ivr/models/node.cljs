@@ -2,7 +2,7 @@
   (:require [clojure.walk :as walk]
             [ivr.libs.logger :as logger]
             [ivr.routes.url :as url]
-            [ivr.services.routes :as routes]
+            [ivr.services.routes.error :as routes-error]
             [re-frame.core :as re-frame]))
 
 
@@ -38,7 +38,7 @@
 (defmethod enter-type :default
   [node _]
   {:ivr.routes/response
-   (routes/error-response
+   (routes-error/error-response
     {:status 500
      :status_code "invalid_node"
      :message "Invalid node - type"
@@ -56,7 +56,7 @@
 (defmethod leave-type :default
   [node _]
   {:ivr.routes/response
-   (routes/error-response
+   (routes-error/error-response
     {:status 500
      :status_code "invalid_node"
      :message "Invalid node - type"

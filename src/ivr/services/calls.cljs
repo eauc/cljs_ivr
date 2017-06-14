@@ -1,12 +1,9 @@
 (ns ivr.services.calls
-  (:require [cljs.spec :as spec]
-            [ivr.db :as db]
-            [ivr.libs.logger :as logger]
+  (:require [ivr.libs.logger :as logger]
             [ivr.models.call :as call]
             [ivr.services.routes :as routes]
-            [ivr.specs.call]
+            [ivr.services.routes.error :as routes-error]
             [re-frame.core :as re-frame]))
-
 
 (def log
   (logger/create "calls"))
@@ -19,7 +16,7 @@
           (nil? call_id)
           (nil? script_id))
     {:ivr.routes/response
-     (routes/error-response
+     (routes-error/error-response
        {:status      400
         :status_code "missing_request_params"
         :message     "Missing request params"
@@ -46,7 +43,7 @@
     (cond
       (and (nil? call)
            (not create?)) {:ivr.routes/response
-                           (routes/error-response
+                           (routes-error/error-response
                              {:status 404
                               :status_code "call_not_found"
                               :message "Call not found"
@@ -64,7 +61,8 @@
 
 (re-frame/reg-fx
   :ivr.call/action-data
-  (fn call-action-data-fx [{:keys [info action-data] :as call}]
+  (fn call-action-data-fx
+    [{:keys [info action-data] :as call}]
     (let [call-id (:id info)
           call (get-in @re-frame.db/app-db [:calls call-id])]
       (when call

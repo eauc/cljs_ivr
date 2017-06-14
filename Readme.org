@@ -5,7 +5,6 @@
 
 * Tickets action
 
-- rajout event/sauvegarder le node dans req.ivr-params lors du start
 - interceptor call-check-action-response:
   - si node dans req.ivr-params
   - si ivr.routes/reponse (!!! mettre l'interceptor apres routes/interceptor !!!)

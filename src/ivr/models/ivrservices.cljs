@@ -1,5 +1,5 @@
 (ns ivr.models.ivrservices
-  (:require [ivr.services.routes :as routes]
+  (:require [ivr.services.routes.error :as routes-error]
             [re-frame.core :as re-frame]))
 
 (defmulti query :type)
@@ -14,7 +14,7 @@
 (defmethod query :default
   [params]
   {:ivr.routes/response
-   (routes/error-response
+   (routes-error/error-response
     {:status 500
      :status_code "invalid_services_query"
      :message "Invalid IVR Services query - type"

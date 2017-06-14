@@ -13,6 +13,7 @@
             [ivr.models.node.voice-record]
             [ivr.models.store :as store]
             [ivr.services.routes :as routes]
+            [ivr.services.routes.error :as routes-error]
             [ivr.specs.node]
             [ivr.specs.script]
             [re-frame.core :as re-frame]
@@ -67,7 +68,7 @@
 (defn resolve-script-error
   [_ {:keys [script-id error]}]
   {:ivr.routes/response
-   (routes/error-response
+   (routes-error/error-response
      {:status 404
       :status_code "script_not_found"
       :message "Script not found"
@@ -83,7 +84,7 @@
   (let [node (get-in script ["nodes" node-id])]
     (if (nil? node)
       {:ivr.routes/response
-       (routes/error-response
+       (routes-error/error-response
          {:status 500
           :status_code "invalid_script"
           :message "Invalid script - missing node"
@@ -98,7 +99,7 @@
         start-index (get script "start")]
     (if (nil? start-index)
       {:ivr.routes/response
-       (routes/error-response
+       (routes-error/error-response
          {:status 500
           :status_code "invalid_script"
           :message "Invalid script - missing start index"

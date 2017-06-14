@@ -1,6 +1,6 @@
 (ns ivr.models.store
   (:require [cljs.spec :as spec]
-            [ivr.services.routes :as routes]
+            [ivr.services.routes.error :as routes-error]
             [re-frame.core :as re-frame]))
 
 (spec/fdef query
@@ -17,7 +17,7 @@
 (defmethod query :default
   [params]
   {:ivr.routes/response
-   (routes/error-response
+   (routes-error/error-response
     {:status 500
      :status_code "invalid_store_query"
      :message "Invalid Store query - type"
@@ -58,12 +58,13 @@
         body (or (aget response "body") {})]
     (if (= 0 (or (get-in body ["meta" "total_count"]) 0))
       [:ivr.routes/error
-       {:status 500
-        :statusCode "sound_not_found"
-        :message "Sound not found"
-        :cause {:account-id account-id
-                :script-id script-id
-                :name name}}]
+       (routes-error/error-response
+         {:status 500
+          :statusCode "sound_not_found"
+          :message "Sound not found"
+          :cause {:account-id account-id
+                  :script-id script-id
+                  :name name}})]
       (let [id (get-in body ["objects" 0 "_id"])
             url (str "/cloudstore/file/" id)
             [on-success-event on-success-payload] on-success]
@@ -73,12 +74,13 @@
 (defn- get-file-error
   [query error]
   [:ivr.routes/error
-   {:status 404
-    :status_code "file_not_found"
-    :message "File not found"
-    :cause (-> query
-               (dissoc :on-success :on-error)
-               (assoc :message (:message error)))}])
+   (routes-error/error-response
+     {:status 404
+      :status_code "file_not_found"
+      :message "File not found"
+      :cause (-> query
+                 (dissoc :on-success :on-error)
+                 (assoc :message (:message error)))})])
 
 
 (defmethod query :ivr.store/get-sound-by-name
