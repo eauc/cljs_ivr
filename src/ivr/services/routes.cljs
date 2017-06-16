@@ -3,6 +3,7 @@
             [ivr.libs.logger :as logger]
             [ivr.models.acd]
             [ivr.models.ivrservices]
+            [ivr.models.node-action :as node-action]
             [ivr.models.store]
             [ivr.models.verbs]
             [ivr.services.routes.dispatch :as dispatch]
@@ -23,7 +24,8 @@
    (re-frame/inject-cofx :ivr.acd/cofx)
    (re-frame/inject-cofx :ivr.services/cofx)
    (re-frame/inject-cofx :ivr.store/cofx)
-   (re-frame/inject-cofx :ivr.verbs/cofx)])
+   (re-frame/inject-cofx :ivr.verbs/cofx)
+   node-action/interceptor])
 
 
 (defn reg-action

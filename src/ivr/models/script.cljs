@@ -80,7 +80,7 @@
 
 
 (defn- resolve-node-id
-  [script node-id params]
+  [script node-id action params]
   (let [node (get-in script ["nodes" node-id])]
     (if (nil? node)
       {:ivr.routes/response
@@ -89,7 +89,7 @@
           :status_code "invalid_script"
           :message "Invalid script - missing node"
           :cause script})}
-      {:ivr.routes/params (assoc params "node" node)
+      {:ivr.routes/params (assoc params "node" node "action" action)
        :ivr.routes/next nil})))
 
 
@@ -104,7 +104,7 @@
           :status_code "invalid_script"
           :message "Invalid script - missing start index"
           :cause script})}
-      (resolve-node-id script start-index params))))
+      (resolve-node-id script start-index :enter params))))
 
 (routes/reg-action
   :ivr.script/resolve-start-node
@@ -112,9 +112,9 @@
 
 
 (defn resolve-node
-  [deps {:keys [params] :as route}]
+  [deps {:keys [action]} {:keys [params] :as route}]
   (let [{:strs [script node_id]} params]
-    (resolve-node-id script node_id params)))
+    (resolve-node-id script node_id action params)))
 
 (routes/reg-action
   :ivr.script/resolve-node

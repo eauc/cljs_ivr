@@ -67,7 +67,8 @@
                                                 :to "to-sda"
                                                 :script-id "script-id"
                                                 :time "call-time-now"}
-                                         :action-data {}}}}
+                                         :action-data {}
+                                         :action-ongoing nil}}}
                 :ivr.routes/params {"account_id" "account-id"
                                     "application_id" "application-id"
                                     "from" "from-sda"
@@ -81,7 +82,8 @@
                                                    :to "to-sda"
                                                    :script-id "script-id"
                                                    :time "call-time-now"}
-                                            :action-data {}}}
+                                            :action-data {}
+                                            :action-ongoing nil}}
                 :ivr.routes/next nil}
                (calls/find-or-create-call coeffects {:create? true} {:params params}))))
 

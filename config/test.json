@@ -3,5 +3,11 @@
     "dispatch_url": {
       "internal": "http://clouddispatch"
     }
+  },
+  "zmq": {
+    "activeZMQ": true,
+    "publishTo": "tcp://*:5575",
+    "publisherName": "IVR",
+    "ticket_version": 1.1
   }
 }

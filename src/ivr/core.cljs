@@ -9,6 +9,7 @@
             [ivr.routes.config :as config-routes]
             [ivr.routes.index :as index-routes]
             [ivr.services.config :as config]
+            [ivr.services.tickets :as tickets]
             [re-frame.core :as re-frame]))
 
 (nodejs/enable-util-print!)
@@ -36,6 +37,14 @@
                #(logger/default "info" "Server started on port"
                                 (:port config)))))
 
+
+(defn- app-init [config-info]
+  (logger/default "info" "Config loaded" (:config config-info))
+  (re-frame/dispatch-sync [:ivr.db/init {:config-info config-info}])
+  (tickets/init (:config config-info))
+  (start-server (:config config-info)))
+
+
 (defn -main []
   (let [env {:port (or (some-> js/process
                                (aget "env" "PORT")
@@ -49,10 +58,7 @@
     (config/init {:layers config-layers
                   :http-retry-timeout-s 10
                   :http-retry-delay-s 2
-                  :on-success (fn [config-info]
-                                (logger/default "info" "Config loaded" (:config config-info))
-                                (re-frame/dispatch-sync [:ivr.db/init {:config-info config-info}])
-                                (start-server (:config config-info)))
+                  :on-success app-init
                   :on-error (fn []
                               (logger/default "error" "Config load failed")
                               (.exit js/process 1))})))

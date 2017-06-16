@@ -74,11 +74,12 @@
               (let [result {"meta" {"total_count" 0} "objects" []}]
                 (is (= [:ivr.routes/error
                         {:status 500
-                         :statusCode "sound_not_found"
-                         :message "Sound not found"
-                         :cause {:account-id "account-id"
-                                 :script-id "script-id"
-                                 :name "sound"}}]
+                         :data {:status 500
+                                :statusCode "sound_not_found"
+                                :message "Sound not found"
+                                :cause {:account-id "account-id"
+                                        :script-id "script-id"
+                                        :name "sound"}}}]
                        (on-success #js {:body result})))))
             (testing "ok"
               (let [result {"meta" {"total_count" 2}
@@ -92,12 +93,13 @@
           (let [on-error (get request :on-error)]
             (is (= [:ivr.routes/error
                     {:status 404
-                     :status_code "file_not_found"
-                     :message "File not found"
-                     :cause {:type :ivr.store/get-sound-by-name,
-                             :name "sound",
-                             :account-id "account-id",
-                             :script-id "script-id",
-                             :url "/cloudstore/account/account-id/file",
-                             :message "error message"}}]
+                     :data {:status 404
+                            :status_code "file_not_found"
+                            :message "File not found"
+                            :cause {:type :ivr.store/get-sound-by-name,
+                                    :name "sound",
+                                    :account-id "account-id",
+                                    :script-id "script-id",
+                                    :url "/cloudstore/account/account-id/file",
+                                    :message "error message"}}}]
                    (on-error {:message "error message"})))))))))

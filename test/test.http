@@ -16,7 +16,7 @@ GET http://localhost:3000/smartccivr/config?path=port
 
 # Start script
 
-GET http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&call_id=2234
+GET http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&application_id=app-id&from=from-sda&to=to-sda&call_id=2234
 
 # Annoucement
 

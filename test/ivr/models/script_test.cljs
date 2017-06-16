@@ -90,7 +90,8 @@
             params {"script" script}]
         (is (= {:ivr.routes/next nil,
                 :ivr.routes/params {"script" script
-                                    "node" {"type" "announcement"}}}
+                                    "node" {"type" "announcement"}
+                                    "action" :enter}}
                (script/resolve-start-node
                  {} {:params params})))))
 
@@ -105,8 +106,9 @@
                         :message "Invalid script - missing node"
                         :cause script}}}
                (script/resolve-node
-                 {} {:params {"script" script
-                              "node_id" "42"}}))))
+                 {} {:action :enter}
+                 {:params {"script" script
+                           "node_id" "42"}}))))
 
 
       (let [script {"id" "script-id"
@@ -116,10 +118,21 @@
         (is (= {:ivr.routes/params
                 {"script" script
                  "node_id" "42"
-                 "node" {"type" "announcement"}}
+                 "node" {"type" "announcement"}
+                 "action" :enter}
                 :ivr.routes/next nil}
                (script/resolve-node
-                 {} {:params params})))))
+                 {} {:action :enter}
+                 {:params params})))
+        (is (= {:ivr.routes/params
+                {"script" script
+                 "node_id" "42"
+                 "node" {"type" "announcement"}
+                 "action" :leave}
+                :ivr.routes/next nil}
+               (script/resolve-node
+                 {} {:action :leave}
+                 {:params params})))))
 
 
     (let [call {:info {:id "call-id"}

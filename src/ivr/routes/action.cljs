@@ -34,8 +34,11 @@
 (def resolve-script-middleware
   (routes-dispatch/dispatch [:ivr.script/resolve-script]))
 
-(def resolve-node-middleware
-  (routes-dispatch/dispatch [:ivr.script/resolve-node]))
+(def resolve-enter-node-middleware
+  (routes-dispatch/dispatch [:ivr.script/resolve-node {:action :enter}]))
+
+(def resolve-leave-node-middleware
+  (routes-dispatch/dispatch [:ivr.script/resolve-node {:action :leave}]))
 
 (def resolve-start-node-middleware
   (routes-dispatch/dispatch [:ivr.script/resolve-start-node]))
@@ -58,11 +61,11 @@
     (.get script-start-url script-enter-node-route)
 
     (.use script-enter-node-url resolve-call-middleware)
-    (.use script-enter-node-url resolve-node-middleware)
+    (.use script-enter-node-url resolve-enter-node-middleware)
     (.get script-enter-node-url script-enter-node-route)
 
     (.use script-leave-node-url resolve-call-middleware)
-    (.use script-leave-node-url resolve-node-middleware)
+    (.use script-leave-node-url resolve-leave-node-middleware)
     (.get script-leave-node-url script-leave-node-route)))
 
 

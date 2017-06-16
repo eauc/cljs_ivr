@@ -1,9 +1,12 @@
 (ns ivr.services.calls
   (:require [ivr.libs.logger :as logger]
             [ivr.models.call :as call]
+            [ivr.services.calls.action-data]
+            [ivr.services.calls.action-ongoing]
             [ivr.services.routes :as routes]
             [ivr.services.routes.error :as routes-error]
             [re-frame.core :as re-frame]))
+
 
 (def log
   (logger/create "calls"))
@@ -30,7 +33,7 @@
                                  :to to
                                  :script-id script_id
                                  :time call-time-now})]
-      {:db (update db :calls assoc call_id call)
+      {:db (call/db-insert-call db call)
        :ivr.routes/params (assoc params "call" call)
        :ivr.routes/next nil})))
 
@@ -39,7 +42,7 @@
   [{:keys [db] :as coeffects}
    {:keys [create?] :as options}
    {{:strs [call_id] :as params} :params}]
-  (let [call (get-in db [:calls call_id])]
+  (let [call (call/db-call db call_id)]
     (cond
       (and (nil? call)
            (not create?)) {:ivr.routes/response
@@ -57,17 +60,6 @@
   :ivr.call/resolve
   [(re-frame/inject-cofx :ivr.call/time-now)]
   find-or-create-call)
-
-
-(re-frame/reg-fx
-  :ivr.call/action-data
-  (fn call-action-data-fx
-    [{:keys [info action-data] :as call}]
-    (let [call-id (:id info)
-          call (get-in @re-frame.db/app-db [:calls call-id])]
-      (when call
-        (log "info" "update call action-data" call)
-        (swap! re-frame.db/app-db assoc-in [:calls call-id :action-data] action-data)))))
 
 
 (re-frame/reg-cofx
