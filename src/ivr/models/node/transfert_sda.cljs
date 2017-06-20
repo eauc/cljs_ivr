@@ -1,7 +1,6 @@
 (ns ivr.models.node.transfert-sda
   (:require [ivr.models.node :as node]
             [ivr.routes.url :as url]
-            [ivr.services.routes :as routes]
             [re-frame.core :as re-frame]))
 
 (defn- conform-case-no-answer
@@ -52,7 +51,7 @@
                 :statusurl status-url}
                transfert-config)])}))
 
-(routes/reg-action
+(node/reg-action
   ::transfert-sda-with-config
   [(re-frame/inject-cofx :ivr.config/cofx [:ivr :transfersda])]
   transfert-sda-with-config)

@@ -2,6 +2,7 @@
   (:require [cljs.spec :as spec]
             [ivr.libs.logger :as logger]
             [ivr.services.routes.dispatch :as dispatch]
+            [ivr.specs.route]
             [re-frame.core :as re-frame]))
 
 (def log
@@ -32,7 +33,7 @@
   [context]
   (let [event (get-in context [:coeffects :event])
         route (peek event)
-        event-base (subvec event 1 (dec (count event)))]
+        event-base (subvec event 0 (dec (count event)))]
     (->> (dispatch/get-route-params route)
          (assoc route :params)
          (conj event-base)

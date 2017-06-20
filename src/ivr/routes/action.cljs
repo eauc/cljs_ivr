@@ -3,6 +3,7 @@
             [ivr.db :as db]
             [ivr.models.script :as script]
             [ivr.models.store :as store]
+            [ivr.routes.call :as call-routes]
             [ivr.routes.url :as url]
             [ivr.services.routes.dispatch :as routes-dispatch]
             [ivr.services.calls]
@@ -52,21 +53,21 @@
 
 
 (def router
-  (doto (.Router express #js {:mergeParams true})
+  (-> (.Router express #js {:mergeParams true})
+      (doto (.use resolve-script-middleware)
 
-    (.use resolve-script-middleware)
+        (.use script-start-url resolve-or-create-call-middleware)
+        (.use script-start-url resolve-start-node-middleware)
+        (.get script-start-url script-enter-node-route)
 
-    (.use script-start-url resolve-or-create-call-middleware)
-    (.use script-start-url resolve-start-node-middleware)
-    (.get script-start-url script-enter-node-route)
+        (.use script-enter-node-url resolve-call-middleware)
+        (.use script-enter-node-url resolve-enter-node-middleware)
+        (.get script-enter-node-url script-enter-node-route)
 
-    (.use script-enter-node-url resolve-call-middleware)
-    (.use script-enter-node-url resolve-enter-node-middleware)
-    (.get script-enter-node-url script-enter-node-route)
-
-    (.use script-leave-node-url resolve-call-middleware)
-    (.use script-leave-node-url resolve-leave-node-middleware)
-    (.get script-leave-node-url script-leave-node-route)))
+        (.use script-leave-node-url resolve-call-middleware)
+        (.use script-leave-node-url resolve-leave-node-middleware)
+        (.get script-leave-node-url script-leave-node-route))
+      (call-routes/init)))
 
 
 (defn init [app]

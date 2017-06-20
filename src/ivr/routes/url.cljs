@@ -12,6 +12,7 @@
                         :script-enter-node "/node/:node_id"
                         :script-leave-node "/node/:node_id/callback"}
                :status {:link "/script/:script_id"
+                        :call "/status"
                         :dial "/dialstatus"}}}})
 
 (defn- relative [api-path]

@@ -3,7 +3,6 @@
             [ivr.models.node :as node]
             [ivr.models.node-set :as node-set]
             [ivr.routes.url :as url]
-            [ivr.services.routes :as routes]
             [re-frame.core :as re-frame]))
 
 (def log
@@ -53,7 +52,7 @@
          :finishonkey (str validate_key cancel_key)
          :callbackurl callback-url}])}))
 
-(routes/reg-action
+(node/reg-action
   ::record-with-config
   [(re-frame/inject-cofx :ivr.config/cofx [:ivr :voicerecord])]
   record-with-config)

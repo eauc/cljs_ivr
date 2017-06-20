@@ -10,7 +10,7 @@
 
 (defn start-action
   [{:keys [db call-time-now] :as coeffects}
-   [_ {:keys [call-id action] :as event}]]
+   [{:keys [call-id action] :as event}]]
   (let [call (call/db-call db call-id)
         ongoing (get call :action-ongoing)]
     (log "debug" "start-action" {:call call

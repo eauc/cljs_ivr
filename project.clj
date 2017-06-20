@@ -4,9 +4,11 @@
   :dependencies
   [[org.clojure/clojure "1.8.0"]
    [org.clojure/clojurescript "1.9.521"]
+   [org.clojure/core.async "0.3.443"]
+   [org.clojure/core.match "0.3.0-alpha4"]
+   [org.clojure/test.check "0.9.0"]
    [com.cognitect/transit-cljs "0.8.239"]
    [hiccups "0.3.0"]
-   [org.clojure/test.check "0.9.0"]
    [re-frame "0.9.3"]
    [reagent "0.6.1"]]
   :hooks [leiningen.cljsbuild]

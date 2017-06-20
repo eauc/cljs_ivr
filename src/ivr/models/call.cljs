@@ -1,8 +1,15 @@
 (ns ivr.models.call
-  (:require [clojure.set :as set]))
+  (:require [clojure.set :as set]
+            [ivr.libs.logger :as logger]))
 
-(defn info->call [info]
+
+(def log
+  (logger/create "call"))
+
+
+(defn info->call [{:keys [time] :as info}]
   {:info (select-keys info [:id :account-id :application-id :from :to :script-id :time])
+   :state {:current "Created" :start-time time}
    :action-data {}
    :action-ongoing nil})
 
@@ -24,6 +31,11 @@
 (defn db-insert-call
   [db {{:keys [id]} :info :as call}]
   (update db :calls assoc id call))
+
+
+(defn db-remove-call
+  [db call-id]
+  (update db :calls dissoc call-id))
 
 
 (defn db-update-call

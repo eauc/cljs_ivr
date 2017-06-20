@@ -1,7 +1,6 @@
 (ns ivr.models.node.fetch
   (:require [ivr.libs.logger :as logger]
-            [ivr.models.node :as node]
-            [ivr.services.routes :as routes]))
+            [ivr.models.node :as node]))
 
 (def log
   (logger/create "node.fetch"))
@@ -33,7 +32,7 @@
     (merge {:ivr.call/action-data (assoc call :action-data new-data)}
            (node/go-to-next node deps))))
 
-(routes/reg-action
+(node/reg-action
   ::apply-routing-rule
   apply-routing-rule)
 
@@ -48,7 +47,7 @@
     (merge {:ivr.call/action-data (assoc call :action-data new-data)}
            (node/go-to-next node deps))))
 
-(routes/reg-action
+(node/reg-action
   ::error-routing-rule
   error-routing-rule)
 

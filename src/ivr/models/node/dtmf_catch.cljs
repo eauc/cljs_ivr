@@ -2,10 +2,9 @@
   (:require [clojure.walk :as walk]
             [ivr.libs.logger :as logger]
             [ivr.models.node :as node]
-            [ivr.models.node.dtmf-catch-speak :as dc-speak]
             [ivr.models.node-set :as node-set]
-            [ivr.routes.url :as url]
-            [ivr.services.routes :as routes]))
+            [ivr.models.node.dtmf-catch-speak :as dc-speak]
+            [ivr.routes.url :as url]))
 
 (def log
   (logger/create "node.dtmf-catch"))
@@ -127,7 +126,7 @@
   (resolve-sounds (conj loaded sound-url) rest node
                   {:deps deps :call call :retries retries}))
 
-(routes/reg-action
+(node/reg-action
   ::sound-name-success
   sound-name-success)
 

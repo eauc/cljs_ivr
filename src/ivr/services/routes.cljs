@@ -1,16 +1,10 @@
 (ns ivr.services.routes
   (:require [ivr.db :as db]
             [ivr.libs.logger :as logger]
-            [ivr.models.acd]
-            [ivr.models.ivrservices]
-            [ivr.models.node-action :as node-action]
-            [ivr.models.store]
-            [ivr.models.verbs]
             [ivr.services.routes.dispatch :as dispatch]
             [ivr.services.routes.effects]
             [ivr.services.routes.error :as error]
             [ivr.services.routes.interceptor :as interceptor]
-            [ivr.specs.route]
             [re-frame.core :as re-frame]))
 
 
@@ -20,12 +14,7 @@
 
 (def default-interceptors
   [db/default-interceptors
-   interceptor/interceptor
-   (re-frame/inject-cofx :ivr.acd/cofx)
-   (re-frame/inject-cofx :ivr.services/cofx)
-   (re-frame/inject-cofx :ivr.store/cofx)
-   (re-frame/inject-cofx :ivr.verbs/cofx)
-   node-action/interceptor])
+   interceptor/interceptor])
 
 
 (defn reg-action

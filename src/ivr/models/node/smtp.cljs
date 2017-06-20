@@ -1,7 +1,6 @@
 (ns ivr.models.node.smtp
   (:require [ivr.libs.logger :as logger]
-            [ivr.models.node :as node]
-            [ivr.services.routes :as routes]))
+            [ivr.models.node :as node]))
 
 (def log
   (logger/create "node.smtp"))
@@ -35,7 +34,7 @@
   (log "info" "send mail success" (dissoc info :response))
   {})
 
-(routes/reg-action
+(node/reg-action
   ::send-mail-success
   send-mail-success)
 
@@ -45,7 +44,7 @@
   (log "error" "send mail error" info)
   {})
 
-(routes/reg-action
+(node/reg-action
   ::send-mail-error
   send-mail-error)
 

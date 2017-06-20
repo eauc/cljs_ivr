@@ -2,8 +2,7 @@
   (:require [ivr.libs.logger :as logger]
             [ivr.models.node :as node]
             [ivr.models.node-set :as node-set]
-            [ivr.routes.url :as url]
-            [ivr.services.routes :as routes]))
+            [ivr.routes.url :as url]))
 
 (def log
   (logger/create "announcementNode"))
@@ -47,7 +46,7 @@
                   :callbackurl callback-url
                   :play [sound-url]}])}))))
 
-(routes/reg-action
+(node/reg-action
   ::play-sound
   play-sound)
 

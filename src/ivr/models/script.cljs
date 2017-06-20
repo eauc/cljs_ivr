@@ -1,6 +1,5 @@
 (ns ivr.models.script
-  (:require [cljs.spec :as spec]
-            [ivr.db :as db]
+  (:require [ivr.libs.logger :as logger]
             [ivr.models.node :as node]
             [ivr.models.node.announcement]
             [ivr.models.node.dtmf-catch]
@@ -11,13 +10,13 @@
             [ivr.models.node.transfert-queue]
             [ivr.models.node.transfert-sda]
             [ivr.models.node.voice-record]
-            [ivr.models.store :as store]
             [ivr.services.routes :as routes]
             [ivr.services.routes.error :as routes-error]
-            [ivr.specs.node]
-            [ivr.specs.script]
-            [re-frame.core :as re-frame]
-            [ivr.libs.logger :as logger]))
+            [re-frame.core :as re-frame]))
+
+
+(def log
+  (logger/create "script"))
 
 
 (defn- resolve-script-event
@@ -36,13 +35,10 @@
 
 (routes/reg-action
   :ivr.script/resolve-script
+  [(re-frame/inject-cofx :ivr.store/cofx)]
   resolve-script-event)
 
 
-(spec/fdef conform
-           :args (spec/cat :script map?
-                           :options (spec/keys :req-un [:ivr.script/account-id]))
-           :ret :ivr.script/script)
 (defn conform [script {:keys [account-id]}]
   (-> script
       (assoc "account_id" account-id)
@@ -94,7 +90,7 @@
 
 
 (defn resolve-start-node
-  [deps {:keys [params] :as route}]
+  [_ {:keys [params] :as route}]
   (let [{:strs [script]} params
         start-index (get script "start")]
     (if (nil? start-index)
@@ -112,7 +108,7 @@
 
 
 (defn resolve-node
-  [deps {:keys [action]} {:keys [params] :as route}]
+  [_ {:keys [action]} {:keys [params] :as route}]
   (let [{:strs [script node_id]} params]
     (resolve-node-id script node_id action params)))
 
@@ -127,7 +123,7 @@
   (let [{:strs [call node]} params]
     (enter-node node {:call call :deps deps :params params})))
 
-(routes/reg-action
+(node/reg-action
   :ivr.script/enter-node-route
   [(re-frame/inject-cofx :ivr.node/enter-cofx)]
   enter-node-route)
@@ -139,7 +135,7 @@
   (let [{:strs [call node]} params]
     (leave-node node {:call call :deps deps :params params})))
 
-(routes/reg-action
+(node/reg-action
   :ivr.script/leave-node-route
   [(re-frame/inject-cofx :ivr.node/leave-cofx)]
   leave-node-route)

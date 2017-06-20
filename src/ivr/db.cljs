@@ -49,7 +49,8 @@
 
 (def default-interceptors
 	[(when debug? re-frame/debug)
-	 (when debug? check-db-interceptor)])
+	 (when debug? check-db-interceptor)
+   re-frame/trim-v])
 
 
 (def default-db
@@ -59,5 +60,5 @@
 (re-frame/reg-event-db
 	::init
 	[default-interceptors]
-	(fn init [_ [_ {:keys [config-info]}]]
+	(fn init [_ [{:keys [config-info]}]]
 		(assoc default-db :config-info config-info)))

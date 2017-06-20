@@ -1,8 +1,7 @@
 (ns ivr.models.node.transfert-queue
   (:require [clojure.walk :as walk]
             [ivr.libs.logger :as logger]
-            [ivr.models.node :as node]
-            [ivr.services.routes :as routes]))
+            [ivr.models.node :as node]))
 
 (def log
   (logger/create "node.transfert-queue"))
@@ -39,7 +38,7 @@
      [{:type :ivr.verbs/loop-play
        :path (str "/cloudstore/file/" wait-sound)}])})
 
-(routes/reg-action
+(node/reg-action
   ::play-waiting-sound
   play-waiting-sound)
 
@@ -51,7 +50,7 @@
    (verbs
      [{:type :ivr.verbs/hangup}])})
 
-(routes/reg-action
+(node/reg-action
   ::error-acd-enqueue
   error-acd-enqueue)
 

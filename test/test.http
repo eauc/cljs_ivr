@@ -165,3 +165,19 @@ GET http://localhost:3000/smartccivr/script/1234/node/11/callback?account_id=000
 # Redirect 4
 
 GET http://localhost:3000/smartccivr/script/1234/node/11/callback?account_id=0007&call_id=2234&record_cause=digit-a&record_digits=23%23&record_url=/record/url
+
+# Start script
+
+GET http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&application_id=app-id&from=from-sda&to=to-sda&call_id=2234
+
+# CallStatus in-progress
+
+GET http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=in-progress
+
+# CallStatus failed
+
+GET http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=failed
+
+# DialStatus transferred
+
+GET http://localhost:3000/smartccivr/script/1234/dialstatus?account_id=0007&call_id=2234&bridgestatus=in-progress

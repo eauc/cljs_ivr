@@ -1,6 +1,12 @@
 (ns ivr.models.node
   (:require [clojure.walk :as walk]
             [ivr.libs.logger :as logger]
+            [ivr.models.acd]
+            [ivr.models.ivrservices]
+            [ivr.models.node-action :as node-action]
+            [ivr.models.store]
+            [ivr.models.verbs]
+            [ivr.services.routes :as routes]
             [ivr.routes.url :as url]
             [ivr.services.routes.error :as routes-error]
             [re-frame.core :as re-frame]))
@@ -8,6 +14,24 @@
 
 (def log
   (logger/create "node"))
+
+
+(def default-interceptors
+  [(re-frame/inject-cofx :ivr.acd/cofx)
+   (re-frame/inject-cofx :ivr.services/cofx)
+   (re-frame/inject-cofx :ivr.store/cofx)
+   (re-frame/inject-cofx :ivr.verbs/cofx)
+   node-action/interceptor])
+
+
+(defn reg-action
+  ([id interceptors handler]
+   (routes/reg-action
+     id
+     (concat default-interceptors interceptors)
+     handler))
+  ([id handler]
+   (reg-action id [] handler)))
 
 
 (defn- node-type

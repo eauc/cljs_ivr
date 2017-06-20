@@ -54,7 +54,6 @@
           (update load :config #(explain-config % path))) loads))
 
 
-
 (defn explain [config-info {:strs [path]}]
   (if (nil? path)
     config-info

@@ -3,15 +3,273 @@
 - implement fetch external url
   - web request timeout / max body size
 
-* Tickets action
+* State Machine
 
-- interceptor call-check-action-response:
-  - si node dans req.ivr-params
-  - si ivr.routes/reponse (!!! mettre l'interceptor apres routes/interceptor !!!)
-  - si reponse.status == 200
-  - alors rajoute dispatch-n: [ivr.call/startAction] avec start-action + response.data
-- event ivr.call/emitActionTicket:
-  - extrait les sda de response data
-  - extrait node.type/stat as type/action
-  - si call.action-ongoing -> return fx ivr.ticket/emit avec action ticket
-  - return fx ivr.call/update-action-ongoing
+** ContextV1
+
+- state
+
+** SmartMatch
+
+- *
+  - session: call.session
+  - context: call.contextV1
+- callStatus:
+  - ccapiCallStatus: route.params?
+- dialStatus:
+  - ccapiDialStatus: route.params?
+- enterNode:
+  - enterNodeParams: node.stats
+  - ccapiCallbackParams: route.params?
+- leaveNode:
+  - callbackNodeParams: node.stats
+  - ccapiCallbackParams: routes.params?
+
+** States
+
+*** Created
+
+- enterNode: transferSda/List + sda -> TransferRinging
+  - ringingSda <- enterNodeParams.sda
+  - time <- context.time
+- enterNode: transferList -> stop
+- enterNode: transferQueue -> AcdTransferred
+  - enterNodeParams.queueid
+  - time <- context.time
+- enterNode: * -> InProgress
+  - time <- context.time
+- callStatus: failed/canceled/completed -> call.delete
+
+*** TransferRinging
+
+- dialStatus: bridgestatus[in-progress] -> Transferred
+  - sda <- context.ringingSda
+- dialStatus: dialstatus[failed/no-answer/busy]
+  - dialstatus <- ccapiDialStatus.dialstatus
+  - dialcause <- ccapiDialStatus.dialcause
+- callStatus: completed/canceled &&
+  context.dialstatus === failed/no-answer/busy -> Terminated
+  - cause <- IVR_HANG_UP
+  - failedSda <- context.ringingSda
+  - dialcause <- context.dialstatus
+  - ccapi_dialcause <- context.dialcause
+  - ccapi_cause <- ccapiCallStatus.cause
+  - doActionEnd(IVR_HANG_UP)
+- callStatus: canceled/completed + cause[user-hangup] -> Terminated[CALLER_HANG_UP]
+  - cause <- CALLER_HANG_UP
+  - ringingSda: context.ringingSda
+  - doActionEnd(CALLER_HANG_UP)
+- enterNode: transferSda/List + sda
+- leaveNode: trasnferList + sda      -> TransferRinging
+  - ringingSda <- enter/callbackNodeParams.sda
+  - context.ringingSda
+  - context.dialstatus
+  - context.dialcause
+- enterNode: transferQueue -> AcdTransferred
+  - enterNodeParams.queueid
+  - context.ringingSda
+  - context.dialstatus
+  - context.dialcause
+- enterNode: * -> InProgress
+  - context.ringingSda
+  - context.dialstatus
+  - context.dialcause
+
+*** InProgress
+
+- callStatus: canceled/completed + cause[user-hangup] -> Terminated[CALLER_HANG_UP]
+  - doActionEnd(CALLER_HANG_UP)
+- callStatus: canceled/completed -> Terminated[IVR_HANG_UP]
+  - ccapi_cause <- ccapiCallStatus.cause
+  - doActionEnd(CALLER_HANG_UP)
+- enterNode: transferSda/List + sda -> TransferRinging
+  - ringingSda <- enterNodeParams.sda
+- enterNode: transferQueue -> AcdTransferred
+  - enterNodeParams.queueid
+
+*** Transferred
+
+- dialStatus: dialstatus[completed]
+  - if[ccapiDialStatus.record_id] persist record
+  - bridgeduration <- ccapiDialStatus.bridgeduration
+  - bridgecause <- ccapiDialStatus.bridgecause
+- callStatus: completed -> Terminated
+  - context.sda
+  - context.bridgeduration <- ccapiDialStatus.bridgeduration
+  - context.bridgecause <- ccapiDialStatus.bridgecause
+  - doActionEnd()
+
+- enter: increment limitManager context.sda
+- leave: decrement limitManager context.sda
+
+*** AcdTransferred
+
+- leaveNode: overflowcause
+  - overflow-cause <- callbackNodeParams.overflowcause
+- enterNode: transferSda/List + sda -> TransferRinging
+  - ringingSda <- enterNodeParams.sda
+  - context.overflowcause
+- enterNode: transferList -> stop
+- enterNode: transferQueue -> stop
+- enterNode: * -> InProgress
+  - context.overflowcause
+  - acdStatus()
+- callStatus: completed + context.overflowcause + ccapiCallStatus.cause[xml-hangup] -> Terminated
+  - ccapiCallStatus.cause
+  - context.overflowcause
+  - doActionEnd(IVR_HANG_UP)
+  - acdStatus()
+- callStatus: completed/canceled -> Terminated
+  - doActionEnd()
+  - acdStatus()
+
+- acdStatus()
+  - data:
+    - session.callid/accountid
+    - ccapiCallStatus.status/cause
+    - nextState
+    - newContext.time
+  - POST call-id data
+
+*** Terminated
+
+- enter:
+  - call.delete()
+  - call.doOnEnd()
+
+** Events
+
+*** DialStatus
+
+- TransferRinging: bridgestatus[in-progress] -> Transferred
+  - sda <- context.ringingSda
+- TransferRinging: dialstatus[failed/no-answer/busy]
+  - dialstatus <- ccapiDialStatus.dialstatus
+  - dialcause <- ccapiDialStatus.dialcause
+- InProgress: dialstatus[completed]
+  - if[ccapiDialStatus.record_id] persist record
+  - bridgeduration <- ccapiDialStatus.bridgeduration
+  - bridgecause <- ccapiDialStatus.bridgecause
+
+*** CallStatus
+
+- Created: failed/canceled/completed -> call.delete
+- TransferRinging: completed/canceled &&
+  context.dialstatus === failed/no-answer/busy -> Terminated
+  - cause <- IVR_HANG_UP
+  - failedSda <- context.ringingSda
+  - dialcause <- context.dialstatus
+  - ccapi_dialcause <- context.dialcause
+  - ccapi_cause <- ccapiCallStatus.cause
+  - doActionEnd(IVR_HANG_UP)
+- TransferRinging: canceled/completed + cause[user-hangup] -> Terminated[CALLER_HANG_UP]
+  - cause <- CALLER_HANG_UP
+  - ringingSda: context.ringingSda
+  - doActionEnd(CALLER_HANG_UP)
+- InProgress: canceled/completed + cause[user-hangup] -> Terminated[CALLER_HANG_UP]
+  - doActionEnd(CALLER_HANG_UP)
+- InProgress: canceled/completed -> Terminated[IVR_HANG_UP]
+  - ccapi_cause <- ccapiCallStatus.cause
+  - doActionEnd(CALLER_HANG_UP)
+- Transferred: completed -> Terminated
+  - context.sda
+  - context.bridgeduration <- ccapiDialStatus.bridgeduration
+  - context.bridgecause <- ccapiDialStatus.bridgecause
+  - doActionEnd()
+- AcdTransferred: completed + context.overflowcause + ccapiCallStatus.cause[xml-hangup] -> Terminated
+  - ccapiCallStatus.cause
+  - context.overflowcause
+  - doActionEnd(IVR_HANG_UP)
+  - acdStatus()
+- AcdTransferred: completed/canceled -> Terminated
+  - doActionEnd()
+  - acdStatus()
+
+*** EnterNode TransferSda/List
+
+- Created: transferSda/List + sda -> TransferRinging
+  - ringingSda <- enterNodeParams.sda
+  - time <- context.time
+- Created: transferList -> stop
+- TransferRinging: transferSda/List + sda      -> TransferRinging
+  - ringingSda <- enter/callbackNodeParams.sda
+  - context.ringingSda
+  - context.dialstatus
+  - context.dialcause
+- InProgress: transferSda/List + sda -> TransferRinging
+  - ringingSda <- enterNodeParams.sda
+- AcdTransferred: transferSda/List + sda -> TransferRinging
+  - ringingSda <- enterNodeParams.sda
+  - context.overflowcause
+- AcdTransferred: transferList -> stop
+
+*** LeaveNode TransferList
+
+- TransferRinging: transferList + sda      -> TransferRinging
+  - ringingSda <- enter/callbackNodeParams.sda
+  - context.ringingSda
+  - context.dialstatus
+  - context.dialcause
+
+*** EnterNode TransferQueue
+
+- Created: transferQueue -> AcdTransferred
+  - enterNodeParams.queueid
+  - time <- context.time
+- TransferRinging: transferQueue -> AcdTransferred
+  - enterNodeParams.queueid
+  - context.ringingSda
+  - context.dialstatus
+  - context.dialcause
+- InProgress: transferQueue -> AcdTransferred
+  - enterNodeParams.queueid
+- AcdTransferred: transferQueue -> stop
+
+*** EnterNode *
+
+- Created: * -> InProgress
+  - time <- context.time
+- TransferRinging: * -> InProgress
+  - context.ringingSda
+  - context.dialstatus
+  - context.dialcause
+- AcdTransferred: * -> InProgress
+  - context.overflowcause
+  - acdStatus()
+
+** StateMachine
+
+#+BEGIN_SRC plantuml :file build/SM.png :exports results
+@startuml
+
+[*] --> Created
+Created --> TransferRinging : enterNode transferSda/List[sda]
+Created --> AcdTransferred : enterNode transferQueue
+Created --> InProgress : enterNode *
+Created --> Terminated : callStatus failed/canceled/completed
+
+TransferRinging --> Transferred : dialStatus bridgestatus[in-progress]
+TransferRinging --> Terminated : callStatus canceled/completed
+TransferRinging --> TransferRinging : enterNode transferSda/List[sda]
+TransferRinging --> TransferRinging : leaveNode transferList[sda]
+TransferRinging --> AcdTransferred : enterNode transferQueue
+TransferRinging --> InProgress : enterNode *
+
+InProgress --> Terminated : callStatus canceled/completed
+InProgress --> TransferRinging : enterNode transferSda/List[sda]
+InProgress --> AcdTransferred : enterNode transferQueue
+
+Transferred --> Terminated : callStatus completed
+
+AcdTransferred --> TransferRinging : enterNode transferSda/List[sda]
+AcdTransferred --> AcdTransferred : enterNode transferQueue
+AcdTransferred --> InProgress : enterNode *
+AcdTransferred --> Terminated : callStatus canceled/completed
+
+Terminated --> [*]
+
+@enduml
+#+END_SRC
+
+#+RESULTS:
+[[file:build/SM.png]]

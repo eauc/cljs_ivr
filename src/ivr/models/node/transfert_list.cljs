@@ -3,7 +3,6 @@
             [ivr.libs.logger :as logger]
             [ivr.models.node :as node]
             [ivr.routes.url :as url]
-            [ivr.services.routes :as routes]
             [re-frame.core :as re-frame]))
 
 (defonce query-string (nodejs/require "querystring"))
@@ -60,7 +59,7 @@
         :on-success [::transfert-call-to-list payload]
         :on-error [::eval-list-error payload]})}))
 
-(routes/reg-action
+(node/reg-action
   ::eval-list-with-config
   [(re-frame/inject-cofx :ivr.config/cofx [:ivr :transfersda])]
   eval-list-with-config)
@@ -109,7 +108,7 @@
                 :statusurl status-url}
                config)])}))
 
-(routes/reg-action
+(node/reg-action
   ::transfert-call-to-list
   transfert-call-to-list)
 
@@ -120,7 +119,7 @@
        {:error error :node node})
   (node/go-to-next node deps))
 
-(routes/reg-action
+(node/reg-action
   ::eval-list-error
   eval-list-error)
 
