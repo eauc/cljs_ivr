@@ -19,6 +19,11 @@
   (get-in call [:info :id]))
 
 
+(defn created-time
+  [call]
+  (get-in call [:info :time]))
+
+
 (defn current-state
   [call]
   (get-in call [:state :current]))

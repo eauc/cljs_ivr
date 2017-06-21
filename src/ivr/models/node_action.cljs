@@ -1,8 +1,8 @@
 (ns ivr.models.node-action
   (:require [ivr.libs.logger :as logger]
+            [ivr.models.call :as call]
             [ivr.services.routes.interceptor :as routes-interceptor]
             [re-frame.core :as re-frame]))
-
 
 (def log
   (logger/create "nodeAction"))
@@ -54,7 +54,7 @@
   [context]
   (let [route (routes-interceptor/get-context-route context)
         params (-> (:req route) (aget "ivr-params"))
-        call-id (get-in params ["call" :info :id])
+        call-id (-> params (get "call") call/id)
         current-action (get params "action")
         node (get params "node")
         response (get-in context [:effects :ivr.routes/response])

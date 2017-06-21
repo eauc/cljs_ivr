@@ -1,5 +1,6 @@
 (ns ivr.models.acd
-  (:require [ivr.routes.url :as url]
+  (:require [ivr.models.call :as call]
+            [ivr.routes.url :as url]
             [ivr.services.routes.error :as routes-error]
             [re-frame.core :as re-frame]))
 
@@ -33,8 +34,8 @@
   (let [fallback-url (url/absolute [:v1 :action :script-leave-node]
                                    {:script-id script_id
                                     :node-id node_id})
-        call-id (get-in call [:info :id])
-        call-time (get-in call [:info :time])
+        call-id (call/id call)
+        call-time (call/created-time call)
         acd-params (-> params
                        (select-keys [:account_id :application_id :queue_id :to :from])
                        (merge {:call_id call-id
