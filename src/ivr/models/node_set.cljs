@@ -1,5 +1,6 @@
 (ns ivr.models.node-set
-  (:require [ivr.libs.logger :as logger]))
+  (:require [ivr.libs.logger :as logger]
+            [ivr.models.call :as call]))
 
 
 (def log
@@ -54,7 +55,8 @@
   [set {:keys [action-data] :as call}]
   (let [new-data (reduce #(apply-set-entry %2 %1) action-data set)]
     (if-not (= new-data action-data)
-      {:ivr.call/action-data (assoc call :action-data new-data)}
+      {:ivr.call/update
+       {:id (call/id call) :action-data new-data}}
       {})))
 
 

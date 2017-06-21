@@ -116,8 +116,10 @@
 (defmethod node/enter-type "dtmfcatch"
   [node {:keys [call deps] :as context}]
   (let [update-action-data (node-set/apply-preset node call)
-        updated-call (or (get update-action-data :ivr.call/action-data) call)
-        result (retry node {:deps deps :call updated-call :retries 1})]
+        new-data (get-in update-action-data [:ivr.call/update :action-data])
+        call (cond-> call
+               new-data (assoc :action-data new-data))
+        result (retry node {:deps deps :call call :retries 1})]
     (merge update-action-data result)))
 
 

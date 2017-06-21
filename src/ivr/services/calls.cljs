@@ -2,8 +2,8 @@
   (:require [cljs.core.match :refer-macros [match]]
             [ivr.libs.logger :as logger]
             [ivr.models.call :as call]
-            [ivr.services.calls.action-data]
-            [ivr.services.calls.action-ongoing]
+            [ivr.services.calls.action]
+            [ivr.services.calls.effects]
             [ivr.services.routes :as routes]
             [ivr.services.routes.error :as routes-error]
             [re-frame.core :as re-frame]
@@ -35,7 +35,7 @@
                                  :to to
                                  :script-id script_id
                                  :time call-time-now})]
-      {:db (call/db-insert-call db call)
+      {:ivr.call/create call
        :ivr.routes/params (assoc params "call" call)
        :ivr.routes/next nil})))
 
@@ -146,15 +146,16 @@
 (defn call-state-event
   [{:keys [call-time-now db]}
    {:keys [id next-state info status dial-status] :as event}]
-  (let [call (call/db-call db id)]
+  (let [{:keys [state] :as call} (call/db-call db id)
+        state-update
+        (cond-> state
+          next-state (merge {:current next-state :start-time call-time-now})
+          info (update :info merge info)
+          status (update :status merge status)
+          dial-status (update :dial-status merge dial-status))]
     (cond-> (if (= "Terminated" next-state)
-              {:db (call/db-remove-call db id)}
-              {:db (cond-> db
-                     next-state (call/db-update-call id update :state merge {:current next-state
-                                                                             :start-time call-time-now})
-                     info (call/db-update-call id update-in [:state :info] merge info)
-                     status (call/db-update-call id update-in [:state :status] merge status)
-                     dial-status (call/db-update-call id update-in [:state :dial-status] merge dial-status))})
+              {:ivr.call/remove id}
+              {:ivr.call/update {:id id :state state-update}})
       next-state (merge (emit-state-ticket call (assoc event :now call-time-now))))))
 
 (db/reg-event-fx

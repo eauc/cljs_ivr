@@ -1,5 +1,6 @@
 (ns ivr.models.node.fetch
   (:require [ivr.libs.logger :as logger]
+            [ivr.models.call :as call]
             [ivr.models.node :as node]))
 
 (def log
@@ -29,7 +30,8 @@
   (let [{:keys [action-data]} call
         var-name (get node "varname")
         new-data (assoc action-data var-name route-value)]
-    (merge {:ivr.call/action-data (assoc call :action-data new-data)}
+    (merge {:ivr.call/update
+            {:id (call/id call) :action-data new-data}}
            (node/go-to-next node deps))))
 
 (node/reg-action
@@ -44,7 +46,8 @@
         new-data (assoc action-data var-name "__FAILED__")
         rule-id (get node "id_routing_rule")]
     (log "warn" "routing rule" {:error error :id rule-id})
-    (merge {:ivr.call/action-data (assoc call :action-data new-data)}
+    (merge {:ivr.call/update
+            {:id (call/id call) :action-data new-data}}
            (node/go-to-next node deps))))
 
 (node/reg-action
