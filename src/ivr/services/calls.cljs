@@ -78,11 +78,11 @@
 (defn call-status-route
   [_ {:keys [params] :as route}]
   (let [{:strs [call status]} params
-        call-update (cond-> {:id (get-in call [:info :id])
-                             :status (select-keys params ["status" "cause"])}
-                      (terminal-status status) (assoc :next-state "Terminated"))]
+        state-update (cond-> {:id (call/id call)
+                              :status (select-keys params ["status" "cause"])}
+                       (terminal-status status) (assoc :next-state "Terminated"))]
     {:ivr.routes/response {:status 204}
-     :dispatch [:ivr.call/update call-update]}))
+     :dispatch [:ivr.call/state state-update]}))
 
 (routes/reg-action
   :ivr.call/status-route
@@ -92,12 +92,16 @@
 (defn call-dial-status-route
   [_ {:keys [params] :as route}]
   (let [{:strs [call bridgestatus]} params
-        current-state (get-in call [:state :current])
-        call-update (cond-> {:id (get-in call [:info :id])}
+        current-state (call/current-state call)
+        call-update (cond-> {:id (call/id call)
+                             :dial-status (select-keys params ["bridgecause"
+                                                               "bridgeduration"
+                                                               "dialstatus"
+                                                               "dialcause"])}
                       (and (= "TransferRinging" current-state)
                            (= "in-progress" bridgestatus)) (assoc :next-state "Transferred"))]
     {:ivr.routes/response {:status 204}
-     :dispatch [:ivr.call/update call-update]}))
+     :dispatch [:ivr.call/state call-update]}))
 
 (routes/reg-action
   :ivr.call/dial-status-route
@@ -116,8 +120,9 @@
 
 (defn emit-state-ticket
   [{:keys [state] :as call}
-   {:keys [now next-state queue sda] :as update}]
-  (let [duration (- now (:start-time state))]
+   {:keys [now next-state info] :as update}]
+  (let [{:keys [queue sda]} info
+        duration (- now (:start-time state))]
     (match [(:current state) next-state]
            ["Created" "Terminated"] {}
            ["InProgress" "InProgress"] {}
@@ -138,19 +143,21 @@
                                        :now now})})))
 
 
-(defn call-update-handler
+(defn call-state-event
   [{:keys [call-time-now db]}
-   {:keys [id next-state status] :as event}]
+   {:keys [id next-state info status dial-status] :as event}]
   (let [call (call/db-call db id)]
     (cond-> (if (= "Terminated" next-state)
               {:db (call/db-remove-call db id)}
               {:db (cond-> db
-                     next-state (call/db-update-call id assoc :state {:current next-state
-                                                                      :start-time call-time-now})
-                     status (call/db-update-call id update :status merge status))})
+                     next-state (call/db-update-call id update :state merge {:current next-state
+                                                                             :start-time call-time-now})
+                     info (call/db-update-call id update-in [:state :info] merge info)
+                     status (call/db-update-call id update-in [:state :status] merge status)
+                     dial-status (call/db-update-call id update-in [:state :dial-status] merge dial-status))})
       next-state (merge (emit-state-ticket call (assoc event :now call-time-now))))))
 
 (db/reg-event-fx
-  :ivr.call/update
+  :ivr.call/state
   [(re-frame/inject-cofx :ivr.call/time-now)]
-  call-update-handler)
+  call-state-event)

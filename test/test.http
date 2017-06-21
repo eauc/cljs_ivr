@@ -166,18 +166,33 @@ GET http://localhost:3000/smartccivr/script/1234/node/11/callback?account_id=000
 
 GET http://localhost:3000/smartccivr/script/1234/node/11/callback?account_id=0007&call_id=2234&record_cause=digit-a&record_digits=23%23&record_url=/record/url
 
-# Start script
+####################################
+# STATE
+####################################
+# Created/InProgress
 
 GET http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&application_id=app-id&from=from-sda&to=to-sda&call_id=2234
 
-# CallStatus in-progress
+# TransferRinging
 
-GET http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=in-progress
+GET http://localhost:3000/smartccivr/script/1234/node/10?account_id=0007&call_id=2234&from=from-sda&to=to-sda
 
-# CallStatus failed
-
-GET http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=failed
-
-# DialStatus transferred
+# Transferred
 
 GET http://localhost:3000/smartccivr/script/1234/dialstatus?account_id=0007&call_id=2234&bridgestatus=in-progress
+
+# AcdTransferred
+
+GET http://localhost:3000/smartccivr/script/1234/node/8?account_id=0007&call_id=2234
+
+# update status
+
+GET http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=in-progress&cause=hangup-b
+
+# update dial-status
+
+GET http://localhost:3000/smartccivr/script/1234/dialstatus?account_id=0007&call_id=2234&bridgeduration=42.0&bridgecause=user-hangup&dialstatus=failed&dialcause=hangup-a
+
+# Terminated
+
+GET http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=failed

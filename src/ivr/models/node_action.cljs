@@ -29,14 +29,14 @@
                      :else "InProgress")
         sda (get-in verb [2 1])
         queue (get node "queue")
-        call-update (cond-> {:id call-id :next-state next-state}
-                      (= "AcdTransferred" next-state) (assoc :queue queue)
-                      (= "TransferRinging" next-state) (assoc :sda sda))]
+        state-update (cond-> {:id call-id :next-state next-state}
+                       (= "AcdTransferred" next-state) (assoc-in [:info :queue] queue)
+                       (= "TransferRinging" next-state) (assoc-in [:info :sda] sda))]
     (log "debug" "check-call-state"
          {:node-type node-type :verb verb :next-state next-state :sda sda :queue queue})
     (cond-> context
       enter-node? (update :effects add-dispatch
-                          [:ivr.call/update call-update]))))
+                          [:ivr.call/state state-update]))))
 
 
 (defn- check-start-action

@@ -14,6 +14,16 @@
    :action-ongoing nil})
 
 
+(defn id
+  [call]
+  (get-in call [:info :id]))
+
+
+(defn current-state
+  [call]
+  (get-in call [:state :current]))
+
+
 (defn call->action-ticket
   [{:keys [info action-ongoing] :as call} now]
   (let [duration (- now (:start-time action-ongoing))]
@@ -28,9 +38,16 @@
             :action (:action action-ongoing)})))
 
 
+(defn db-call
+  [db call-id]
+  (get-in db [:calls call-id]))
+
+
 (defn db-insert-call
   [db {{:keys [id]} :info :as call}]
-  (update db :calls assoc id call))
+  (if-not (db-call db id)
+    (update db :calls assoc id call)
+    db))
 
 
 (defn db-remove-call
@@ -40,9 +57,6 @@
 
 (defn db-update-call
   [db call-id & args]
-  (apply update-in db [:calls call-id] args))
-
-
-(defn db-call
-  [db call-id]
-  (get-in db [:calls call-id]))
+  (if (db-call db call-id)
+    (apply update-in db [:calls call-id] args)
+    db))
