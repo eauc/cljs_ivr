@@ -1,5 +1,6 @@
 (ns ivr.models.call
-  (:require [clojure.set :as set]
+  (:require [cljs.core.match :refer-macros [match]]
+            [clojure.set :as set]
             [ivr.libs.logger :as logger]))
 
 
@@ -41,6 +42,41 @@
            {:time now
             :duration duration
             :action (:action action-ongoing)})))
+
+
+(defn state-ticket
+  [state {:keys [next-state now] :as info}]
+  (let [duration (- now (:start-time state))]
+    (merge {:state (:current state)
+            :nextState next-state
+            :time now
+            :duration duration}
+           (dissoc info :next-state :now))))
+
+
+(defn emit-state-ticket
+  [{:keys [state] :as call}
+   {:keys [now next-state info] :as update}]
+  (let [{:keys [queue sda]} info
+        duration (- now (:start-time state))]
+    (match [(:current state) next-state]
+           ["Created" "Terminated"] {}
+           ["InProgress" "InProgress"] {}
+           ["AcdTransferred" "AcdTransferred"] {}
+           ["Created" _] {:ivr.ticket/emit
+                          (state-ticket state {:next-state next-state
+                                               :now (:start-time state)})}
+           [_ "AcdTransferred"] {:ivr.ticket/emit
+                                 (state-ticket state {:next-state next-state
+                                                      :now now
+                                                      :queueid queue})}
+           [_ "TransferRinging"] {:ivr.ticket/emit
+                                  (state-ticket state {:next-state next-state
+                                                       :now now
+                                                       :ringingSda sda})}
+           :else {:ivr.ticket/emit
+                  (state-ticket state {:next-state next-state
+                                       :now now})})))
 
 
 (defn db-call

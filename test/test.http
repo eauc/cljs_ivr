@@ -194,5 +194,4 @@ GET http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=
 GET http://localhost:3000/smartccivr/script/1234/dialstatus?account_id=0007&call_id=2234&bridgeduration=42.0&bridgecause=user-hangup&dialstatus=failed&dialcause=hangup-a
 
 # Terminated
-
 GET http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=failed
