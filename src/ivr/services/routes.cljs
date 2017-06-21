@@ -1,31 +1,27 @@
 (ns ivr.services.routes
   (:require [ivr.db :as db]
             [ivr.libs.logger :as logger]
-            [ivr.services.routes.dispatch :as dispatch]
             [ivr.services.routes.effects]
             [ivr.services.routes.error :as error]
-            [ivr.services.routes.interceptor :as interceptor]
-            [re-frame.core :as re-frame]))
-
+            [ivr.services.routes.interceptor :as interceptor]))
 
 (def log
   (logger/create "routes"))
 
 
 (def default-interceptors
-  [db/default-interceptors
-   interceptor/interceptor])
+  [interceptor/interceptor])
 
 
 (defn reg-action
   ([id interceptors handler]
-   (re-frame/reg-event-fx
+   (db/reg-event-fx
      id
      (concat default-interceptors interceptors)
      (fn action-handler
-       [coeffects event]
+       [& args]
        (try
-         (apply handler coeffects event)
+         (apply handler args)
          (catch js/Object error
            {:ivr.routes/response
             (error/error-response

@@ -49,16 +49,31 @@
 
 (def default-interceptors
 	[(when debug? re-frame/debug)
-	 (when debug? check-db-interceptor)
-   re-frame/trim-v])
+	 (when debug? check-db-interceptor)])
+
+
+(defn reg-event-fx
+	([id interceptors handler]
+	 (re-frame/reg-event-fx
+		 id
+		 (concat default-interceptors interceptors)
+		 (fn action-handler
+			 [coeffects [_ & event]]
+			 (try
+				 (apply handler coeffects event)
+				 (catch js/Object error
+					 (log "error" "event handler"
+                {:message (aget error "message")
+                 :stack (aget error "stack")}))))))
+	([id handler]
+	 (reg-event-fx id [] handler)))
 
 
 (def default-db
 	{:calls {}})
 
 
-(re-frame/reg-event-db
+(reg-event-fx
 	::init
-	[default-interceptors]
-	(fn init [_ [{:keys [config-info]}]]
-		(assoc default-db :config-info config-info)))
+	(fn init [_ {:keys [config-info]}]
+		{:db (assoc default-db :config-info config-info)}))

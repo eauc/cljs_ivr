@@ -140,7 +140,7 @@
 
 (defn call-update-handler
   [{:keys [call-time-now db]}
-   [{:keys [id next-state status] :as event}]]
+   {:keys [id next-state status] :as event}]
   (let [call (call/db-call db id)]
     (cond-> (if (= "Terminated" next-state)
               {:db (call/db-remove-call db id)}
@@ -150,8 +150,7 @@
                      status (call/db-update-call id update :status merge status))})
       next-state (merge (emit-state-ticket call (assoc event :now call-time-now))))))
 
-(re-frame/reg-event-fx
+(db/reg-event-fx
   :ivr.call/update
-  [db/default-interceptors
-   (re-frame/inject-cofx :ivr.call/time-now)]
+  [(re-frame/inject-cofx :ivr.call/time-now)]
   call-update-handler)

@@ -10,7 +10,7 @@
 
 (defn start-action
   [{:keys [db call-time-now] :as coeffects}
-   [{:keys [call-id action] :as event}]]
+   {:keys [call-id action] :as event}]
   (let [call (call/db-call db call-id)
         ongoing (get call :action-ongoing)]
     (log "debug" "start-action" {:call call
@@ -22,10 +22,9 @@
       (not (nil? ongoing)) (merge {:ivr.ticket/emit
                                    (call/call->action-ticket call call-time-now)}))))
 
-(re-frame/reg-event-fx
+(db/reg-event-fx
   :ivr.call/start-action
-  [db/default-interceptors
-   (re-frame/inject-cofx :ivr.call/time-now)]
+  [(re-frame/inject-cofx :ivr.call/time-now)]
   start-action)
 
 
