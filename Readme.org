@@ -239,32 +239,266 @@
 
 ** StateMachine
 
-#+BEGIN_SRC plantuml :file build/SM.png :exports results
+#+BEGIN_SRC plantuml :file doc/SM_full.png :exports results
 @startuml
 
 [*] --> Created
-Created --> TransferRinging : enterNode transferSda/List[sda]
-Created --> AcdTransferred : enterNode transferQueue
-Created --> InProgress : enterNode *
-Created --> Terminated : callStatus failed/canceled/completed
+Created --> TransferRinging
+note right on link
+enterNode.transferSda/List[sda]
+--
+time: context.time
+ringingSda: enterNodeParams.sda
+end note
+Created --> AcdTransferred
+note right on link
+enterNode.transferQueue
+--
+time: context.time
+queueid: enterNodeParams.queueid
+end note
+Created --> InProgress
+note right on link
+enterNode.*
+--
+time: context.time
+end note
+Created --> Terminated
+note right on link
+callStatus.status[failed/canceled/completed]
+end note
 
-TransferRinging --> Transferred : dialStatus bridgestatus[in-progress]
-TransferRinging --> Terminated : callStatus canceled/completed
-TransferRinging --> TransferRinging : enterNode transferSda/List[sda]
-TransferRinging --> TransferRinging : leaveNode transferList[sda]
-TransferRinging --> AcdTransferred : enterNode transferQueue
-TransferRinging --> InProgress : enterNode *
+TransferRinging --> Transferred
+note right on link
+dialStatus.bridgestatus[in-progress]
+--
+sda: context.ringingSda
+end note
+TransferRinging --> Terminated
+note right on link
+callStatus.status[canceled/completed]
+&& dialStatus.dialstatus[failed/no-answer/busy]
+--
+cause: IVR_HANG_UP
+failedSda: context.ringingSda
+dialcause: context.dialstatus
+ccapi_dialcause: context.dialcause
+ccapi_cause: callStatus.cause
+--
+doActionEnd(IVR_HANG_UP)
+end note
+TransferRinging --> Terminated
+note right on link
+callStatus.status[canceled/completed]
+&& callStatus.cause[user-hangup]
+--
+cause: CALLER_HANG_UP
+ringingSda: context.ringingSda
+--
+doActionEnd(CALLER_HANG_UP)
+end note
+TransferRinging --> TransferRinging
+note right on link
+enterNode.transferSda/List[sda]
+|| leaveNode.transferList[sda]
+--
+ringingSda: nodeEnterParams.sda
+failedSda: context.sda
+dialcause: context.dialstatus
+ccapi_dialcause: context.dialcause
+end note
+TransferRinging --> AcdTransferred
+note right on link
+enterNode.transferQueue
+--
+queueid: enterNodeParams.queueid
+failedSda: context.sda
+dialcause: context.dialstatus
+ccapi_dialcause: context.dialcause
+end note
+TransferRinging --> InProgress
+note right on link
+enterNode.*
+--
+failedSda: context.sda
+dialcause: context.dialstatus
+ccapi_dialcause: context.dialcause
+end note
 
-InProgress --> Terminated : callStatus canceled/completed
-InProgress --> TransferRinging : enterNode transferSda/List[sda]
-InProgress --> AcdTransferred : enterNode transferQueue
+InProgress --> Terminated
+note right on link
+callStatus.status[canceled/completed]
+&& callStatus.cause[user-hangup]
+--
+cause: CALLER_HANGUP
+--
+doActionEnd(CALLER_HANG_UP)
+end note
+InProgress --> Terminated
+note right on link
+callStatus.status[canceled/completed]
+--
+cause: IVR_HANGUP
+ccapi_cause: callStatus.cause
+--
+doActionEnd(IVR_HANG_UP)
+end note
+InProgress --> TransferRinging
+note right on link
+enterNode.transferSda/List[sda]
+--
+ringingSda: enterNodeParams.sda
+end note
+InProgress --> AcdTransferred
+note right on link
+enterNode transferQueue
+--
+queueid: enterNodeParams.queueid
+end note
 
-Transferred --> Terminated : callStatus completed
+Transferred --> Terminated
+note right on link
+callStatus.status[completed]
+--
+sda: context.sda
+bridgeduration: context.brideduration
+bridgecause: context.bridgecause
+end note
+Transferred : enter() - limitManager.inc(context.sda)
+Transferred : leave() - limitManager.dec(context.sda)
 
-AcdTransferred --> TransferRinging : enterNode transferSda/List[sda]
-AcdTransferred --> AcdTransferred : enterNode transferQueue
-AcdTransferred --> InProgress : enterNode *
-AcdTransferred --> Terminated : callStatus canceled/completed
+AcdTransferred --> TransferRinging
+note right on link
+enterNode.transferSda/List[sda]
+--
+acdcause: ACD_OVERFLOW
+overflowcause: context.overflowcause
+ringingSda: enterNodeParams.sda
+--
+acdStatus()
+end note
+AcdTransferred --> AcdTransferred
+note right on link
+enterNode.transferQueue
+end note
+AcdTransferred --> InProgress
+note right on link
+enterNode.*
+--
+acdcause: ACD_OVERFLOW
+overflowcause: context.overflowcause
+--
+acdStatus()
+end note
+AcdTransferred --> Terminated
+note right on link
+callStatus.status[completed]
+&& callStatus.cause[xml-hangup]
+&& context.overflow_cause
+--
+acdcause: ACD_OVERFLOW
+cause: IVR_HANG_UP
+ccapi_cause: callStatus.cause
+overflowcause: context.cause
+--
+doActionEnd(IVR_HANG_UP)
+acdStatus()
+end note
+AcdTransferred --> Terminated
+note right on link
+callStatus.status[canceled/completed]
+--
+--
+doActionEnd()
+acdStatus()
+end note
+
+Terminated --> [*]
+Terminated : enter() - call.delete() & call.doOnEnd()
+
+@enduml
+#+END_SRC
+
+#+RESULTS:
+[[file:doc/SM_full.png]]
+
+#+BEGIN_SRC plantuml :file doc/SM_state.png :exports results
+@startuml
+
+[*] --> Created
+Created --> TransferRinging
+note right on link
+enterNode.transferSda/List[sda]
+end note
+Created --> AcdTransferred
+note right on link
+enterNode.transferQueue
+end note
+Created --> InProgress
+note right on link
+enterNode.*
+end note
+Created --> Terminated
+note right on link
+callStatus.status[failed/canceled/completed]
+end note
+
+TransferRinging --> Transferred
+note right on link
+dialStatus.bridgestatus[in-progress]
+end note
+TransferRinging --> Terminated
+note right on link
+callStatus.status[canceled/completed]
+end note
+TransferRinging --> TransferRinging
+note right on link
+enterNode.transferSda/List[sda]
+|| leaveNode.transferList[sda]
+end note
+TransferRinging --> AcdTransferred
+note right on link
+enterNode.transferQueue
+end note
+TransferRinging --> InProgress
+note right on link
+enterNode.*
+end note
+
+InProgress --> Terminated
+note right on link
+callStatus.status[canceled/completed]
+end note
+InProgress --> TransferRinging
+note right on link
+enterNode.transferSda/List[sda]
+end note
+InProgress --> AcdTransferred
+note right on link
+enterNode transferQueue
+end note
+
+Transferred --> Terminated
+note right on link
+callStatus.status[completed]
+end note
+
+AcdTransferred --> TransferRinging
+note right on link
+enterNode.transferSda/List[sda]
+end note
+AcdTransferred --> AcdTransferred
+note right on link
+enterNode.transferQueue
+end note
+AcdTransferred --> InProgress
+note right on link
+enterNode.*
+end note
+AcdTransferred --> Terminated
+note right on link
+callStatus.status[canceled/completed]
+end note
 
 Terminated --> [*]
 
@@ -272,4 +506,132 @@ Terminated --> [*]
 #+END_SRC
 
 #+RESULTS:
-[[file:build/SM.png]]
+[[file:doc/SM_state.png]]
+
+#+BEGIN_SRC plantuml :file doc/SM_progress.png :exports results
+@startuml
+
+[*] --> Created
+
+Created --> InProgress
+note right on link
+enterNode.*
+end note
+
+TransferRinging --> InProgress
+note right on link
+enterNode.*
+end note
+
+AcdTransferred --> InProgress
+note right on link
+enterNode.*
+end note
+
+@enduml
+#+END_SRC
+
+#+RESULTS:
+[[file:doc/SM_progress.png]]
+
+#+BEGIN_SRC plantuml :file doc/SM_acdtransferred.png :exports results
+@startuml
+
+[*] --> Created
+
+Created --> AcdTransferred
+note right on link
+enterNode.transferQueue
+end note
+
+TransferRinging --> AcdTransferred
+note right on link
+enterNode.transferQueue
+end note
+
+InProgress --> AcdTransferred
+note right on link
+enterNode transferQueue
+end note
+
+AcdTransferred --> AcdTransferred
+note right on link
+enterNode.transferQueue
+end note
+
+@enduml
+#+END_SRC
+
+#+RESULTS:
+[[file:doc/SM_acdtransferred.png]]
+
+#+BEGIN_SRC plantuml :file doc/SM_transferringing.png :exports results
+@startuml
+
+[*] --> Created
+
+Created --> TransferRinging
+note right on link
+enterNode.transferSda/List[sda]
+end note
+
+TransferRinging --> TransferRinging
+note right on link
+enterNode.transferSda/List[sda]
+|| leaveNode.transferList[sda]
+end note
+
+InProgress --> TransferRinging
+note right on link
+enterNode.transferSda/List[sda]
+end note
+
+AcdTransferred --> TransferRinging
+note right on link
+enterNode.transferSda/List[sda]
+end note
+
+@enduml
+#+END_SRC
+
+#+RESULTS:
+[[file:doc/SM_transferringing.png]]
+
+#+BEGIN_SRC plantuml :file doc/SM_terminated.png :exports results
+@startuml
+
+[*] --> Created
+
+Created --> Terminated
+note right on link
+callStatus.status[failed/canceled/completed]
+end note
+
+TransferRinging --> Terminated
+note right on link
+callStatus.status[canceled/completed]
+end note
+
+InProgress --> Terminated
+note right on link
+callStatus.status[canceled/completed]
+end note
+
+Transferred --> Terminated
+note right on link
+callStatus.status[completed]
+end note
+
+AcdTransferred --> Terminated
+note right on link
+callStatus.status[canceled/completed]
+end note
+
+Terminated --> [*]
+
+@enduml
+#+END_SRC
+
+#+RESULTS:
+[[file:doc/SM_terminated.png]]
+
