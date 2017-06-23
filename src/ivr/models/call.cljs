@@ -57,7 +57,7 @@
 (defn emit-state-ticket
   [{:keys [state] :as call}
    {:keys [now next-state info] :as update}]
-  (let [{:keys [queue sda]} info
+  (let [{:keys [queue sda]} (:info state)
         duration (- now (:start-time state))]
     (match [(:current state) next-state]
            ["Created" "Terminated"] {}

@@ -1,5 +1,6 @@
 (ns ivr.models.node.transfert-sda
-  (:require [ivr.models.node :as node]
+  (:require [ivr.models.call :as call]
+            [ivr.models.node :as node]
             [ivr.routes.url :as url]
             [re-frame.core :as re-frame]))
 
@@ -43,7 +44,8 @@
                                    {:script-id script_id :node-id id})
         status-url (url/absolute [:v1 :status :dial]
                                  {:script-id script_id})]
-    {:ivr.routes/response
+    {:dispatch-n [[:ivr.call/state {:id (call/id (get params "call")) :info {:sda dest}}]]
+     :ivr.routes/response
      (verbs
        [(merge {:type :ivr.verbs/dial-number
                 :number dest

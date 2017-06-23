@@ -1,6 +1,7 @@
 (ns ivr.models.node.transfert-queue
   (:require [clojure.walk :as walk]
             [ivr.libs.logger :as logger]
+            [ivr.models.call :as call]
             [ivr.models.node :as node]))
 
 (def log
@@ -16,6 +17,7 @@
   [{:strs [id script_id queue] :as node}
    {:keys [call deps params] :as context}]
   (let [{:keys [acd]} deps
+        call-id (call/id (get params "call"))
         acd-params
         (-> params
             (select-keys ["account_id" "application_id" "to" "from"])
@@ -25,15 +27,16 @@
                     :node_id id
                     :script_id script_id
                     :queue_id queue
-                    :on-success [::play-waiting-sound {:node node}]
+                    :on-success [::play-waiting-sound {:call-id call-id :node node :queue queue}]
                     :on-error [::error-acd-enqueue {:node node}]}))]
     {:ivr.web/request
      (acd acd-params)}))
 
 
 (defn- play-waiting-sound
-  [{:keys [verbs]} {:keys [wait-sound]}]
-  {:ivr.routes/response
+  [{:keys [verbs]} {:keys [call-id queue wait-sound]}]
+  {:dispatch-n [[:ivr.call/state {:id call-id :info {:queue queue}}]]
+   :ivr.routes/response
    (verbs
      [{:type :ivr.verbs/loop-play
        :path (str "/cloudstore/file/" wait-sound)}])})

@@ -1,6 +1,7 @@
 (ns ivr.models.node.transfert-list
   (:require [cljs.nodejs :as nodejs]
             [ivr.libs.logger :as logger]
+            [ivr.models.call :as call]
             [ivr.models.node :as node]
             [ivr.routes.url :as url]
             [re-frame.core :as re-frame]))
@@ -47,9 +48,10 @@
   [{:keys [config services] :as coeffects}
    {:keys [node eval-list account]}
    {:keys [params]}]
-  (let [transfert-config (node/->transfert-config config account params)
+  (let [call-id (call/id (get params "call"))
+        transfert-config (node/->transfert-config config account params)
         {account-id "account_id" list-id "dest"} node
-        payload {:node node :config transfert-config}]
+        payload {:call-id call-id :node node :config transfert-config}]
     {:ivr.web/request
      (services
        {:type :ivr.services/eval-destination-list
@@ -92,18 +94,20 @@
 
 
 (defn- transfert-call-to-list
-  [{:keys [verbs]} {:keys [config node list-value]}]
+  [{:keys [verbs]} {:keys [call-id config node list-value]}]
   (let [{:strs [id script_id]} node
         callback-query (eval-list->callback-query list-value)
         callback-url (url/absolute [:v1 :action :script-leave-node]
                                    {:script-id script_id
                                     :node-id id})
         status-url (url/absolute [:v1 :status :dial]
-                                 {:script-id script_id})]
-    {:ivr.routes/response
+                                 {:script-id script_id})
+        sda (get list-value "sda")]
+    {:dispatch-n [[:ivr.call/state {:id call-id :info {:sda sda}}]]
+     :ivr.routes/response
      (verbs
        [(merge {:type :ivr.verbs/dial-number
-                :number (get list-value "sda")
+                :number sda
                 :callbackurl (str callback-url callback-query)
                 :statusurl status-url}
                config)])}))

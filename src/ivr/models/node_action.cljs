@@ -19,26 +19,22 @@
 (defn- check-call-state
   [context {:keys [call-id current-action node response success?]}]
   (let [node-type (get node "type")
-        verb (first (get-in response [:data 1]))
+        verb (get (first (get-in response [:data 1])) 0)
         next-state (cond
                      (and (= :enter current-action)
                           (= "transferqueue" node-type)
-                          (= :Play (get verb 0))) "AcdTransferred"
+                          (= :Play verb)) "AcdTransferred"
                      (and (= :enter current-action)
                           (= "transfersda" node-type)
-                          (= :Dial (get verb 0))) "TransferRinging"
+                          (= :Dial verb)) "TransferRinging"
                      (and (= "transferlist" node-type)
-                          (= :Dial (get verb 0))) "TransferRinging"
+                          (= :Dial verb)) "TransferRinging"
                      (= "transferlist" node-type) nil
                      :else "InProgress")
-        sda (get-in verb [2 1])
-        queue (get node "queue")
         change-state? (and success? next-state)
-        state-update (cond-> {:id call-id :next-state next-state}
-                       (= "AcdTransferred" next-state) (assoc-in [:info :queue] queue)
-                       (= "TransferRinging" next-state) (assoc-in [:info :sda] sda))]
+        state-update {:id call-id :next-state next-state}]
     (log "debug" "check-call-state"
-         {:node-type node-type :verb verb :next-state next-state :sda sda :queue queue})
+         {:node-type node-type :verb verb :next-state next-state :change-state? change-state?})
     (cond-> context
       change-state? (update :effects add-dispatch
                             [:ivr.call/state state-update]))))
