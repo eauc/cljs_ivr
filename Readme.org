@@ -250,6 +250,10 @@ enterNode.transferSda/List[sda]
 time: context.time
 ringingSda: enterNodeParams.sda
 end note
+Created --> Created
+note right on link
+enterNode.transferList
+end note
 Created --> AcdTransferred
 note right on link
 enterNode.transferQueue
@@ -379,7 +383,8 @@ acdStatus()
 end note
 AcdTransferred --> AcdTransferred
 note right on link
-enterNode.transferQueue
+enterNode.transferList
+|| enterNode.transferQueue
 end note
 AcdTransferred --> InProgress
 note right on link
@@ -429,6 +434,10 @@ Terminated : enter() - call.delete() & call.doOnEnd()
 Created --> TransferRinging
 note right on link
 enterNode.transferSda/List[sda]
+end note
+Created --> Created
+note right on link
+enterNode.transferList
 end note
 Created --> AcdTransferred
 note right on link
@@ -489,7 +498,8 @@ enterNode.transferSda/List[sda]
 end note
 AcdTransferred --> AcdTransferred
 note right on link
-enterNode.transferQueue
+enterNode.transferList
+|| enterNode.transferQueue
 end note
 AcdTransferred --> InProgress
 note right on link

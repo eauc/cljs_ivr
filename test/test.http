@@ -177,6 +177,19 @@ GET http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&appl
 
 GET http://localhost:3000/smartccivr/script/1234/node/10?account_id=0007&call_id=2234&from=from-sda&to=to-sda
 
+# <- TransferList leave
+# TransferRinging
+
+GET http://localhost:3000/smartccivr/script/1234/node/6/callback?account_id=0007&call_id=2234&_dstLst_param1=value1&_dstLst_param2=value2&from=from-sda&to=to-sda
+
+# <- TransferList enter no-change
+
+GET http://localhost:3000/smartccivr/script/1234/node/7?account_id=0007&call_id=2234
+
+# <- TransferList leave no change
+
+GET http://localhost:3000/smartccivr/script/1234/node/6/callback?account_id=0007&call_id=2234&_dstLst_param1=value1&_dstLst_param2=value2&dialstatus=completed
+
 # Transferred
 
 GET http://localhost:3000/smartccivr/script/1234/dialstatus?account_id=0007&call_id=2234&bridgestatus=in-progress
