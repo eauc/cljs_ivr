@@ -103,13 +103,8 @@
         status-url (url/absolute [:v1 :status :dial]
                                  {:script-id script_id})
         sda (get list-value "sda")
-        call (call/db-call db call-id)
-        call-state (call/current-state call)
-        call-previous-sda (call/current-sda call)
-        info-update (cond-> {:sda sda}
-                      (and (= "TransferRinging" call-state)
-                           call-previous-sda) (assoc :failed-sda call-previous-sda))]
-    {:dispatch-n [[:ivr.call/state {:id call-id :info info-update}]]
+        call (call/db-call db call-id)]
+    {:dispatch-n [(call/update-sda call sda)]
      :ivr.routes/response
      (verbs
        [(merge {:type :ivr.verbs/dial-number

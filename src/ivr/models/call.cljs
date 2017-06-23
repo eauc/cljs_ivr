@@ -35,6 +35,16 @@
   (get-in call [:state :info :sda]))
 
 
+(defn update-sda
+  [call sda]
+  (let [id (id call)
+        state (current-state call)
+        current-sda (current-sda call)
+        info-update (cond-> {:sda sda}
+                      (and (= "TransferRinging" state)
+                           current-sda) (assoc :failed-sda current-sda))]
+    [:ivr.call/state {:id id :info info-update}]))
+
 (defn call->action-ticket
   [{:keys [info action-ongoing] :as call} now]
   (let [duration (- now (:start-time action-ongoing))]

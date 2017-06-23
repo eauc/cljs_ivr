@@ -44,13 +44,8 @@
                                    {:script-id script_id :node-id id})
         status-url (url/absolute [:v1 :status :dial]
                                  {:script-id script_id})
-        call (get params "call")
-        call-state (call/current-state call)
-        call-previous-sda (call/current-sda call)
-        info-update (cond-> {:sda dest}
-                      (and (= "TransferRinging" call-state)
-                           call-previous-sda) (assoc :failed-sda call-previous-sda))]
-    {:dispatch-n [[:ivr.call/state {:id (call/id (get params "call")) :info info-update}]]
+        call (get params "call")]
+    {:dispatch-n [(call/update-sda call dest)]
      :ivr.routes/response
      (verbs
        [(merge {:type :ivr.verbs/dial-number
