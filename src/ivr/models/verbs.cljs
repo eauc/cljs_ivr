@@ -29,3 +29,8 @@
  :ivr.verbs/cofx
  (fn verbs-cofx [coeffects _]
    (assoc coeffects :verbs create)))
+
+
+(defn first-verb
+  [response]
+  (get (first (get-in response [:data 1])) 0))

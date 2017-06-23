@@ -1,6 +1,7 @@
 (ns ivr.models.node-action
   (:require [ivr.libs.logger :as logger]
             [ivr.models.call :as call]
+            [ivr.models.verbs :as verbs]
             [ivr.services.routes.interceptor :as routes-interceptor]
             [re-frame.core :as re-frame]))
 
@@ -19,7 +20,7 @@
 (defn- check-call-state
   [context {:keys [call-id current-action node response success?]}]
   (let [node-type (get node "type")
-        verb (get (first (get-in response [:data 1])) 0)
+        verb (verbs/first-verb response)
         next-state (cond
                      (and (= :enter current-action)
                           (= "transferqueue" node-type)
