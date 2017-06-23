@@ -60,16 +60,61 @@
 
 
 (defn enter-state-ticket
-  [{{{:keys [queue sda]} :info} :state :as call} status next-state]
+  [{{current-state :current
+     {:keys [overflow-cause queue sda]} :info
+     {:strs [dialstatus]} :dial-status} :state
+    :as call}
+   {:strs [cause] :as status}
+   next-state]
   (condp = next-state
     "AcdTransferred" {:queueid queue}
+    "Transferred" {:sda sda}
     "TransferRinging" {:ringingSda sda}
-    "Terminated" (let [cause (get status "cause")]
-                   (if (= "user-hangup" cause)
-                     {:cause "CALLER_HANG_UP"}
-                     {:cause "IVR_HANG_UP"
-                      :ccapi_cause cause}))
+    "Terminated" (cond
+                   (= "Transferred" current-state) {}
+                   (= "TransferRinging" current-state)
+                   (cond
+                     (#{"failed" "no-answer" "busy"} dialstatus) {:ccapi_cause cause}
+                     (= "user-hangup" cause) (enter-state-ticket call status nil)
+                     :else {})
+                   (and (= "AcdTransferred" current-state)
+                        (not (and (overflow-cause)
+                                  (= "xml-hangup" cause)))) {}
+                   (= "user-hangup" cause) {:cause "CALLER_HANG_UP"}
+                   :else {:cause "IVR_HANG_UP"
+                          :ccapi_cause cause})
     {}))
+
+
+(defn leave-state-ticket
+  [{{current-state :current
+     {:keys [overflow-cause sda]} :info
+     {:strs [bridgecause bridgeduration dialcause dialstatus]} :dial-status} :state
+    :as call}
+   {:strs [cause] :as status}
+   next-state]
+  (condp = current-state
+    "AcdTransferred" (if (and overflow-cause (= "xml-hangup" cause))
+                       {:acdcause "ACD_OVERFLOW"
+                        :overflowcause overflow-cause}
+                       {})
+    "TransferRinging" (cond
+                        (= "Transferred" next-state) {}
+                        (= "Terminated" next-state) (cond
+                                                      (#{"failed" "no-answer" "busy"} dialstatus)
+                                                      (leave-state-ticket call status nil)
+                                                      (= "user-hangup" cause)
+                                                      {:ringingSda sda}
+                                                      :else
+                                                      {})
+                        :else {:failedSda sda
+                               :dialcause dialstatus
+                               :ccapi_dialcause dialcause})
+    "Transferred" {:sda sda
+                   :bridgecause bridgecause
+                   :bridgeduration bridgeduration}
+    {}))
+
 
 (defn emit-state-ticket
   [{:keys [state] :as call}
@@ -86,18 +131,21 @@
            ["Created" "AcdTransferred"]
            {:ivr.ticket/emit
             (merge base-ticket
+                   (leave-state-ticket call status next-state)
                    (enter-state-ticket call status next-state))}
            ;; ["Created" "Created"]
            ;; {}
            ["Created" "InProgress"]
            {:ivr.ticket/emit
             (merge base-ticket
+                   (leave-state-ticket call status next-state)
                    (enter-state-ticket call status next-state))}
            ;; ["Created" "Transferred"]
            ;; {}
            ["Created" "TransferRinging"]
            {:ivr.ticket/emit
             (merge base-ticket
+                   (leave-state-ticket call status next-state)
                    (enter-state-ticket call status next-state))}
            ;; ["Created" "Terminated"]
            ;; {}
@@ -106,6 +154,7 @@
            ["InProgress" "AcdTransferred"]
            {:ivr.ticket/emit
             (merge base-ticket
+                   (leave-state-ticket call status next-state)
                    (enter-state-ticket call status next-state))}
            ;; ["InProgress" "Created"]
            ;; {}
@@ -116,10 +165,12 @@
            ["InProgress" "TransferRinging"]
            {:ivr.ticket/emit
             (merge base-ticket
+                   (leave-state-ticket call status next-state)
                    (enter-state-ticket call status next-state))}
            ["InProgress" "Terminated"]
            {:ivr.ticket/emit
             (merge base-ticket
+                   (leave-state-ticket call status next-state)
                    (enter-state-ticket call status next-state))}
 
 
@@ -130,93 +181,49 @@
            ["AcdTransferred" "InProgress"]
            {:ivr.ticket/emit
             (merge base-ticket
-                   {:acdcause "ACD_OVERFLOW"
-                    :overflowcause overflow-cause})}
+                   (leave-state-ticket call status next-state)
+                   (enter-state-ticket call status next-state))}
            ;; ["AcdTransferred" "Transferred"]
            ;; {}
            ["AcdTransferred" "TransferRinging"]
            {:ivr.ticket/emit
             (merge base-ticket
-                   {:acdcause "ACD_OVERFLOW"
-                    :overflowcause overflow-cause}
+                   (leave-state-ticket call status next-state)
                    (enter-state-ticket call status next-state))}
            ["AcdTransferred" "Terminated"]
-           (let [cause (get status "cause")]
-             (if (and overflow-cause (= "xml-hangup" cause))
-               {:ivr.ticket/emit
-                (merge base-ticket
-                       {:acdcause "ACD_OVERFLOW"
-                        :overflowcause overflow-cause}
-                       (enter-state-ticket call status next-state))}
-               {:ivr.ticket/emit
-                base-ticket}))
+           {:ivr.ticket/emit
+            (merge base-ticket
+                   (leave-state-ticket call status next-state)
+                   (enter-state-ticket call status next-state))}
 
 
            ["TransferRinging" "AcdTransferred"]
            {:ivr.ticket/emit
             (merge base-ticket
-                   {:failedSda sda
-                    :dialcause dialstatus
-                    :ccapi_dialcause dialcause}
+                   (leave-state-ticket call status next-state)
                    (enter-state-ticket call status next-state))}
            ;; ["TransferRinging" "Created"]
            ;; {}
            ["TransferRinging" "InProgress"]
            {:ivr.ticket/emit
             (merge base-ticket
-                   {:failedSda sda
-                    :dialcause dialstatus
-                    :ccapi_dialcause dialcause})}
+                   (leave-state-ticket call status next-state)
+                   (enter-state-ticket call status next-state))}
            ["TransferRinging" "Transferred"]
            {:ivr.ticket/emit
             (merge base-ticket
-                   {:sda sda})}
+                   (leave-state-ticket call status next-state)
+                   (enter-state-ticket call status next-state))}
            ["TransferRinging" "TransferRinging"]
            {:ivr.ticket/emit
             (merge base-ticket
-                   {:failedSda failed-sda
-                    :dialcause dialstatus
-                    :ccapi_dialcause dialcause}
+                   (leave-state-ticket call status next-state)
                    (enter-state-ticket call status next-state))}
            ["TransferRinging" "Terminated"]
-           (let [cause (get status "cause")]
-             (cond
-               (#{"failed" "no-answer" "busy"} dialstatus)
-               {:ivr.ticket/emit
-                (merge base-ticket
-                       {:failedSda sda
-                        :dialcause dialstatus
-                        :ccapi_dialcause dialcause}
-                       {:ccapi_cause cause})}
-               (= "user-hangup" cause)
-               {:ivr.ticket/emit
-                (merge base-ticket
-                       {:ringingSda sda}
-                       (enter-state-ticket call status next-state))}
-               :else
-               {:ivr.ticket/emit
-                base-ticket}))
-
-
-           ;; ["Transferred" "AcdTransferred"]
-           ;; {}
-           ;; ["Transferred" "Created"]
-           ;; {}
-           ;; ["Transferred" "InProgress"]
-           ;; {}
-           ;; ["Transferred" "Transferred"]
-           ;; {}
-           ;; ["Transferred" "TransferRinging"]
-           ;; {}
-           ["Transferred" "Terminated"]
            {:ivr.ticket/emit
             (merge base-ticket
-                   {:sda sda
-                    :bridgecause bridgecause
-                    :bridgeduration bridgeduration})}
-
-           :else
-           {})))
+                   (leave-state-ticket call status next-state)
+                   (enter-state-ticket call status next-state))})))
 
 
 (defn db-call
