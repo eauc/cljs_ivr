@@ -94,7 +94,7 @@
 
 
 (defn- transfert-call-to-list
-  [{:keys [verbs]} {:keys [call-id config node list-value]}]
+  [{:keys [db verbs]} {:keys [call-id config node list-value]}]
   (let [{:strs [id script_id]} node
         callback-query (eval-list->callback-query list-value)
         callback-url (url/absolute [:v1 :action :script-leave-node]
@@ -102,8 +102,14 @@
                                     :node-id id})
         status-url (url/absolute [:v1 :status :dial]
                                  {:script-id script_id})
-        sda (get list-value "sda")]
-    {:dispatch-n [[:ivr.call/state {:id call-id :info {:sda sda}}]]
+        sda (get list-value "sda")
+        call (call/db-call db call-id)
+        call-state (call/current-state call)
+        call-previous-sda (call/current-sda call)
+        info-update (cond-> {:sda sda}
+                      (and (= "TransferRinging" call-state)
+                           call-previous-sda) (assoc :failed-sda call-previous-sda))]
+    {:dispatch-n [[:ivr.call/state {:id call-id :info info-update}]]
      :ivr.routes/response
      (verbs
        [(merge {:type :ivr.verbs/dial-number

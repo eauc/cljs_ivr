@@ -198,13 +198,22 @@ GET http://localhost:3000/smartccivr/script/1234/dialstatus?account_id=0007&call
 
 GET http://localhost:3000/smartccivr/script/1234/node/8?account_id=0007&call_id=2234
 
+# update info.overflow-cause
+
+GET http://localhost:3000/smartccivr/script/1234/node/8/callback?account_id=0007&call_id=2234&overflowcause=NO_AGENT
+
 # update status
 
 GET http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=in-progress&cause=hangup-b
 
-# update dial-status
+# update dial-status FAILED
 
 GET http://localhost:3000/smartccivr/script/1234/dialstatus?account_id=0007&call_id=2234&bridgeduration=42.0&bridgecause=user-hangup&dialstatus=failed&dialcause=hangup-a
 
-# Terminated
-GET http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=failed
+# Terminated IVR_HANG_UP
+
+GET http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=failed&cause=xml-hangup
+
+# Terminated CALLER_HANG_UP
+
+GET http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=failed&cause=user-hangup

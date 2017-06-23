@@ -61,9 +61,12 @@
   [{:strs [case] :as node}
    {:keys [deps params] :as context}]
   (let [{:strs [overflowcause]} params
+        call-id (call/id (get params "call"))
         next (cond
                (= "NO_AGENT" overflowcause) (get case "noagent")
                (= "QUEUE_FULL" overflowcause) (get case "full")
                (= "QUEUE_TIMEOUT" overflowcause) (get case "timeout")
-               :else nil)]
-    (node/go-to-next (assoc node "next" next) deps)))
+               :else nil)
+        go-to-next (node/go-to-next (assoc node "next" next) deps)
+        state-update {:dispatch-n [[:ivr.call/state {:id call-id :info {:overflow-cause overflowcause}}]]}]
+    (merge state-update go-to-next)))
