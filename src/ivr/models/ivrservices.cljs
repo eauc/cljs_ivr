@@ -1,6 +1,13 @@
 (ns ivr.models.ivrservices
-  (:require [ivr.services.routes.error :as routes-error]
-            [re-frame.core :as re-frame]))
+  (:require [ivr.db :as db]
+            [ivr.services.routes.error :as routes-error]
+            [re-frame.core :as re-frame]
+            [ivr.libs.logger :as logger]))
+
+
+(def log
+  (logger/create "ivrServices"))
+
 
 (defmulti query :type)
 
@@ -59,3 +66,28 @@
    :data data
    :on-success (partial eval-destination-list-success on-success)
    :on-error on-error})
+
+
+(defmethod query :ivr.services/call-on-end
+  [{:keys [account-id script-id] :as params}]
+  {:method "POST"
+   :url (str "/smartccivrservices/account/" account-id "/script/" script-id "/on-end")
+   :data params
+   :on-success [:ivr.services/call-on-end-success params]
+   :on-error [:ivr.services/call-on-end-error params]})
+
+
+(db/reg-event-fx
+  :ivr.services/call-on-end-success
+  (fn services-call-on-end-success
+    [_ params]
+    (log "info" "call-on-end ok" params)
+    {}))
+
+
+(db/reg-event-fx
+  :ivr.services/call-on-end-error
+  (fn services-call-on-end-error
+    [_ params]
+    (log "error" "call-on-end error" params)
+    {}))

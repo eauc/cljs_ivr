@@ -1,8 +1,8 @@
 (ns ivr.models.call
   (:require [cljs.core.match :refer-macros [match]]
             [clojure.set :as set]
-            [ivr.libs.logger :as logger]))
-
+            [ivr.libs.logger :as logger]
+            [ivr.models.cloudmemory :as cloudmemory]))
 
 (def log
   (logger/create "call"))
@@ -44,6 +44,7 @@
                       (and (= "TransferRinging" state)
                            current-sda) (assoc :failed-sda current-sda))]
     [:ivr.call/state {:id id :info info-update}]))
+
 
 (defn call->action-ticket
   [{:keys [info action-ongoing] :as call} now]
@@ -153,6 +154,76 @@
               (merge base-ticket
                      (leave-state-ticket call status next-state)
                      (enter-state-ticket call status next-state))}))))
+
+
+(defn change-state-event
+  [call {:keys [next-state now] :as update}]
+  (let [id (id call)
+        current-state (current-state call)
+        event {:id id :time now :from current-state :to next-state}]
+    (if-not (= current-state next-state)
+      {:dispatch-n [[:ivr.call/leave-state event]
+                    [:ivr.call/enter-state event]]})))
+
+
+(defn inc-sda-limit
+  [{{{:keys [sda]} :info} :state :as call}
+   {:keys [cloudmemory]}]
+  {:ivr.web/request
+   (cloudmemory {:type :ivr.cloudmemory/inc-sda-limit
+                 :sda sda})})
+
+
+(defn dec-sda-limit
+  [{{{:keys [sda]} :info} :state :as call}
+   {:keys [cloudmemory]}]
+  {:ivr.web/request
+   (cloudmemory {:type :ivr.cloudmemory/dec-sda-limit
+                 :sda sda})})
+
+
+(defn update-acd-status
+  [{{:keys [account-id id]} :info
+    {{:strs [cause status]} :status} :state
+    :as call}
+   {:keys [acd next-state time]}]
+  {:ivr.web/request
+   (acd {:type :ivr.acd/update-call-status
+         :account-id account-id
+         :call-id id
+         :status (or status "in-progress")
+         :cause cause
+         :IVRStatus {:state next-state
+                     :lastChange time}})})
+
+
+(defn terminate
+  [{{:keys [id] :as info} :info
+    action-data :action-data
+    {{:keys [overflow-cause]} :info
+     {:strs [cause]} :status
+     {:strs [dialstatus]} :dial-status} :state
+    :as call}
+   {:keys [from services time]}]
+  (let [end-cause (condp = from
+                    "AcdTransferred" (if (and overflow-cause
+                                              (= "xml-hangup" cause))
+                                       "IVR_HANG_UP"
+                                       "")
+                    "InProgress" (if (= "user-hangup" cause)
+                                   "CALLER_HANG_UP"
+                                   "IVR_HANGUP")
+                    "TransferRinging" (cond
+                                        (#{"failed" "no-answer" "busy"} dialstatus) "IVR_HANG_UP"
+                                        (= "user-hangup" cause) "CALLER_HANG_UP"
+                                        :else nil)
+                    nil)
+        on-end-data (merge info action-data
+                           {:type :ivr.services/call-on-end})]
+    (cond-> {:ivr.call/remove id
+             :ivr.web/request (services on-end-data)}
+      end-cause (merge {:ivr.ticket/emit
+                        (assoc (call->action-ticket call time) :endCause end-cause)}))))
 
 
 (defn db-call

@@ -83,8 +83,9 @@
     (handler->event on-error :error result)))
 
 
-(defn- request-fx [context route
-                   {:keys [url on-success on-error] :as description}]
+(defn- request-routes-fx
+  [context route
+   {:keys [url on-success on-error] :as description}]
   (let [config (get-in context [:coeffects :db :config-info :config])
         dispatch-url (get-in config [:environment :dispatch_url :internal])
         absolute-url (str dispatch-url url)]
@@ -100,4 +101,21 @@
 
 (routes-interceptor/reg-fx
   :ivr.web/request
-  request-fx)
+  request-routes-fx)
+
+
+(re-frame/reg-fx
+  :ivr.web/request
+  (fn request-fx
+    [{:keys [url on-success on-error] :as description}]
+    (let [config (get-in @re-frame.db/app-db [:config-info :config])
+          dispatch-url (get-in config [:environment :dispatch_url :internal])
+          absolute-url (str dispatch-url url)]
+      (go
+        (let [response (-> description
+                           (assoc :url absolute-url)
+                           request
+                           <!)]
+          (-> response
+              (response->event on-success on-error)
+              re-frame/dispatch))))))

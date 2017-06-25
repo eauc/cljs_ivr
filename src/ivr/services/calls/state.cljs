@@ -19,12 +19,41 @@
           info (update :info merge info)
           status (update :status merge status)
           dial-status (update :dial-status merge dial-status))]
-    (cond-> (if (= "Terminated" next-state)
-              {:ivr.call/remove id}
-              {:ivr.call/update {:id id :state state-update}})
-      next-state (merge (call/emit-state-ticket call (assoc event :now call-time-now))))))
+    (cond-> {:ivr.call/update {:id id :state state-update}}
+      next-state (merge (call/emit-state-ticket call (assoc event :now call-time-now)))
+      next-state (merge (call/change-state-event call (assoc event :now call-time-now))))))
 
 (db/reg-event-fx
   :ivr.call/state
   [(re-frame/inject-cofx :ivr.call/time-now)]
   call-state-event)
+
+
+(defn call-enter-state-event
+  [{:keys [db services] :as deps} {:keys [id time from to]}]
+  (let [call (call/db-call db id)]
+    (condp = to
+      "Transferred" (call/inc-sda-limit call deps)
+      "Terminated" (call/terminate call {:from from :services services :time time})
+      {})))
+
+(db/reg-event-fx
+  :ivr.call/enter-state
+  [(re-frame/inject-cofx :ivr.cloudmemory/cofx)
+   (re-frame/inject-cofx :ivr.services/cofx)]
+  call-enter-state-event)
+
+
+(defn call-leave-state-event
+  [{:keys [acd db] :as deps} {:keys [id time from to]}]
+  (let [call (call/db-call db id)]
+    (condp = from
+      "Transferred" (call/dec-sda-limit call deps)
+      "AcdTransferred" (call/update-acd-status call {:acd acd :next-state to :time time})
+      {})))
+
+(db/reg-event-fx
+  :ivr.call/leave-state
+  [(re-frame/inject-cofx :ivr.acd/cofx)
+   (re-frame/inject-cofx :ivr.cloudmemory/cofx)]
+  call-leave-state-event)

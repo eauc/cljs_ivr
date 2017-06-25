@@ -20,7 +20,7 @@
             ivr.models.verbs-test
             ivr.routes.url-test
             ivr.services.calls-test
-            ivr.services.calls.action-ongoing-test
+            ;; ivr.services.calls.action-ongoing-test
             ivr.services.config-test
             ivr.services.config.base-test
             ivr.services.routes-test
@@ -49,7 +49,7 @@
                   'ivr.models.verbs-test
                   'ivr.routes.url-test
                   'ivr.services.calls-test
-                  'ivr.services.calls.action-ongoing-test
+                  ;; 'ivr.services.calls.action-ongoing-test
                   'ivr.services.config.base-test
                   'ivr.services.config-test
                   'ivr.services.routes-test
