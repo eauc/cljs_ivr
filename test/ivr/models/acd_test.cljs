@@ -48,4 +48,33 @@
       (testing "enqueue call success"
         (let [on-success (:on-success request)]
           (is (= [:success {:wait-sound "wait-sound"}]
-                 (on-success #js {:body {"waitSound" "wait-sound"}}))))))))
+                 (on-success #js {:body {"waitSound" "wait-sound"}})))))))
+
+  (testing "update call status"
+    (let [query {:type :ivr.acd/update-call-status
+                 :account-id "account-id"
+                 :call-id "call-id"
+                 :status "ringing"
+                 :cause "hangup-a"
+                 :IVRStatus {:state "TransferRinging"
+                             :lastChange "change-time"}}
+          request (acd/query query)]
+      (is (= {:method "POST"
+              :url "/smartccacdlink/call/call-id/principal/status"
+              :data {:status "ringing"
+                     :cause "hangup-a"
+                     :IVRStatus {:state "TransferRinging"
+                                 :lastChange "change-time"}
+                     :account_id "account-id"
+                     :call_id "call-id"}
+              :on-success
+              [:ivr.acd/update-call-status-success query],
+              :on-error
+              [:ivr.acd/update-call-status-error query]}
+             request))
+
+      (testing "on success"
+        (is (= {} (acd/update-call-status-success {} query))))
+
+      (testing "on error"
+        (is (= {} (acd/update-call-status-error {} query)))))))

@@ -66,17 +66,21 @@
    :on-error [:ivr.acd/update-call-status-error params]})
 
 
+(defn update-call-status-success
+  [_ params]
+  (log "info" "update call status ok" params)
+  {})
+
 (db/reg-event-fx
   :ivr.acd/update-call-status-success
-  (fn acd-update-call-status-success
-    [_ params]
-    (log "info" "update call status ok" params)
-    {}))
+  update-call-status-success)
 
+
+(defn update-call-status-error
+  [_ params]
+  (log "error" "update call status error" params)
+  {})
 
 (db/reg-event-fx
   :ivr.acd/update-call-status-error
-  (fn acd-update-call-status-error
-    [_ params]
-    (log "error" "update call status error" params)
-    {}))
+  update-call-status-error)
