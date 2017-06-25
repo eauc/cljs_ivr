@@ -143,7 +143,8 @@
                 (#{"failed" "no-answer" "busy"} dialstatus)
                 (merge base-ticket
                        (leave-state-ticket call status next-state)
-                       {:ccapi_cause cause})
+                       {:cause "IVR_HANG_UP"
+                        :ccapi_cause cause})
                 (= "user-hangup" cause)
                 (merge base-ticket
                        {:ringingSda sda}
@@ -212,13 +213,18 @@
                                        "")
                     "InProgress" (if (= "user-hangup" cause)
                                    "CALLER_HANG_UP"
-                                   "IVR_HANGUP")
+                                   "IVR_HANG_UP")
                     "TransferRinging" (cond
                                         (#{"failed" "no-answer" "busy"} dialstatus) "IVR_HANG_UP"
                                         (= "user-hangup" cause) "CALLER_HANG_UP"
                                         :else nil)
                     nil)
-        on-end-data (merge info action-data
+        on-end-data (merge (set/rename-keys info {:id :callid
+                                                  :account-id :accountid
+                                                  :application-id :applicationid
+                                                  :script-id :scriptid
+                                                  :time :callTime})
+                           action-data
                            {:type :ivr.services/call-on-end})]
     (cond-> {:ivr.call/remove id
              :ivr.web/request (services on-end-data)}
