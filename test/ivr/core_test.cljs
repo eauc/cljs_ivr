@@ -2,6 +2,7 @@
   (:require [clojure.test :as test]
             ivr.models.acd-test
             ivr.models.call-test
+            ivr.models.cloudmemory-test
             ivr.models.ivrservices-test
             ivr.models.node-test
             ivr.models.node-action-test
@@ -19,8 +20,10 @@
             ivr.models.store-test
             ivr.models.verbs-test
             ivr.routes.url-test
-            ivr.services.calls-test
-            ;; ivr.services.calls.action-ongoing-test
+            ivr.services.calls.action-test
+            ivr.services.calls.resolve-test
+            ivr.services.calls.state-test
+            ivr.services.calls.status-test
             ivr.services.config-test
             ivr.services.config.base-test
             ivr.services.routes-test
@@ -31,6 +34,7 @@
 (defn run-tests []
   (test/run-tests 'ivr.models.acd-test
                   'ivr.models.call-test
+                  'ivr.models.cloudmemory-test
                   'ivr.models.ivrservices-test
                   'ivr.models.node-test
                   'ivr.models.node-action-test
@@ -48,8 +52,10 @@
                   'ivr.models.store-test
                   'ivr.models.verbs-test
                   'ivr.routes.url-test
-                  'ivr.services.calls-test
-                  ;; 'ivr.services.calls.action-ongoing-test
+                  'ivr.services.calls.action-test
+                  'ivr.services.calls.resolve-test
+                  'ivr.services.calls.state-test
+                  'ivr.services.calls.status-test
                   'ivr.services.config.base-test
                   'ivr.services.config-test
                   'ivr.services.routes-test

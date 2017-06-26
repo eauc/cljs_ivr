@@ -30,7 +30,8 @@
 
 
 (defn call-enter-state-event
-  [{:keys [db services] :as deps} {:keys [id time from to]}]
+  [{:keys [db services] :as deps}
+   {:keys [id time from to]}]
   (let [call (call/db-call db id)]
     (condp = to
       "Transferred" (call/inc-sda-limit call deps)
