@@ -3,6 +3,7 @@
             [clojure.set :as set]
             [ivr.libs.logger :as logger]
             [ivr.models.call-action :as call-action]
+            [ivr.models.call-number :as call-number]
             [ivr.models.call-state :as call-state]
             [ivr.models.call.acd-transferred]
             [ivr.models.call.in-progress]
@@ -15,10 +16,10 @@
   (logger/create "call"))
 
 
-(defn info->call [{:keys [time] :as info}]
+(defn info->call [{:keys [from time] :as info}]
   {:info (select-keys info [:id :account-id :application-id :from :to :script-id :time])
    :state {:current "Created" :start-time time}
-   :action-data {}
+   :action-data (call-number/find-arcep-info from)
    :action-ongoing nil})
 
 

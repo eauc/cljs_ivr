@@ -16,7 +16,7 @@ GET http://localhost:3000/smartccivr/config?path=port
 
 # Start script
 
-GET http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&application_id=app-id&from=from-sda&to=to-sda&call_id=2234
+GET http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&application_id=app-id&from=%2B33478597106&to=to-sda&call_id=2234
 
 # Annoucement
 
@@ -171,7 +171,7 @@ GET http://localhost:3000/smartccivr/script/1234/node/11/callback?account_id=000
 ####################################
 # Created/InProgress
 
-GET http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&application_id=app-id&from=from-sda&to=to-sda&call_id=2234
+GET http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&application_id=app-id&from=%2B33478597106&to=to-sda&call_id=2234
 
 # TransferRinging
 
@@ -215,5 +215,24 @@ GET http://localhost:3000/smartccivr/script/1234/dialstatus?account_id=0007&call
 GET http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=failed&cause=xml-hangup
 
 # Terminated CALLER_HANG_UP
+
+GET http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=failed&cause=user-hangup
+
+####################################
+# Geolocalisation
+####################################
+# +33 number
+
+GET http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&application_id=app-id&from=%2B33478597106&to=to-sda&call_id=2234
+
+# 06 number
+
+GET http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&application_id=app-id&from=0666201317&to=to-sda&call_id=2234
+
+# unknown
+
+GET http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&application_id=app-id&from=from-sda&to=to-sda&call_id=2234
+
+# Terminated
 
 GET http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=failed&cause=user-hangup
