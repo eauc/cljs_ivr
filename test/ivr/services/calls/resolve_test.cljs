@@ -1,7 +1,11 @@
 (ns ivr.services.calls.resolve-test
 	(:require [clojure.test :as test :refer-macros [async deftest is run-tests testing use-fixtures]]
-						[cljs.spec :as spec]
+            [cljs.spec.test :as stest]
 						[ivr.services.calls.resolve :as resolve]))
+
+(use-fixtures :once
+  {:before (fn [] (stest/instrument 'ivr.services.calls.resolve))
+   :after (fn [] (stest/unstrument 'ivr.services.calls.resolve))})
 
 (deftest calls-resolve-service
 	(testing "find-or-create-call"
