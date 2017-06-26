@@ -87,10 +87,10 @@
                       "preset" [(node-set/map->SetEntry
                                   {:to "to_var"
                                    :value "set_value"})]}]
-            (is (= {:info {:id "call-id"}
+            (is (= {:id "call-id"
                     :action-data {"action" "data"
                                   "to_var" "set_value"}}
-                   (:ivr.call/action-data
+                   (:ivr.call/update
                     (node/enter-type node options)))))
 
           (let [node {"type" "announcement"
@@ -103,10 +103,10 @@
                                 (node-set/map->CopyEntry
                                   {:to "to_var"
                                    :from "action"})]}]
-            (is (= {:info {:id "call-id"}
+            (is (= {:id "call-id"
                     :action-data {"action" "to_value"
                                   "to_var" "to_value"}}
-                   (:ivr.call/action-data
+                   (:ivr.call/update
                     (node/enter-type node options))))))))
 
 
