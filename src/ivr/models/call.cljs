@@ -16,10 +16,10 @@
   (logger/create "call"))
 
 
-(defn info->call [{:keys [from time] :as info}]
+(defn info->call [{:keys [time] :as info}]
   {:info (select-keys info [:id :account-id :application-id :from :to :script-id :time])
    :state {:current "Created" :start-time time}
-   :action-data (call-number/find-arcep-info from)
+   :action-data (call-number/geo-localize-call info)
    :action-ongoing nil})
 
 

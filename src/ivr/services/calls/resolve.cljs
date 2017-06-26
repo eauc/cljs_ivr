@@ -29,7 +29,8 @@
                                  :from from
                                  :to to
                                  :script-id script_id
-                                 :time call-time-now})]
+                                 :time call-time-now
+                                 :paccess-header (get params "siphdr-paccessnetworkinfo")})]
       {:ivr.call/create call
        :ivr.routes/params (assoc params "call" call)
        :ivr.routes/next nil})))

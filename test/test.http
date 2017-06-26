@@ -229,6 +229,10 @@ GET http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&appl
 
 GET http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&application_id=app-id&from=0666201317&to=to-sda&call_id=2234
 
+# 06 number + paccess
+
+GET http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&application_id=app-id&from=0666201317&to=to-sda&call_id=2234&siphdr-paccessnetworkinfo=toto-utu%3B%20CP-71600%3B%20titi-cndwq
+
 # unknown
 
 GET http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&application_id=app-id&from=from-sda&to=to-sda&call_id=2234

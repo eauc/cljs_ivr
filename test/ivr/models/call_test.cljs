@@ -4,41 +4,13 @@
             [ivr.models.call :as call]
             [ivr.models.call-state :as call-state]))
 
+
 (use-fixtures :once
   {:before (fn [] (stest/instrument 'ivr.models.call))
    :after (fn [] (stest/unstrument 'ivr.models.call))})
 
+
 (deftest call-model-test
-
-
-  (testing "geo-localisation"
-
-    (testing "invalid number"
-      (is (= {}
-             (:action-data (call/info->call {:id "call-id" :from "invalid-sda"}))))
-      (is (= {}
-             (:action-data (call/info->call {:id "call-id" :from "047859abcd"})))))
-
-    (testing "mobile number"
-      (is (= {"zoneTel" 30}
-             (:action-data (call/info->call {:id "call-id" :from "0666201317"})))))
-
-    (testing "local number"
-      (is (= {"dep" "93", "reg" "11", "zoneTel" 1}
-             (:action-data (call/info->call {:id "call-id" :from "0178456732"}))))
-      (is (= {"dep" "50", "reg" "28", "zoneTel" 2}
-             (:action-data (call/info->call {:id "call-id" :from "0233456789"}))))
-      (is (= {"dep" "71", "reg" "27", "zoneTel" 3}
-             (:action-data (call/info->call {:id "call-id" :from "0385813045"}))))
-      (is (= {"dep" "69", "reg" "84", "zoneTel" 4}
-             (:action-data (call/info->call {:id "call-id" :from "0478597106"}))))
-      (is (= {"dep" "17", "reg" "75", "zoneTel" 5}
-             (:action-data (call/info->call {:id "call-id" :from "0546732819"})))))
-
-    (testing "international number"
-      (is (= {"dep" "69", "reg" "84", "zoneTel" 4}
-             (:action-data (call/info->call {:id "call-id" :from "+33478597106"}))))))
-
 
   (testing "update-sda"
     (let [call (call/info->call {:id "call-id" :time "call-time"})]
