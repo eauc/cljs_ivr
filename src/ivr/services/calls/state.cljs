@@ -46,7 +46,8 @@
 
 
 (defn call-leave-state-event
-  [{:keys [acd db] :as deps} {:keys [id time from to]}]
+  [{:keys [acd db] :as deps}
+   {:keys [id time from to]}]
   (let [call (call/db-call db id)]
     (condp = from
       "Transferred" (call/dec-sda-limit call deps)

@@ -2,6 +2,11 @@
   (:require [cljs.core.match :refer-macros [match]]
             [clojure.set :as set]
             [ivr.libs.logger :as logger]
+            [ivr.models.call-state :as call-state]
+            [ivr.models.call.acd-transferred]
+            [ivr.models.call.terminated]
+            [ivr.models.call.transferred]
+            [ivr.models.call.transfer-ringing]
             [ivr.models.cloudmemory :as cloudmemory]))
 
 (def log
@@ -25,9 +30,7 @@
   (get-in call [:info :time]))
 
 
-(defn current-state
-  [call]
-  (get-in call [:state :current]))
+(def current-state call-state/current-state)
 
 
 (defn current-sda
@@ -60,41 +63,6 @@
             :action (:action action-ongoing)})))
 
 
-(defn enter-state-ticket
-  [{{{:keys [queue sda]} :info} :state
-    :as call}
-   {:strs [cause] :as status}
-   next-state]
-  (condp = next-state
-    "AcdTransferred" {:queueid queue}
-    "Transferred" {:sda sda}
-    "TransferRinging" {:ringingSda sda}
-    "Terminated" (if (= "user-hangup" cause)
-                   {:cause "CALLER_HANG_UP"}
-                   {:cause "IVR_HANG_UP"
-                    :ccapi_cause cause})
-    {}))
-
-
-(defn leave-state-ticket
-  [{{current-state :current
-     {:keys [overflow-cause sda]} :info
-     {:strs [bridgecause bridgeduration dialcause dialstatus]} :dial-status} :state
-    :as call}
-   status next-state]
-  (condp = current-state
-    "AcdTransferred" {:acdcause "ACD_OVERFLOW"
-                      :overflowcause overflow-cause}
-    "TransferRinging" (if-not (= "Transferred" next-state)
-                        {:failedSda sda
-                         :dialcause dialstatus
-                         :ccapi_dialcause dialcause})
-    "Transferred" {:sda sda
-                   :bridgecause bridgecause
-                   :bridgeduration bridgeduration}
-    {}))
-
-
 (defn emit-state-ticket
   [{{current-state :current
      start-time :start-time
@@ -123,38 +91,38 @@
              {:ivr.ticket/emit
               (if (and overflow-cause (= "xml-hangup" cause))
                 (merge base-ticket
-                       (leave-state-ticket call status next-state)
-                       (enter-state-ticket call status next-state))
+                       (call-state/leave-ticket call status next-state)
+                       (call-state/enter-ticket call status next-state))
                 base-ticket)}
              ["Transferred" "Terminated"]
              {:ivr.ticket/emit
               (merge base-ticket
-                     (leave-state-ticket call status next-state))}
+                     (call-state/leave-ticket call status next-state))}
              ["TransferRinging" "TransferRinging"]
              {:ivr.ticket/emit
               (merge base-ticket
                      {:failedSda failed-sda
                       :dialcause dialstatus
                       :ccapi_dialcause dialcause}
-                     (enter-state-ticket call status next-state))}
+                     (call-state/enter-ticket call status next-state))}
              ["TransferRinging" "Terminated"]
              {:ivr.ticket/emit
               (cond
                 (#{"failed" "no-answer" "busy"} dialstatus)
                 (merge base-ticket
-                       (leave-state-ticket call status next-state)
+                       (call-state/leave-ticket call status next-state)
                        {:cause "IVR_HANG_UP"
                         :ccapi_cause cause})
                 (= "user-hangup" cause)
                 (merge base-ticket
                        {:ringingSda sda}
-                       (enter-state-ticket call status next-state))
+                       (call-state/enter-ticket call status next-state))
                 :else base-ticket)}
              :else
              {:ivr.ticket/emit
               (merge base-ticket
-                     (leave-state-ticket call status next-state)
-                     (enter-state-ticket call status next-state))}))))
+                     (call-state/leave-ticket call status next-state)
+                     (call-state/enter-ticket call status next-state))}))))
 
 
 (defn change-state-event
