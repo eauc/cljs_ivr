@@ -2,7 +2,8 @@
   (:require [ivr.db :as db]
             [ivr.libs.logger :as logger]
             [ivr.models.call :as call]
-            [re-frame.core :as re-frame]))
+            [re-frame.core :as re-frame]
+            [ivr.models.call-state :as call-state]))
 
 
 (def log
@@ -30,13 +31,10 @@
 
 
 (defn call-enter-state-event
-  [{:keys [db services] :as deps}
-   {:keys [id time from to]}]
+  [{:keys [db] :as deps}
+   {:keys [id] :as event}]
   (let [call (call/db-call db id)]
-    (condp = to
-      "Transferred" (call/inc-sda-limit call deps)
-      "Terminated" (call/terminate call {:from from :services services :time time})
-      {})))
+    (call-state/on-enter call (merge event (select-keys deps [:cloudmemory :services])))))
 
 (db/reg-event-fx
   :ivr.call/enter-state
@@ -46,13 +44,10 @@
 
 
 (defn call-leave-state-event
-  [{:keys [acd db] :as deps}
-   {:keys [id time from to]}]
+  [{:keys [db] :as deps}
+   {:keys [id] :as event}]
   (let [call (call/db-call db id)]
-    (condp = from
-      "Transferred" (call/dec-sda-limit call deps)
-      "AcdTransferred" (call/update-acd-status call {:acd acd :next-state to :time time})
-      {})))
+    (call-state/on-leave call (merge event (select-keys deps [:cloudmemory :acd])))))
 
 (db/reg-event-fx
   :ivr.call/leave-state

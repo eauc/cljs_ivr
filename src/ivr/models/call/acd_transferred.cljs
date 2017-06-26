@@ -25,3 +25,18 @@
            (= "xml-hangup" cause))
     "IVR_HANG_UP"
     ""))
+
+
+(defmethod call-state/on-leave "AcdTransferred"
+  [{{:keys [account-id id]} :info
+    {{:strs [cause status]} :status} :state
+    :as call}
+   {:keys [acd to time]}]
+  {:ivr.web/request
+   (acd {:type :ivr.acd/update-call-status
+         :account-id account-id
+         :call-id id
+         :status (or status "in-progress")
+         :cause cause
+         :IVRStatus {:state to
+                     :lastChange time}})})

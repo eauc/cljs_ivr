@@ -1,14 +1,14 @@
 (ns ivr.models.call-test
   (:require [clojure.test :as test :refer-macros [async deftest is run-tests testing use-fixtures]]
             [cljs.spec.test :as stest]
-            [ivr.models.call :as call]))
+            [ivr.models.call :as call]
+            [ivr.models.call-state :as call-state]))
 
 (use-fixtures :once
   {:before (fn [] (stest/instrument 'ivr.models.call))
    :after (fn [] (stest/unstrument 'ivr.models.call))})
 
 (deftest call-model-test
-
 
   (testing "update-sda"
     (let [call (call/info->call {:id "call-id" :time "call-time"})]
@@ -464,175 +464,6 @@
                 {:id "call-id" :time "now"
                  :from "from-state" :to "to-state"}]]}
              (call/change-state-event call update)))))
-
-
-  (testing "inc-sda-limit"
-    (let [call (-> (call/info->call {:id "call-id" :time "call-time"})
-                   (assoc-in [:state :info :sda] "ringing-sda"))
-          deps {:cloudmemory #(assoc % :cloudmemory :query)}]
-      (is (= {:ivr.web/request
-              {:cloudmemory :query
-               :type :ivr.cloudmemory/inc-sda-limit
-               :sda "ringing-sda"}}
-             (call/inc-sda-limit call deps)))))
-
-
-  (testing "dec-sda-limit"
-    (let [call (-> (call/info->call {:id "call-id" :time "call-time"})
-                   (assoc-in [:state :info :sda] "ringing-sda"))
-          deps {:cloudmemory #(assoc % :cloudmemory :query)}]
-      (is (= {:ivr.web/request
-              {:cloudmemory :query
-               :type :ivr.cloudmemory/dec-sda-limit
-               :sda "ringing-sda"}}
-             (call/dec-sda-limit call deps)))))
-
-
-  (testing "update-acd-status"
-    (let [call (-> (call/info->call {:id "call-id" :time "call-time"})
-                   (assoc-in [:info :account-id] "account-id")
-                   (assoc-in [:state :status] {"cause" "xml-hangup"
-                                               "status" "failed"}))
-          options {:acd #(assoc % :acd :query)
-                   :next-state "InProgress"
-                   :time "now"}]
-      (is (= {:ivr.web/request
-              {:acd :query
-               :type :ivr.acd/update-call-status
-               :account-id "account-id"
-               :call-id "call-id"
-               :status "failed"
-               :cause "xml-hangup"
-               :IVRStatus {:state "InProgress" :lastChange "now"}}}
-             (call/update-acd-status call options)))))
-
-
-  (testing "terminate"
-    (let [call (-> (call/info->call {:id "call-id"
-                                     :account-id "account-id"
-                                     :application-id "app-id"
-                                     :script-id "script-id"
-                                     :from "from"
-                                     :to "to"
-                                     :time 42})
-                   (assoc :action-data {:action :data})
-                   (assoc :action-ongoing {:action :ongoing
-                                           :start-time 14}))
-          options {:from "Transferred"
-                   :services #(assoc % :services :query)
-                   :time 71}]
-
-      (testing "from AcdTransferred"
-        (let [options (assoc options :from "AcdTransferred")
-              expected-ticket {:producer "IVR"
-                               :time 71
-                               :duration 57
-                               :applicationid "app-id"
-                               :from "from"
-                               :callTime 42
-                               :callid "call-id"
-                               :action :ongoing
-                               :accountid "account-id"
-                               :subject "ACTION"
-                               :scriptid "script-id"
-                               :to "to"}]
-          (is (= (assoc expected-ticket :endCause "")
-                 (get (call/terminate
-                        (assoc-in call [:state :info :overflow-cause] "overflow-cause")
-                        options)
-                      :ivr.ticket/emit)))
-          (is (= (assoc expected-ticket :endCause "")
-                 (get (call/terminate
-                        (assoc-in call [:state :status "cause"] "xml-hangup")
-                        options)
-                      :ivr.ticket/emit)))
-          (is (= (assoc expected-ticket :endCause "IVR_HANG_UP")
-                 (get (call/terminate
-                        (-> call
-                            (assoc-in [:state :info :overflow-cause] "overflow-cause")
-                            (assoc-in [:state :status "cause"] "xml-hangup"))
-                        options)
-                      :ivr.ticket/emit)))))
-
-      (testing "from InProgress"
-        (let [options (assoc options :from "InProgress")
-              expected-ticket {:producer "IVR"
-                               :time 71
-                               :duration 57
-                               :applicationid "app-id"
-                               :from "from"
-                               :callTime 42
-                               :callid "call-id"
-                               :action :ongoing
-                               :accountid "account-id"
-                               :subject "ACTION"
-                               :scriptid "script-id"
-                               :to "to"}]
-          (is (= (assoc expected-ticket :endCause "CALLER_HANG_UP")
-                 (get (call/terminate
-                        (assoc-in call [:state :status "cause"] "user-hangup")
-                        options)
-                      :ivr.ticket/emit)))
-          (is (= (assoc expected-ticket :endCause "IVR_HANG_UP")
-                 (get (call/terminate
-                        (assoc-in call [:state :status "cause"] "xml-hangup")
-                        options)
-                      :ivr.ticket/emit)))))
-
-      (testing "from Transferred"
-        (is (= {:ivr.call/remove "call-id"
-                :ivr.web/request {:services :query
-                                  :type :ivr.services/call-on-end
-                                  :action :data
-                                  :account-id "account-id"
-                                  :application-id "app-id"
-                                  :id "call-id"
-                                  :script-id "script-id"
-                                  :from "from"
-                                  :to "to"
-                                  :time 42}}
-               (call/terminate call options))))
-
-      (testing "from TransferRinging"
-        (let [call (assoc-in call [:state :status "cause"] "user-hangup")
-              options (assoc options :from "TransferRinging")
-              expected-ticket {:producer "IVR"
-                               :time 71
-                               :duration 57
-                               :applicationid "app-id"
-                               :from "from"
-                               :callTime 42
-                               :callid "call-id"
-                               :action :ongoing
-                               :accountid "account-id"
-                               :subject "ACTION"
-                               :scriptid "script-id"
-                               :to "to"}]
-          (is (= nil
-                 (get (call/terminate
-                        (assoc-in call [:state :status "cause"] "xml-hangup")
-                        options)
-                      :ivr.ticket/emit)))
-          (is (= (assoc expected-ticket :endCause "CALLER_HANG_UP")
-                 (get (call/terminate
-                        call
-                        options)
-                      :ivr.ticket/emit)))
-          (is (= (assoc expected-ticket :endCause "IVR_HANG_UP")
-                 (get (call/terminate
-                        (assoc-in call [:state :dial-status "dialstatus"] "failed")
-                        options)
-                      :ivr.ticket/emit)))
-          (is (= (assoc expected-ticket :endCause "IVR_HANG_UP")
-                 (get (call/terminate
-                        (assoc-in call [:state :dial-status "dialstatus"] "no-answer")
-                        options)
-                      :ivr.ticket/emit)))
-          (is (= (assoc expected-ticket :endCause "IVR_HANG_UP")
-                 (get (call/terminate
-                        (assoc-in call [:state :dial-status "dialstatus"] "busy")
-                        options)
-                      :ivr.ticket/emit)))))))
 
 
   (testing "db-insert-call"

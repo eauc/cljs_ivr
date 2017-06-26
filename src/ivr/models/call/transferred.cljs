@@ -18,3 +18,19 @@
   {:sda sda
    :bridgecause bridgecause
    :bridgeduration bridgeduration})
+
+
+(defmethod call-state/on-enter "Transferred"
+  [{{{:keys [sda]} :info} :state :as call}
+   {:keys [cloudmemory]}]
+  {:ivr.web/request
+   (cloudmemory {:type :ivr.cloudmemory/inc-sda-limit
+                 :sda sda})})
+
+
+(defmethod call-state/on-leave "Transferred"
+  [{{{:keys [sda]} :info} :state :as call}
+   {:keys [cloudmemory]}]
+  {:ivr.web/request
+   (cloudmemory {:type :ivr.cloudmemory/dec-sda-limit
+                 :sda sda})})

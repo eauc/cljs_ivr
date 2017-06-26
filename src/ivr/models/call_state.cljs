@@ -38,8 +38,8 @@
   {})
 
 
-(defmulti on-enter (fn [_ {:keys [from]}] from))
+(defmulti on-leave (fn [_ {:keys [from]}] from))
 
-(defmethod on-enter :default
+(defmethod on-leave :default
   []
   {})

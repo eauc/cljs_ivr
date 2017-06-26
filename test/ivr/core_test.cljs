@@ -2,6 +2,7 @@
   (:require [clojure.test :as test]
             ivr.models.acd-test
             ivr.models.call-test
+            ivr.models.call-state-test
             ivr.models.cloudmemory-test
             ivr.models.ivrservices-test
             ivr.models.node-test
@@ -34,6 +35,7 @@
 (defn run-tests []
   (test/run-tests 'ivr.models.acd-test
                   'ivr.models.call-test
+                  'ivr.models.call-state-test
                   'ivr.models.cloudmemory-test
                   'ivr.models.ivrservices-test
                   'ivr.models.node-test
