@@ -219,11 +219,7 @@
                                         (= "user-hangup" cause) "CALLER_HANG_UP"
                                         :else nil)
                     nil)
-        on-end-data (merge (set/rename-keys info {:id :callid
-                                                  :account-id :accountid
-                                                  :application-id :applicationid
-                                                  :script-id :scriptid
-                                                  :time :callTime})
+        on-end-data (merge info
                            action-data
                            {:type :ivr.services/call-on-end})]
     (cond-> {:ivr.call/remove id

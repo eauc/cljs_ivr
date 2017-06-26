@@ -584,13 +584,13 @@
                 :ivr.web/request {:services :query
                                   :type :ivr.services/call-on-end
                                   :action :data
-                                  :accountid "account-id"
-                                  :applicationid "app-id"
-                                  :callid "call-id"
-                                  :scriptid "script-id"
+                                  :account-id "account-id"
+                                  :application-id "app-id"
+                                  :id "call-id"
+                                  :script-id "script-id"
                                   :from "from"
                                   :to "to"
-                                  :callTime 42}}
+                                  :time 42}}
                (call/terminate call options))))
 
       (testing "from TransferRinging"

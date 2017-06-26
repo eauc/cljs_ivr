@@ -70,4 +70,36 @@
       (testing "eval destination list success"
         (let [on-success (:on-success request)]
           (is (= [:success {:list-value "list-value"}]
-                 (on-success #js {:body "list-value"}))))))))
+                 (on-success #js {:body "list-value"})))))))
+
+
+  (testing "call onEnd"
+    (let [params {:type :ivr.services/call-on-end
+                  :account-id "account-id"
+                  :application-id "app-id"
+                  :script-id "script-id"
+                  :from "from"
+                  :to "to"
+                  :time 42}
+          request (services/query params)]
+      (is (= {:method "POST"
+              :url "/smartccivrservices/account/account-id/script/script-id/on-end"
+              :data {:from "from"
+                     :to "to"
+                     :accountid "account-id"
+                     :applicationid "app-id"
+                     :scriptid "script-id"
+                     :callTime 42}
+              :on-success
+              [:ivr.services/call-on-end-success params]
+              :on-error
+              [:ivr.services/call-on-end-error params]}
+             request))
+
+      (testing "call onEnd success"
+        (is (= {}
+               (services/call-on-end-success {} {}))))
+
+      (testing "call onEnd error"
+        (is (= {}
+               (services/call-on-end-error {} {})))))))

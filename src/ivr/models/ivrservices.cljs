@@ -1,9 +1,9 @@
 (ns ivr.models.ivrservices
-  (:require [ivr.db :as db]
+  (:require [clojure.set :as set]
+            [ivr.db :as db]
+            [ivr.libs.logger :as logger]
             [ivr.services.routes.error :as routes-error]
-            [re-frame.core :as re-frame]
-            [ivr.libs.logger :as logger]))
-
+            [re-frame.core :as re-frame]))
 
 (def log
   (logger/create "ivrServices"))
@@ -72,22 +72,31 @@
   [{:keys [account-id script-id] :as params}]
   {:method "POST"
    :url (str "/smartccivrservices/account/" account-id "/script/" script-id "/on-end")
-   :data params
+   :data (-> (dissoc params :type)
+             (set/rename-keys {:id :callid
+                               :account-id :accountid
+                               :application-id :applicationid
+                               :script-id :scriptid
+                               :time :callTime}))
    :on-success [:ivr.services/call-on-end-success params]
    :on-error [:ivr.services/call-on-end-error params]})
 
 
+(defn call-on-end-success
+  [_ params]
+  (log "info" "call-on-end ok" params)
+  {})
+
 (db/reg-event-fx
   :ivr.services/call-on-end-success
-  (fn services-call-on-end-success
-    [_ params]
-    (log "info" "call-on-end ok" params)
-    {}))
+  call-on-end-success)
 
+
+(defn call-on-end-error
+  [_ params]
+  (log "error" "call-on-end error" params)
+  {})
 
 (db/reg-event-fx
   :ivr.services/call-on-end-error
-  (fn services-call-on-end-error
-    [_ params]
-    (log "error" "call-on-end error" params)
-    {}))
+  call-on-end-error)
