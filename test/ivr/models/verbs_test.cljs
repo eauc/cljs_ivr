@@ -10,8 +10,8 @@
 (deftest verbs-model
   (testing "unknown"
     (is (= [:Response `([:Invalid {:type :ivr.verbs/unknown :params :values}])]
-            (:data
-             (verbs/create [{:type :ivr.verbs/unknown :params :values}])))))
+           (:data
+            (verbs/create [{:type :ivr.verbs/unknown :params :values}])))))
 
 
   (testing "hangup"
@@ -57,4 +57,13 @@
     (is (= [:Response `([:Redirect "path"])]
            (:data
             (verbs/create [{:type :ivr.verbs/redirect
-                            :path "path"}]))))))
+                            :path "path"}])))))
+
+  (testing "first-verb"
+    (is (= nil
+           (verbs/first-verb (verbs/create []))))
+    (is (= :HangUp
+           (verbs/first-verb (verbs/create [{:type :ivr.verbs/hangup}]))))
+    (is (= :Dial
+           (verbs/first-verb (verbs/create [{:type :ivr.verbs/dial-number}
+                                            {:type :ivr.verbs/hangup}]))))))
