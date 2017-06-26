@@ -1,15 +1,15 @@
 (ns ivr.services.calls.state-test
   (:require [cljs.spec.test :as stest]
             [clojure.test :as test :refer-macros [deftest is testing use-fixtures]]
-            [ivr.services.calls.state :as state]
-            [ivr.models.call :as call]))
+            [ivr.models.call :as call]
+            [ivr.services.calls.state :as state]))
 
 (use-fixtures :once
   {:before (fn [] (stest/instrument 'ivr.services.calls.state))
    :after (fn [] (stest/unstrument 'ivr.services.calls.state))})
 
 
-(deftest call-state-services
+(deftest call-state-service-test
 
   (testing "state event"
     (let [call (-> (call/info->call {:id "call-id" :time 42})

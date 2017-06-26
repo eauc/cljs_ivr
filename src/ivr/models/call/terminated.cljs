@@ -27,4 +27,4 @@
     (cond-> {:ivr.call/remove id
              :ivr.web/request (services on-end-data)}
       end-cause (merge {:ivr.ticket/emit
-                        (assoc (call-action/call->action-ticket call time) :endCause end-cause)}))))
+                        (assoc (call-action/call->ticket call time) :endCause end-cause)}))))

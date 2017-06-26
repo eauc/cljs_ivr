@@ -2,9 +2,8 @@
   (:require [ivr.db :as db]
             [ivr.libs.logger :as logger]
             [ivr.models.call :as call]
-            [re-frame.core :as re-frame]
-            [ivr.models.call-state :as call-state]))
-
+            [ivr.models.call-state :as call-state]
+            [re-frame.core :as re-frame]))
 
 (def log
   (logger/create "callsState"))
@@ -21,8 +20,8 @@
           status (update :status merge status)
           dial-status (update :dial-status merge dial-status))]
     (cond-> {:ivr.call/update {:id id :state state-update}}
-      next-state (merge (call/emit-state-ticket call (assoc event :now call-time-now)))
-      next-state (merge (call/change-state-event call (assoc event :now call-time-now))))))
+      next-state (merge (call-state/emit-ticket call (assoc event :now call-time-now)))
+      next-state (merge (call-state/change-event call (assoc event :now call-time-now))))))
 
 (db/reg-event-fx
   :ivr.call/state

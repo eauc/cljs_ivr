@@ -2,6 +2,7 @@
   (:require [ivr.db :as db]
             [ivr.libs.logger :as logger]
             [ivr.models.call :as call]
+            [ivr.models.call-action :as call-action]
             [re-frame.core :as re-frame]))
 
 (def log
@@ -21,7 +22,7 @@
                                  :action-ongoing {:action action
                                                   :start-time call-time-now}}})
       (not (nil? ongoing)) (merge {:ivr.ticket/emit
-                                   (call/call->action-ticket call call-time-now)}))))
+                                   (call-action/call->ticket call call-time-now)}))))
 
 (db/reg-event-fx
   :ivr.call/start-action

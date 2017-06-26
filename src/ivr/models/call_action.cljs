@@ -2,7 +2,7 @@
   (:require [clojure.set :as set]))
 
 
-(defn call->action-ticket
+(defn call->ticket
 	[{:keys [info action-ongoing] :as call} now]
 	(let [duration (- now (:start-time action-ongoing))]
 		(merge {:producer "IVR" :subject "ACTION"}
