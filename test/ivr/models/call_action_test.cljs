@@ -1,6 +1,7 @@
 (ns ivr.models.call-action-test
   (:require [clojure.test :as test :refer-macros [async deftest is run-tests testing use-fixtures]]
             [cljs.spec.test :as stest]
+            [ivr.models.call :as call]
             [ivr.models.call-action :as call-action]))
 
 (use-fixtures :once
