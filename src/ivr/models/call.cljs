@@ -4,6 +4,7 @@
             [ivr.libs.logger :as logger]
             [ivr.models.call-state :as call-state]
             [ivr.models.call.acd-transferred]
+            [ivr.models.call.in-progress]
             [ivr.models.call.terminated]
             [ivr.models.call.transferred]
             [ivr.models.call.transfer-ringing]
@@ -173,20 +174,8 @@
      {:strs [cause]} :status
      {:strs [dialstatus]} :dial-status} :state
     :as call}
-   {:keys [from services time]}]
-  (let [end-cause (condp = from
-                    "AcdTransferred" (if (and overflow-cause
-                                              (= "xml-hangup" cause))
-                                       "IVR_HANG_UP"
-                                       "")
-                    "InProgress" (if (= "user-hangup" cause)
-                                   "CALLER_HANG_UP"
-                                   "IVR_HANG_UP")
-                    "TransferRinging" (cond
-                                        (#{"failed" "no-answer" "busy"} dialstatus) "IVR_HANG_UP"
-                                        (= "user-hangup" cause) "CALLER_HANG_UP"
-                                        :else nil)
-                    nil)
+   {:keys [from services time] :as options}]
+  (let [end-cause (call-state/end-cause call from)
         on-end-data (merge info
                            action-data
                            {:type :ivr.services/call-on-end})]

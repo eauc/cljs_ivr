@@ -19,3 +19,13 @@
 		{:failedSda sda
 		 :dialcause dialstatus
 		 :ccapi_dialcause dialcause}))
+
+
+(defmethod call-state/end-cause "TransferRinging"
+  [{{{:strs [cause]} :status
+     {:strs [dialstatus]} :dial-status} :state
+    :as call} _]
+  (cond
+    (#{"failed" "no-answer" "busy"} dialstatus) "IVR_HANG_UP"
+    (= "user-hangup" cause) "CALLER_HANG_UP"
+    :else nil))

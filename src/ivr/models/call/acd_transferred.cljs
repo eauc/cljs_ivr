@@ -15,3 +15,13 @@
    next-state]
   {:acdcause "ACD_OVERFLOW"
    :overflowcause overflow-cause})
+
+
+(defmethod call-state/end-cause "AcdTransferred"
+  [{{{:keys [overflow-cause]} :info
+     {:strs [cause]} :status} :state
+    :as call} _]
+  (if (and overflow-cause
+           (= "xml-hangup" cause))
+    "IVR_HANG_UP"
+    ""))
