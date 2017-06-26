@@ -1,6 +1,7 @@
 (ns ivr.models.node.transfert-queue-test
   (:require [cljs.spec.test :as stest]
-            [clojure.test :as test :refer-macros [async deftest is run-tests testing use-fixtures]]
+            [clojure.test :as test :refer-macros [deftest is testing use-fixtures]]
+            [ivr.models.call :as call]
             [ivr.models.node :as node]
             [ivr.models.node.transfert-queue :as tq-node]))
 
@@ -18,7 +19,8 @@
         deps {:acd acd :verbs verbs}
         call {:info {:id "call-id"
                      :time "call-time"}}
-        params {}
+        call (call/info->call {:id "call-id" :time "call-time"})
+        params {"call" call}
         context {:call call :deps deps :params params}]
     (testing "enter"
       (is (= {:ivr.web/request
@@ -30,7 +32,7 @@
                :queue_id "queue-id",
                :on-success
                [:ivr.models.node.transfert-queue/play-waiting-sound
-                {:node node}],
+                {:call-id "call-id" :node node :queue-id "queue-id"}],
                :on-error
                [:ivr.models.node.transfert-queue/error-acd-enqueue
                 {:node node}]}}
@@ -38,13 +40,17 @@
 
 
       (testing "play-waiting-sound"
-        (is (= {:ivr.routes/response
+        (is (= {:dispatch-n
+                [[:ivr.call/state {:id "call-id", :info {:queue "queue-id"}}]]
+                :ivr.routes/response
                 {:verbs :create
                  :data [{:type :ivr.verbs/loop-play
                          :path "/cloudstore/file/waiting"}]}}
                (tq-node/play-waiting-sound
                  deps
-                 {:node node
+                 {:call-id "call-id"
+                  :node node
+                  :queue-id "queue-id"
                   :wait-sound "waiting"}))))
 
 
@@ -60,7 +66,9 @@
 
     (testing "leave"
       (testing "no overflowcause"
-        (is (= {:ivr.routes/response
+        (is (= {:dispatch-n
+                [[:ivr.call/state {:id "call-id", :info {:overflow-cause nil}}]]
+                :ivr.routes/response
                 {:verbs :create
                  :data [{:type :ivr.verbs/hangup}]}}
                (node/leave-type node context))))
@@ -71,7 +79,9 @@
                                         "timeout" "71"}})
               context (update context :params
                               merge {"overflowcause" "QUEUE_FULL"})]
-          (is (= {:ivr.routes/response
+          (is (= {:dispatch-n
+                  [[:ivr.call/state {:id "call-id", :info {:overflow-cause "QUEUE_FULL"}}]]
+                  :ivr.routes/response
                   {:verbs :create
                    :data [{:type :ivr.verbs/hangup}]}}
                  (node/leave-type node context))))
@@ -79,7 +89,9 @@
                                         "timeout" "71"}})
               context (update context :params
                               merge {"overflowcause" "NO_AGENT"})]
-          (is (= {:ivr.routes/response
+          (is (= {:dispatch-n
+                  [[:ivr.call/state {:id "call-id", :info {:overflow-cause "NO_AGENT"}}]]
+                  :ivr.routes/response
                   {:verbs :create
                    :data [{:type :ivr.verbs/hangup}]}}
                  (node/leave-type node context))))
@@ -87,7 +99,9 @@
                                         "noagent" "69"}})
               context (update context :params
                               merge {"overflowcause" "QUEUE_TIMEOUT"})]
-          (is (= {:ivr.routes/response
+          (is (= {:dispatch-n
+                  [[:ivr.call/state {:id "call-id", :info {:overflow-cause "QUEUE_TIMEOUT"}}]]
+                  :ivr.routes/response
                   {:verbs :create
                    :data [{:type :ivr.verbs/hangup}]}}
                  (node/leave-type node context)))))
@@ -99,7 +113,9 @@
                                         "timeout" "71"}})
               context (update context :params
                               merge {"overflowcause" "QUEUE_FULL"})]
-          (is (= {:ivr.routes/response
+          (is (= {:dispatch-n
+                  [[:ivr.call/state {:id "call-id", :info {:overflow-cause "QUEUE_FULL"}}]]
+                  :ivr.routes/response
                   {:verbs :create
                    :data [{:type :ivr.verbs/redirect
                               :path "/smartccivr/script/script-id/node/42"}]}}
@@ -109,7 +125,9 @@
                                         "timeout" "71"}})
               context (update context :params
                               merge {"overflowcause" "NO_AGENT"})]
-          (is (= {:ivr.routes/response
+          (is (= {:dispatch-n
+                  [[:ivr.call/state {:id "call-id", :info {:overflow-cause "NO_AGENT"}}]]
+                  :ivr.routes/response
                   {:verbs :create
                    :data [{:type :ivr.verbs/redirect
                               :path "/smartccivr/script/script-id/node/69"}]}}
@@ -119,8 +137,10 @@
                                         "timeout" "71"}})
               context (update context :params
                               merge {"overflowcause" "QUEUE_TIMEOUT"})]
-          (is (= {:ivr.routes/response
+          (is (= {:dispatch-n
+                  [[:ivr.call/state {:id "call-id", :info {:overflow-cause "QUEUE_TIMEOUT"}}]]
+                  :ivr.routes/response
                   {:verbs :create
                    :data [{:type :ivr.verbs/redirect
-                              :path "/smartccivr/script/script-id/node/71"}]}}
+                           :path "/smartccivr/script/script-id/node/71"}]}}
                  (node/leave-type node context))))))))

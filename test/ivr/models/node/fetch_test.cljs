@@ -41,8 +41,8 @@
 					context {:node node
 									 :call call
 									 :route-value route-value}]
-			(is (= {:ivr.call/action-data
-							{:info {:id "call-id"}
+			(is (= {:ivr.call/update
+							{:id "call-id"
 							 :action-data {"action" "data"
                              "to_fetch" "route_value"}}
 							:ivr.routes/response
@@ -65,8 +65,8 @@
 					context {:node node
 									 :call call
 									 :error error}]
-			(is (= {:ivr.call/action-data
-							{:info {:id "call-id"}
+			(is (= {:ivr.call/update
+							{:id "call-id"
 							 :action-data {"action" "data"
 														 "to_fetch" "__FAILED__"}}
 							:ivr.routes/response

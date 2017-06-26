@@ -257,8 +257,8 @@
 					(testing "success"
 						(let [context (merge context {:params {"digits" ["4" "2"]
 																									 "termdigit" "2"}})]
-							(is (= {:ivr.call/action-data
-											{:info {:id "call-id"}
+							(is (= {:ivr.call/update
+											{:id "call-id"
 											 :action-data {"action" "data" "to_var" ["4" "2"]}}
 											:ivr.routes/response
 											{:verbs :create
@@ -270,12 +270,12 @@
 								(let [node (merge node {"case" {"dtmf_ok" {"set" [(node-set/map->SetEntry
 																																		{:to "set_var"
 																																		 :value "set_value"})]}}})]
-									(is (= {:info {:id "call-id"}
+									(is (= {:id "call-id"
 													:action-data {"action" "data"
 																				"to_var" ["4" "2"]
 																				"set_var" "set_value"}}
 												 (get (node/leave-type node context)
-															:ivr.call/action-data)))))
+															:ivr.call/update)))))
 
 
 							(testing "dtmf_ok.next"

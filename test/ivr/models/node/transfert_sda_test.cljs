@@ -1,8 +1,9 @@
 (ns ivr.models.node.transfert-sda-test
-	(:require [cljs.spec.test :as stest]
-						[clojure.test :as test :refer-macros [async deftest is run-tests testing use-fixtures]]
-						[ivr.models.node :as node]
-						[ivr.models.node.transfert-sda :as ts-node]))
+  (:require [cljs.spec.test :as stest]
+            [clojure.test :as test :refer-macros [deftest is testing use-fixtures]]
+            [ivr.models.call :as call]
+            [ivr.models.node :as node]
+            [ivr.models.node.transfert-sda :as ts-node]))
 
 (use-fixtures :once
 	{:before (fn [] (stest/instrument 'ivr.models.node.transfert-sda))
@@ -58,9 +59,16 @@
 							account {"fromSda" "CALLER"
 											 "record_enabled" true
 											 "ringing_tone" "ringing"}
-							params {"from" "from-number"
+              call (-> (call/info->call {:id "call-id" :time "call-time"})
+                       (assoc-in [:state :current] "TransferRinging")
+                       (assoc-in [:state :info :sda] "failed-sda"))
+							params {"call" call
+                      "from" "from-number"
 											"to" "to-number"}]
-					(is (= {:ivr.routes/response
+					(is (= {:dispatch-n
+                  [[:ivr.call/state {:id "call-id", :info {:sda "dest-sda"
+                                                           :failed-sda "failed-sda"}}]]
+                  :ivr.routes/response
 									{:verbs :create
 									 :data [{:type :ivr.verbs/dial-number
 													 :number "dest-sda"

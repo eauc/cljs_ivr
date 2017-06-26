@@ -106,8 +106,8 @@
 							context (merge context {:call {:action-data action-data
 																						 :info {:id "call-id"}}
 																			:params params})]
-					(is (= {:ivr.call/action-data
-									{:info {:id "call-id"}
+					(is (= {:ivr.call/update
+									{:id "call-id"
 									 :action-data {"action" "data"
 																 "record_var" "/record/url"}}
 									:ivr.routes/response
@@ -126,8 +126,8 @@
 																											"set" [(node-set/map->CopyEntry
                                                                {:from "record_var"
                                                                 :to "to_var"})]}}})]
-						(is (= {:ivr.call/action-data
-										{:info {:id "call-id"}
+						(is (= {:ivr.call/update
+										{:id "call-id"
 										 :action-data {"action" "data"
 																	 "record_var" "/record/url"
 																	 "to_var" "/record/url"}}
@@ -140,8 +140,8 @@
 					(let [node (merge node {"case" {"validate" {"set" [(node-set/map->SetEntry
                                                                {:value "set_value"
                                                                 :to "to_var"})]}}})]
-						(is (= {:ivr.call/action-data
-										{:info {:id "call-id"}
+						(is (= {:ivr.call/update
+										{:id "call-id"
 										 :action-data {"action" "data"
 																	 "record_var" "/record/url"
 																	 "to_var" "set_value"}}
