@@ -1,8 +1,8 @@
 (ns ivr.services.calls.action-test
-  (:require [clojure.test :as test :refer-macros [async deftest is run-tests testing use-fixtures]]
-            [cljs.spec.test :as stest]
-						[ivr.services.calls.action :as action]
-            [ivr.models.call :as call]))
+  (:require [cljs.spec.test :as stest]
+            [clojure.test :as test :refer-macros [deftest is testing use-fixtures]]
+            [ivr.models.call :as call]
+            [ivr.services.calls.action :as action]))
 
 (use-fixtures :once
   {:before (fn [] (stest/instrument 'ivr.services.calls.action))
