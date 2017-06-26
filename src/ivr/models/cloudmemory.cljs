@@ -36,17 +36,21 @@
    :on-error [:ivr.cloudmemory/sda-limit-error {:sda sda :action "dec"}]})
 
 
+(defn sda-limit-success
+  [_ params]
+  (log "info" "sda limit ok" params)
+  {})
+
 (db/reg-event-fx
   :ivr.cloudmemory/sda-limit-success
-  (fn cloudmemory-sda-limit-success
-    [_ params]
-    (log "info" "sda limit ok" params)
-    {}))
+  sda-limit-success)
 
+
+(defn sda-limit-error
+  [_ params]
+  (log "error" "sda limit error" params)
+  {})
 
 (db/reg-event-fx
   :ivr.cloudmemory/sda-limit-error
-  (fn cloudmemory-sda-limit-error
-    [_ params]
-    (log "error" "sda limit error" params)
-    {}))
+  sda-limit-error)
