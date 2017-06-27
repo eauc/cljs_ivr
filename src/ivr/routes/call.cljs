@@ -25,7 +25,7 @@
   (doto router
 
     (.use call-status-url resolve-call-middleware)
-    (.get call-status-url call-status-route)
+    (.post call-status-url call-status-route)
 
     (.use call-dial-status-url resolve-call-middleware)
-    (.get call-dial-status-url call-dial-status-route)))
+    (.post call-dial-status-url call-dial-status-route)))

@@ -19,7 +19,7 @@
 (defn- refresh-route-params [{:keys [req] :as route}]
   (let [express-params (js->clj (aget req "params"))
         params (-> (get-route-params route)
-                   (or (let [body (json->clj (aget req "text"))
+                   (or (let [body (js->clj (aget req "body"))
                              query (js->clj (aget req "query"))]
                          (merge body query)))
                    (merge express-params))]

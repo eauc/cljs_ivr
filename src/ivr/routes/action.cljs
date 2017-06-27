@@ -58,15 +58,15 @@
 
         (.use script-start-url resolve-or-create-call-middleware)
         (.use script-start-url resolve-start-node-middleware)
-        (.get script-start-url script-enter-node-route)
+        (.post script-start-url script-enter-node-route)
 
         (.use script-enter-node-url resolve-call-middleware)
         (.use script-enter-node-url resolve-enter-node-middleware)
-        (.get script-enter-node-url script-enter-node-route)
+        (.post script-enter-node-url script-enter-node-route)
 
         (.use script-leave-node-url resolve-call-middleware)
         (.use script-leave-node-url resolve-leave-node-middleware)
-        (.get script-leave-node-url script-leave-node-route))
+        (.post script-leave-node-url script-leave-node-route))
       (call-routes/init)))
 
 

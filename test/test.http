@@ -16,203 +16,203 @@ GET http://localhost:3000/smartccivr/config?path=port
 
 # Start script
 
-GET http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&application_id=app-id&from=%2B33478597106&to=to-sda&call_id=2234
+POST http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&application_id=app-id&from=%2B33478597106&to=to-sda&call_id=2234
 
 # Annoucement
 
-GET http://localhost:3000/smartccivr/script/1234/node/1?account_id=0007&call_id=2234
+POST http://localhost:3000/smartccivr/script/1234/node/1?account_id=0007&call_id=2234
 
 # Annoucement leave
 # hangup
 
-GET http://localhost:3000/smartccivr/script/1234/node/1/callback?account_id=0007&call_id=2234
+POST http://localhost:3000/smartccivr/script/1234/node/1/callback?account_id=0007&call_id=2234
 
 # DTMFCatch
 
-GET http://localhost:3000/smartccivr/script/1234/node/2?account_id=0007&call_id=2234
+POST http://localhost:3000/smartccivr/script/1234/node/2?account_id=0007&call_id=2234
 
 # DTMFCatch leave retry
 
-GET http://localhost:3000/smartccivr/script/1234/node/2/callback?account_id=0007&call_id=2234&retries=1
+POST http://localhost:3000/smartccivr/script/1234/node/2/callback?account_id=0007&call_id=2234&retries=1
 
 # DTMFCatch leave max attempts
 # redirect 44
 
-GET http://localhost:3000/smartccivr/script/1234/node/2/callback?account_id=0007&call_id=2234&retries=3
+POST http://localhost:3000/smartccivr/script/1234/node/2/callback?account_id=0007&call_id=2234&retries=3
 
 # DTMFCatch leave invalid termdigit
 # retry skip first 2 sounds
 
-GET http://localhost:3000/smartccivr/script/1234/node/2/callback?account_id=0007&call_id=2234&retries=2&digits=241&termdigit=1
+POST http://localhost:3000/smartccivr/script/1234/node/2/callback?account_id=0007&call_id=2234&retries=2&digits=241&termdigit=1
 
 # DTMFCatch leave invalid numdigits
 # retry skip first 2 sounds
 
-GET http://localhost:3000/smartccivr/script/1234/node/2/callback?account_id=0007&call_id=2234&retries=2&digits=24&termdigit=4
+POST http://localhost:3000/smartccivr/script/1234/node/2/callback?account_id=0007&call_id=2234&retries=2&digits=24&termdigit=4
 
 # DTMFCatch leave invalid pattern
 # retry skip first 2 sounds
 
-GET http://localhost:3000/smartccivr/script/1234/node/2/callback?account_id=0007&call_id=2234&retries=2&digits=254&termdigit=4
+POST http://localhost:3000/smartccivr/script/1234/node/2/callback?account_id=0007&call_id=2234&retries=2&digits=254&termdigit=4
 
 # DTMFCatch leave ok
 # redirect 43
 
-GET http://localhost:3000/smartccivr/script/1234/node/2/callback?account_id=0007&call_id=2234&retries=2&digits=214&termdigit=4
+POST http://localhost:3000/smartccivr/script/1234/node/2/callback?account_id=0007&call_id=2234&retries=2&digits=214&termdigit=4
 
 # Fetch
 # redirect 2
 
-GET http://localhost:3000/smartccivr/script/1234/node/3?account_id=0007&call_id=2234
+POST http://localhost:3000/smartccivr/script/1234/node/3?account_id=0007&call_id=2234
 
 # Fetch leave
 # redirect 2
 
-GET http://localhost:3000/smartccivr/script/1234/node/3/callback?account_id=0007&call_id=2234
+POST http://localhost:3000/smartccivr/script/1234/node/3/callback?account_id=0007&call_id=2234
 
 # Route
 # redirect 3 si script/start joue
 
-GET http://localhost:3000/smartccivr/script/1234/node/4?account_id=0007&call_id=2234
+POST http://localhost:3000/smartccivr/script/1234/node/4?account_id=0007&call_id=2234
 
 # Route leave
 # hangup
 
-GET http://localhost:3000/smartccivr/script/1234/node/4/callback?account_id=0007&call_id=2234
+POST http://localhost:3000/smartccivr/script/1234/node/4/callback?account_id=0007&call_id=2234
 
 # SMTP
 # redirect 4
 
-GET http://localhost:3000/smartccivr/script/1234/node/5?account_id=0007&call_id=2234
+POST http://localhost:3000/smartccivr/script/1234/node/5?account_id=0007&call_id=2234
 
 # SMTP leave
 # redirect 4
 
-GET http://localhost:3000/smartccivr/script/1234/node/5/callback?account_id=0007&call_id=2234
+POST http://localhost:3000/smartccivr/script/1234/node/5/callback?account_id=0007&call_id=2234
 
 # TransferList
 # Dial list-sda
 
-GET http://localhost:3000/smartccivr/script/1234/node/6?account_id=0007&call_id=2234&from=from-sda&to=to-sda
+POST http://localhost:3000/smartccivr/script/1234/node/6?account_id=0007&call_id=2234&from=from-sda&to=to-sda
 
 # TransferList leave
 # Dial list-sda
 # envoi des params list a ivrservices
 
-GET http://localhost:3000/smartccivr/script/1234/node/6/callback?account_id=0007&call_id=2234&_dstLst_param1=value1&_dstLst_param2=value2&from=from-sda&to=to-sda
+POST http://localhost:3000/smartccivr/script/1234/node/6/callback?account_id=0007&call_id=2234&_dstLst_param1=value1&_dstLst_param2=value2&from=from-sda&to=to-sda
 
 # TransferList leave completed
 # Hangup
 
-GET http://localhost:3000/smartccivr/script/1234/node/6/callback?account_id=0007&call_id=2234&_dstLst_param1=value1&_dstLst_param2=value2&dialstatus=completed
+POST http://localhost:3000/smartccivr/script/1234/node/6/callback?account_id=0007&call_id=2234&_dstLst_param1=value1&_dstLst_param2=value2&dialstatus=completed
 
 # TransferList echec
 # Redirect 6
 
-GET http://localhost:3000/smartccivr/script/1234/node/7?account_id=0007&call_id=2234
+POST http://localhost:3000/smartccivr/script/1234/node/7?account_id=0007&call_id=2234
 
 # TransferQueue
 # Playloop queue_waiting
 
-GET http://localhost:3000/smartccivr/script/1234/node/8?account_id=0007&call_id=2234
+POST http://localhost:3000/smartccivr/script/1234/node/8?account_id=0007&call_id=2234
 
 # TransferQueue leave
 # Hangup
 
-GET http://localhost:3000/smartccivr/script/1234/node/8/callback?account_id=0007&call_id=2234
+POST http://localhost:3000/smartccivr/script/1234/node/8/callback?account_id=0007&call_id=2234
 
 # TransferQueue echec
 # Hangup
 
-GET http://localhost:3000/smartccivr/script/1234/node/9?account_id=0007&call_id=2234
+POST http://localhost:3000/smartccivr/script/1234/node/9?account_id=0007&call_id=2234
 
 # TransferSda
 # Dial dest-sda
 
-GET http://localhost:3000/smartccivr/script/1234/node/10?account_id=0007&call_id=2234&from=from-sda&to=to-sda
+POST http://localhost:3000/smartccivr/script/1234/node/10?account_id=0007&call_id=2234&from=from-sda&to=to-sda
 
 # TransferSda leave completed
 # Hangup
 
-GET http://localhost:3000/smartccivr/script/1234/node/10/callback?account_id=0007&call_id=2234&dialstatus=completed
+POST http://localhost:3000/smartccivr/script/1234/node/10/callback?account_id=0007&call_id=2234&dialstatus=completed
 
 # TransferSda leave no-answer
 # Redirect 42
 
-GET http://localhost:3000/smartccivr/script/1234/node/10/callback?account_id=0007&call_id=2234&dialstatus=no-answer
+POST http://localhost:3000/smartccivr/script/1234/node/10/callback?account_id=0007&call_id=2234&dialstatus=no-answer
 
 # TransferSda leave busy
 # Redirect 71
 
-GET http://localhost:3000/smartccivr/script/1234/node/10/callback?account_id=0007&call_id=2234&dialstatus=busy
+POST http://localhost:3000/smartccivr/script/1234/node/10/callback?account_id=0007&call_id=2234&dialstatus=busy
 
 # TransferSda leave other
 # Redirect 3
 
-GET http://localhost:3000/smartccivr/script/1234/node/10/callback?account_id=0007&call_id=2234&dialstatus=other
+POST http://localhost:3000/smartccivr/script/1234/node/10/callback?account_id=0007&call_id=2234&dialstatus=other
 
 # VoiceRecord
 # Record
 
-GET http://localhost:3000/smartccivr/script/1234/node/11?account_id=0007&call_id=2234
+POST http://localhost:3000/smartccivr/script/1234/node/11?account_id=0007&call_id=2234
 
 # VoiceRecord leave validate
 # Redirect 7
 
-GET http://localhost:3000/smartccivr/script/1234/node/11/callback?account_id=0007&call_id=2234&record_url=/record/url
+POST http://localhost:3000/smartccivr/script/1234/node/11/callback?account_id=0007&call_id=2234&record_url=/record/url
 
 # VoiceRecord leave cancel
 # Redirect 4
 
-GET http://localhost:3000/smartccivr/script/1234/node/11/callback?account_id=0007&call_id=2234&record_cause=digit-a&record_digits=23%23&record_url=/record/url
+POST http://localhost:3000/smartccivr/script/1234/node/11/callback?account_id=0007&call_id=2234&record_cause=digit-a&record_digits=23%23&record_url=/record/url
 
 ####################################
 # STATE
 ####################################
 # Created/InProgress
 
-GET http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&application_id=app-id&from=%2B33478597106&to=to-sda&call_id=2234
+POST http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&application_id=app-id&from=%2B33478597106&to=to-sda&call_id=2234
 
 # TransferRinging
 
-GET http://localhost:3000/smartccivr/script/1234/node/10?account_id=0007&call_id=2234&from=from-sda&to=to-sda
+POST http://localhost:3000/smartccivr/script/1234/node/10?account_id=0007&call_id=2234&from=from-sda&to=to-sda
 
 # <- TransferList leave
 # TransferRinging
 
-GET http://localhost:3000/smartccivr/script/1234/node/6/callback?account_id=0007&call_id=2234&_dstLst_param1=value1&_dstLst_param2=value2&from=from-sda&to=to-sda
+POST http://localhost:3000/smartccivr/script/1234/node/6/callback?account_id=0007&call_id=2234&_dstLst_param1=value1&_dstLst_param2=value2&from=from-sda&to=to-sda
 
 # <- TransferList enter no-change
 
-GET http://localhost:3000/smartccivr/script/1234/node/7?account_id=0007&call_id=2234
+POST http://localhost:3000/smartccivr/script/1234/node/7?account_id=0007&call_id=2234
 
 # <- TransferList leave no change
 
-GET http://localhost:3000/smartccivr/script/1234/node/6/callback?account_id=0007&call_id=2234&_dstLst_param1=value1&_dstLst_param2=value2&dialstatus=completed
+POST http://localhost:3000/smartccivr/script/1234/node/6/callback?account_id=0007&call_id=2234&_dstLst_param1=value1&_dstLst_param2=value2&dialstatus=completed
 
 # Transferred
 
-GET http://localhost:3000/smartccivr/script/1234/dialstatus?account_id=0007&call_id=2234&bridgestatus=in-progress
+POST http://localhost:3000/smartccivr/script/1234/dialstatus?account_id=0007&call_id=2234&bridgestatus=in-progress
 
 # AcdTransferred
 
-GET http://localhost:3000/smartccivr/script/1234/node/8?account_id=0007&call_id=2234
+POST http://localhost:3000/smartccivr/script/1234/node/8?account_id=0007&call_id=2234
 
 # update info.overflow-cause
 
-GET http://localhost:3000/smartccivr/script/1234/node/8/callback?account_id=0007&call_id=2234&overflowcause=NO_AGENT
+POST http://localhost:3000/smartccivr/script/1234/node/8/callback?account_id=0007&call_id=2234&overflowcause=NO_AGENT
 
 # update status
 
-GET http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=in-progress&cause=hangup-b
+POST http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=in-progress&cause=hangup-b
 
 # update dial-status FAILED
 
-GET http://localhost:3000/smartccivr/script/1234/dialstatus?account_id=0007&call_id=2234&bridgeduration=42.0&bridgecause=user-hangup&dialstatus=failed&dialcause=hangup-a
+POST http://localhost:3000/smartccivr/script/1234/dialstatus?account_id=0007&call_id=2234&bridgeduration=42.0&bridgecause=user-hangup&dialstatus=failed&dialcause=hangup-a
 
 # Terminated IVR_HANG_UP
 
-GET http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=failed&cause=xml-hangup
+POST http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=failed&cause=xml-hangup
 
 # Terminated CALLER_HANG_UP
 
@@ -239,4 +239,4 @@ GET http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&appl
 
 # Terminated
 
-GET http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=failed&cause=user-hangup
+POST http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=failed&cause=user-hangup
