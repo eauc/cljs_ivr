@@ -32,19 +32,20 @@
 
 (defn play-sound
   [{:keys [verbs]} {:keys [sound-url node]}]
-  (let [{:strs [id no_barge script_id]} node]
-    (if no_barge
-      {:ivr.routes/response
-       (verbs [{:type :ivr.verbs/play :path sound-url}])}
-      (let [callback-url (url/absolute [:v1 :action :script-leave-node]
-                                       {:script-id script_id
-                                        :node-id id})]
-        {:ivr.routes/response
-         (verbs [{:type :ivr.verbs/gather
-                  :numdigits 1
-                  :timeout 1
-                  :callbackurl callback-url
-                  :play [sound-url]}])}))))
+  (let [{:strs [id no_barge script_id]} node
+        callback-url (url/absolute [:v1 :action :script-leave-node]
+                                   {:script-id script_id
+                                    :node-id id})
+        play-verbs (if no_barge
+                     [{:type :ivr.verbs/play :path sound-url}]
+                     [{:type :ivr.verbs/gather
+                       :numdigits 1
+                       :timeout 1
+                       :callbackurl callback-url
+                       :play [sound-url]}])]
+    {:ivr.routes/response
+     (verbs (concat play-verbs
+                    (node/go-to-next-verbs node)))}))
 
 (node/reg-action
   ::play-sound

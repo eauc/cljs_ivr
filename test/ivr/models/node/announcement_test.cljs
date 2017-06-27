@@ -87,29 +87,33 @@
                   "soundname" "son1"}]
 
 
-        (testing "simple announcement"
+        (testing "simple announcement / no next"
           (is (= {:ivr.routes/response
                   {:verbs "mock"
                    :actions [{:type :ivr.verbs/play
-                              :path "sound-url"}]}}
+                              :path "sound-url"}
+                             {:type :ivr.verbs/hangup}]}}
                  (announcement-node/play-sound
                    deps
                    {:sound-url "sound-url"
                     :node (merge node {"no_barge" true})}))))
 
 
-        (testing "with dtmf catch"
-          (is (= {:ivr.routes/response
-                  {:verbs "mock"
-                   :actions [{:type :ivr.verbs/gather
-                              :numdigits 1
-                              :timeout 1
-                              :callbackurl "/smartccivr/script/script-id/node/node-id/callback"
-                              :play ["sound-url"]}]}}
-                 (announcement-node/play-sound
-                   deps
-                   {:sound-url "sound-url"
-                    :node node}))))))
+        (testing "with dtmf catch / next node"
+          (let [node (assoc node "next" "2")]
+            (is (= {:ivr.routes/response
+                    {:verbs "mock"
+                     :actions [{:type :ivr.verbs/gather
+                                :numdigits 1
+                                :timeout 1
+                                :callbackurl "/smartccivr/script/script-id/node/node-id/callback"
+                                :play ["sound-url"]}
+                               {:type :ivr.verbs/redirect
+                                :path "/smartccivr/script/script-id/node/2"}]}}
+                   (announcement-node/play-sound
+                     deps
+                     {:sound-url "sound-url"
+                      :node node})))))))
 
 
     (testing "leave"

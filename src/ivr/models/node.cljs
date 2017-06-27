@@ -63,15 +63,15 @@
   [node _]
   {:ivr.routes/response
    (routes-error/error-response
-    {:status 500
-     :status_code "invalid_node"
-     :message "Invalid node - type"
-     :cause node})})
+     {:status 500
+      :status_code "invalid_node"
+      :message "Invalid node - type"
+      :cause node})})
 
 (re-frame/reg-cofx
- :ivr.node/enter-cofx
- (fn enter-cofx [coeffects _]
-   (assoc coeffects :enter-node enter-type)))
+  :ivr.node/enter-cofx
+  (fn enter-cofx [coeffects _]
+    (assoc coeffects :enter-node enter-type)))
 
 
 (defmulti leave-type #(node-type %))
@@ -81,32 +81,35 @@
   [node _]
   {:ivr.routes/response
    (routes-error/error-response
-    {:status 500
-     :status_code "invalid_node"
-     :message "Invalid node - type"
-     :cause node})})
+     {:status 500
+      :status_code "invalid_node"
+      :message "Invalid node - type"
+      :cause node})})
 
 (re-frame/reg-cofx
- :ivr.node/leave-cofx
- (fn leave-cofx [coeffects _]
-   (assoc coeffects :leave-node leave-type)))
+  :ivr.node/leave-cofx
+  (fn leave-cofx [coeffects _]
+    (assoc coeffects :leave-node leave-type)))
 
 
-(defn- go-to-next
-  [{:strs [script_id next] :as node}
-   {:keys [verbs] :as deps}]
+(defn go-to-next-verbs
+  [{:strs [script_id next] :as node}]
   (if next
-    {:ivr.routes/response
-     (verbs [{:type :ivr.verbs/redirect
-              :path (url/absolute
-                      [:v1 :action :script-enter-node]
-                      {:script-id script_id
-                       :node-id next})}])}
-    {:ivr.routes/response
-     (verbs [{:type :ivr.verbs/hangup}])}))
+    [{:type :ivr.verbs/redirect
+      :path (url/absolute
+              [:v1 :action :script-enter-node]
+              {:script-id script_id
+               :node-id next})}]
+    [{:type :ivr.verbs/hangup}]))
 
 
-(defn- ->transfert-config
+(defn go-to-next
+  [node {:keys [verbs] :as deps}]
+  {:ivr.routes/response
+   (verbs (go-to-next-verbs node))})
+
+
+(defn ->transfert-config
   [ivr-config account params]
   (let [config (merge {:fromSda "CALLEE"
                        :ringingTimeoutSec 10}
