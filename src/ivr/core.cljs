@@ -6,6 +6,7 @@
             [ivr.libs.nock]
             [ivr.routes.action :as action-routes]
             [ivr.routes.api-v1 :as api-v1-routes]
+            [ivr.routes.call :as call-routes]
             [ivr.routes.config :as config-routes]
             [ivr.routes.index :as index-routes]
             [ivr.services.config :as config]
@@ -26,6 +27,7 @@
               (middlewares/init)
               (index-routes/init)
               (api-v1-routes/init)
+              (call-routes/init)
               (config-routes/init)
               (action-routes/init))))
 

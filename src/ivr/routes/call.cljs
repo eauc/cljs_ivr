@@ -1,31 +1,35 @@
 (ns ivr.routes.call
-  (:require [ivr.routes.url :as url]
+  (:require [cljs.nodejs :as nodejs]
+            [ivr.routes.url :as url]
             [ivr.services.routes.dispatch :as routes-dispatch]))
 
+(defonce express (nodejs/require "express"))
 
-(def call-status-url
-  (get-in url/config [:apis :v1 :status :call]))
 
-(def call-dial-status-url
-  (get-in url/config [:apis :v1 :status :dial]))
+(def base-url
+  (str (get-in url/config [:apis :v1 :link])
+       (get-in url/config [:apis :v1 :call :link])))
+
+
+(def call-context-url
+  (get-in url/config [:apis :v1 :call :context]))
 
 
 (def resolve-call-middleware
   (routes-dispatch/dispatch [:ivr.call/resolve {:create? false}]))
 
 
-(def call-status-route
-  (routes-dispatch/dispatch [:ivr.call/status-route]))
-
-(def call-dial-status-route
-  (routes-dispatch/dispatch [:ivr.call/dial-status-route]))
+(def call-context-route
+  (routes-dispatch/dispatch [:ivr.call/context-route]))
 
 
-(defn init [router]
-  (doto router
+(def router
+  (doto (.Router express #js {:mergeParams true})
 
-    (.use call-status-url resolve-call-middleware)
-    (.post call-status-url call-status-route)
+    (.use call-context-url resolve-call-middleware)
+    (.get call-context-url call-context-route)))
 
-    (.use call-dial-status-url resolve-call-middleware)
-    (.post call-dial-status-url call-dial-status-route)))
+
+(defn init [app]
+  (doto app
+    (.use base-url router)))

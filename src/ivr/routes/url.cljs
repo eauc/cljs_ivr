@@ -11,6 +11,8 @@
                         :script-start "/node/start"
                         :script-enter-node "/node/:node_id"
                         :script-leave-node "/node/:node_id/callback"}
+               :call {:link "/account/:account_id/call/:call_id"
+                      :context "/"}
                :status {:link "/script/:script_id"
                         :call "/status"
                         :dial "/dialstatus"}}}})

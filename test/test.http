@@ -167,6 +167,12 @@ POST http://localhost:3000/smartccivr/script/1234/node/11/callback?account_id=00
 POST http://localhost:3000/smartccivr/script/1234/node/11/callback?account_id=0007&call_id=2234&record_cause=digit-a&record_digits=23%23&record_url=/record/url
 
 ####################################
+# Call Context
+####################################
+
+GET http://localhost:3000/smartccivr/account/0007/call/2234
+
+####################################
 # STATE
 ####################################
 # Created/InProgress
@@ -216,7 +222,7 @@ POST http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id
 
 # Terminated CALLER_HANG_UP
 
-GET http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=failed&cause=user-hangup
+POST http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=failed&cause=user-hangup
 
 ####################################
 # Geolocalisation

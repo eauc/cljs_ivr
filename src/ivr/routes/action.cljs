@@ -3,7 +3,7 @@
             [ivr.db :as db]
             [ivr.models.script :as script]
             [ivr.models.store :as store]
-            [ivr.routes.call :as call-routes]
+            [ivr.routes.status :as status-routes]
             [ivr.routes.url :as url]
             [ivr.services.routes.dispatch :as routes-dispatch]
             [ivr.services.calls]
@@ -67,7 +67,7 @@
         (.use script-leave-node-url resolve-call-middleware)
         (.use script-leave-node-url resolve-leave-node-middleware)
         (.post script-leave-node-url script-leave-node-route))
-      (call-routes/init)))
+      (status-routes/init)))
 
 
 (defn init [app]
