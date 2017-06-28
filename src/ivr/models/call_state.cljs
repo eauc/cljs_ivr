@@ -1,6 +1,7 @@
 (ns ivr.models.call-state
   (:require [cljs.core.match :refer-macros [match]]
-            [ivr.libs.logger :as logger]))
+            [ivr.libs.logger :as logger]
+            [clojure.set :as set]))
 
 (def log
   (logger/create "callState"))
@@ -74,10 +75,15 @@
      start-time :start-time} :state :as call}
    {:keys [now next-state] :as update}]
   (let [duration (- now start-time)]
-    {:state current-state
-     :nextState next-state
-     :time now
-     :duration duration}))
+    (merge (set/rename-keys (:info call) {:id :callId
+                                          :time :callTime
+                                          :account-id :accountid
+                                          :application-id :applicationid
+                                          :script-id :scriptid})
+           {:state current-state
+            :nextState next-state
+            :time now
+            :duration duration})))
 
 
 (defn emit-ticket

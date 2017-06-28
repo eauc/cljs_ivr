@@ -1,158 +1,158 @@
 (ns ivr.models.call-state-test
-	(:require [clojure.test :as test :refer-macros [async deftest is run-tests testing use-fixtures]]
-						[cljs.spec.test :as stest]
-						[ivr.models.call :as call]
-						[ivr.models.call-state :as call-state]))
+  (:require [clojure.test :as test :refer-macros [async deftest is run-tests testing use-fixtures]]
+            [cljs.spec.test :as stest]
+            [ivr.models.call :as call]
+            [ivr.models.call-state :as call-state]))
 
 (use-fixtures :once
-	{:before (fn [] (stest/instrument 'ivr.models.call-state))
-	 :after (fn [] (stest/unstrument 'ivr.models.call-state))})
+  {:before (fn [] (stest/instrument 'ivr.models.call-state))
+   :after (fn [] (stest/unstrument 'ivr.models.call-state))})
 
 (deftest call-model-test
 
-	(testing "on-enter"
+  (testing "on-enter"
 
-		(testing "Transferred, increment sda limit"
-			(let [call (-> (call/info->call {:id "call-id" :time 42})
-										 (assoc-in [:state :info :sda] "sda"))
-						event {:id (call/id call) :time 71
-									 :from "FromState" :to "Transferred"
-									 :cloudmemory #(assoc % :cloudmemory :query)
-									 :services #(assoc % :services :query)}]
-				(is (= {:ivr.web/request
-								{:type :ivr.cloudmemory/inc-sda-limit
-								 :sda "sda"
-								 :cloudmemory :query}}
-							 (call-state/on-enter call event)))))
+    (testing "Transferred, increment sda limit"
+      (let [call (-> (call/info->call {:id "call-id" :time 42})
+                     (assoc-in [:state :info :sda] "sda"))
+            event {:id (call/id call) :time 71
+                   :from "FromState" :to "Transferred"
+                   :cloudmemory #(assoc % :cloudmemory :query)
+                   :services #(assoc % :services :query)}]
+        (is (= {:ivr.web/request
+                {:type :ivr.cloudmemory/inc-sda-limit
+                 :sda "sda"
+                 :cloudmemory :query}}
+               (call-state/on-enter call event)))))
 
 
-		(testing "Terminated, terminate call"
-			(let [call (-> (call/info->call {:id "call-id"
-																			 :account-id "account-id"
-																			 :application-id "app-id"
-																			 :script-id "script-id"
-																			 :from "from"
-																			 :to "to"
-																			 :time 42})
-										 (assoc :action-data {:action :data})
-										 (assoc :action-ongoing {:action :ongoing
-																						 :start-time 14}))
-						options {:from "Transferred"
-										 :to "Terminated"
-										 :services #(assoc % :services :query)
-										 :time 71}]
+    (testing "Terminated, terminate call"
+      (let [call (-> (call/info->call {:id "call-id"
+                                       :account-id "account-id"
+                                       :application-id "app-id"
+                                       :script-id "script-id"
+                                       :from "from"
+                                       :to "to"
+                                       :time 42})
+                     (assoc :action-data {:action :data})
+                     (assoc :action-ongoing {:action :ongoing
+                                             :start-time 14}))
+            options {:from "Transferred"
+                     :to "Terminated"
+                     :services #(assoc % :services :query)
+                     :time 71}]
 
-				(testing "from AcdTransferred"
-					(let [options (assoc options :from "AcdTransferred")
-								expected-ticket {:producer "IVR"
-																 :time 71
-																 :duration 57
-																 :applicationid "app-id"
-																 :from "from"
-																 :callTime 42
-																 :callid "call-id"
-																 :action :ongoing
-																 :accountid "account-id"
-																 :subject "ACTION"
-																 :scriptid "script-id"
-																 :to "to"}]
-						(is (= (assoc expected-ticket :endCause "")
-									 (get (call-state/on-enter
-													(assoc-in call [:state :info :overflow-cause] "overflow-cause")
-													options)
-												:ivr.ticket/emit)))
-						(is (= (assoc expected-ticket :endCause "")
-									 (get (call-state/on-enter
-													(assoc-in call [:state :status "cause"] "xml-hangup")
-													options)
-												:ivr.ticket/emit)))
-						(is (= (assoc expected-ticket :endCause "IVR_HANG_UP")
-									 (get (call-state/on-enter
-													(-> call
-															(assoc-in [:state :info :overflow-cause] "overflow-cause")
-															(assoc-in [:state :status "cause"] "xml-hangup"))
-													options)
-												:ivr.ticket/emit)))))
+        (testing "from AcdTransferred"
+          (let [options (assoc options :from "AcdTransferred")
+                expected-ticket {:producer "IVR"
+                                 :time 71
+                                 :duration 57
+                                 :applicationid "app-id"
+                                 :from "from"
+                                 :callTime 42
+                                 :callid "call-id"
+                                 :action :ongoing
+                                 :accountid "account-id"
+                                 :subject "ACTION"
+                                 :scriptid "script-id"
+                                 :to "to"}]
+            (is (= (assoc expected-ticket :endCause "")
+                   (get (call-state/on-enter
+                          (assoc-in call [:state :info :overflow-cause] "overflow-cause")
+                          options)
+                        :ivr.ticket/emit)))
+            (is (= (assoc expected-ticket :endCause "")
+                   (get (call-state/on-enter
+                          (assoc-in call [:state :status "cause"] "xml-hangup")
+                          options)
+                        :ivr.ticket/emit)))
+            (is (= (assoc expected-ticket :endCause "IVR_HANG_UP")
+                   (get (call-state/on-enter
+                          (-> call
+                              (assoc-in [:state :info :overflow-cause] "overflow-cause")
+                              (assoc-in [:state :status "cause"] "xml-hangup"))
+                          options)
+                        :ivr.ticket/emit)))))
 
-				(testing "from InProgress"
-					(let [options (assoc options :from "InProgress")
-								expected-ticket {:producer "IVR"
-																 :time 71
-																 :duration 57
-																 :applicationid "app-id"
-																 :from "from"
-																 :callTime 42
-																 :callid "call-id"
-																 :action :ongoing
-																 :accountid "account-id"
-																 :subject "ACTION"
-																 :scriptid "script-id"
-																 :to "to"}]
-						(is (= (assoc expected-ticket :endCause "CALLER_HANG_UP")
-									 (get (call-state/on-enter
-													(assoc-in call [:state :status "cause"] "user-hangup")
-													options)
-												:ivr.ticket/emit)))
-						(is (= (assoc expected-ticket :endCause "IVR_HANG_UP")
-									 (get (call-state/on-enter
-													(assoc-in call [:state :status "cause"] "xml-hangup")
-													options)
-												:ivr.ticket/emit)))))
+        (testing "from InProgress"
+          (let [options (assoc options :from "InProgress")
+                expected-ticket {:producer "IVR"
+                                 :time 71
+                                 :duration 57
+                                 :applicationid "app-id"
+                                 :from "from"
+                                 :callTime 42
+                                 :callid "call-id"
+                                 :action :ongoing
+                                 :accountid "account-id"
+                                 :subject "ACTION"
+                                 :scriptid "script-id"
+                                 :to "to"}]
+            (is (= (assoc expected-ticket :endCause "CALLER_HANG_UP")
+                   (get (call-state/on-enter
+                          (assoc-in call [:state :status "cause"] "user-hangup")
+                          options)
+                        :ivr.ticket/emit)))
+            (is (= (assoc expected-ticket :endCause "IVR_HANG_UP")
+                   (get (call-state/on-enter
+                          (assoc-in call [:state :status "cause"] "xml-hangup")
+                          options)
+                        :ivr.ticket/emit)))))
 
-				(testing "from Transferred"
-					(is (= {:ivr.call/remove "call-id"
-									:ivr.web/request {:services :query
-																		:type :ivr.services/call-on-end
-																		:action :data
-																		:account-id "account-id"
-																		:application-id "app-id"
-																		:id "call-id"
-																		:script-id "script-id"
-																		:from "from"
-																		:to "to"
-																		:time 42}}
-								 (call-state/on-enter call options))))
+        (testing "from Transferred"
+          (is (= {:ivr.call/remove "call-id"
+                  :ivr.web/request {:services :query
+                                    :type :ivr.services/call-on-end
+                                    :action :data
+                                    :account-id "account-id"
+                                    :application-id "app-id"
+                                    :id "call-id"
+                                    :script-id "script-id"
+                                    :from "from"
+                                    :to "to"
+                                    :time 42}}
+                 (call-state/on-enter call options))))
 
-				(testing "from TransferRinging"
-					(let [call (assoc-in call [:state :status "cause"] "user-hangup")
-								options (assoc options :from "TransferRinging")
-								expected-ticket {:producer "IVR"
-																 :time 71
-																 :duration 57
-																 :applicationid "app-id"
-																 :from "from"
-																 :callTime 42
-																 :callid "call-id"
-																 :action :ongoing
-																 :accountid "account-id"
-																 :subject "ACTION"
-																 :scriptid "script-id"
-																 :to "to"}]
-						(is (= nil
-									 (get (call-state/on-enter
-													(assoc-in call [:state :status "cause"] "xml-hangup")
-													options)
-												:ivr.ticket/emit)))
-						(is (= (assoc expected-ticket :endCause "CALLER_HANG_UP")
-									 (get (call-state/on-enter
-													call
-													options)
-												:ivr.ticket/emit)))
-						(is (= (assoc expected-ticket :endCause "IVR_HANG_UP")
-									 (get (call-state/on-enter
-													(assoc-in call [:state :dial-status "dialstatus"] "failed")
-													options)
-												:ivr.ticket/emit)))
-						(is (= (assoc expected-ticket :endCause "IVR_HANG_UP")
-									 (get (call-state/on-enter
-													(assoc-in call [:state :dial-status "dialstatus"] "no-answer")
-													options)
-												:ivr.ticket/emit)))
-						(is (= (assoc expected-ticket :endCause "IVR_HANG_UP")
-									 (get (call-state/on-enter
-													(assoc-in call [:state :dial-status "dialstatus"] "busy")
-													options)
-												:ivr.ticket/emit))))))))
+        (testing "from TransferRinging"
+          (let [call (assoc-in call [:state :status "cause"] "user-hangup")
+                options (assoc options :from "TransferRinging")
+                expected-ticket {:producer "IVR"
+                                 :time 71
+                                 :duration 57
+                                 :applicationid "app-id"
+                                 :from "from"
+                                 :callTime 42
+                                 :callid "call-id"
+                                 :action :ongoing
+                                 :accountid "account-id"
+                                 :subject "ACTION"
+                                 :scriptid "script-id"
+                                 :to "to"}]
+            (is (= nil
+                   (get (call-state/on-enter
+                          (assoc-in call [:state :status "cause"] "xml-hangup")
+                          options)
+                        :ivr.ticket/emit)))
+            (is (= (assoc expected-ticket :endCause "CALLER_HANG_UP")
+                   (get (call-state/on-enter
+                          call
+                          options)
+                        :ivr.ticket/emit)))
+            (is (= (assoc expected-ticket :endCause "IVR_HANG_UP")
+                   (get (call-state/on-enter
+                          (assoc-in call [:state :dial-status "dialstatus"] "failed")
+                          options)
+                        :ivr.ticket/emit)))
+            (is (= (assoc expected-ticket :endCause "IVR_HANG_UP")
+                   (get (call-state/on-enter
+                          (assoc-in call [:state :dial-status "dialstatus"] "no-answer")
+                          options)
+                        :ivr.ticket/emit)))
+            (is (= (assoc expected-ticket :endCause "IVR_HANG_UP")
+                   (get (call-state/on-enter
+                          (assoc-in call [:state :dial-status "dialstatus"] "busy")
+                          options)
+                        :ivr.ticket/emit))))))))
 
   (testing "on leave"
     (let [call (-> (call/info->call {:id "call-id"
@@ -204,7 +204,13 @@
 
 
   (testing "emit-state-ticket"
-    (let [call (-> (call/info->call {:id "call-id" :time 42})
+    (let [call (-> (call/info->call {:id "call-id"
+                                     :time 42
+                                     :application-id "app-id"
+                                     :account-id "account-id"
+                                     :script-id "script-id"
+                                     :from "from"
+                                     :to "to"})
                    (assoc-in [:state :info] {:failed-sda "failed-sda"
                                              :overflow-cause "NO_AGENT"
                                              :queue "queue-id"
@@ -217,7 +223,14 @@
 
       (testing "Created -> AcdTransferred"
         (is (= {:ivr.ticket/emit
-                {:state "Created"
+                {:applicationid "app-id"
+                 :from "from"
+                 :callTime 42
+                 :callId "call-id"
+                 :accountid "account-id"
+                 :scriptid "script-id"
+                 :to "to"
+                 :state "Created"
                  :nextState "AcdTransferred"
                  :time 71
                  :duration 29
@@ -234,7 +247,14 @@
 
       (testing "Created -> InProgress"
         (is (= {:ivr.ticket/emit
-                {:state "Created"
+                {:applicationid "app-id"
+                 :from "from"
+                 :callTime 42
+                 :callId "call-id"
+                 :accountid "account-id"
+                 :scriptid "script-id"
+                 :to "to"
+                 :state "Created"
                  :nextState "InProgress"
                  :time 71
                  :duration 29}}
@@ -256,7 +276,14 @@
 
       (testing "Created -> TransferRinging"
         (is (= {:ivr.ticket/emit
-                {:state "Created"
+                {:applicationid "app-id"
+                 :from "from"
+                 :callTime 42
+                 :callId "call-id"
+                 :accountid "account-id"
+                 :scriptid "script-id"
+                 :to "to"
+                 :state "Created"
                  :nextState "TransferRinging"
                  :time 71
                  :duration 29
@@ -282,7 +309,14 @@
 
         (testing "AcdTransferred -> InProgress"
           (is (= {:ivr.ticket/emit
-                  {:state "AcdTransferred"
+                  {:applicationid "app-id"
+                   :from "from"
+                   :callTime 42
+                   :callId "call-id"
+                   :accountid "account-id"
+                   :scriptid "script-id"
+                   :to "to"
+                   :state "AcdTransferred"
                    :nextState "InProgress"
                    :time 71
                    :duration 29
@@ -294,7 +328,14 @@
 
         (testing "AcdTransferred -> Terminated"
           (is (= {:ivr.ticket/emit
-                  {:state "AcdTransferred"
+                  {:applicationid "app-id"
+                   :from "from"
+                   :callTime 42
+                   :callId "call-id"
+                   :accountid "account-id"
+                   :scriptid "script-id"
+                   :to "to"
+                   :state "AcdTransferred"
                    :nextState "Terminated"
                    :time 71
                    :duration 29
@@ -306,7 +347,14 @@
                    call
                    (assoc update :next-state "Terminated"))))
           (is (= {:ivr.ticket/emit
-                  {:state "AcdTransferred"
+                  {:applicationid "app-id"
+                   :from "from"
+                   :callTime 42
+                   :callId "call-id"
+                   :accountid "account-id"
+                   :scriptid "script-id"
+                   :to "to"
+                   :state "AcdTransferred"
                    :nextState "Terminated"
                    :time 71
                    :duration 29}}
@@ -316,7 +364,14 @@
                           :next-state "Terminated"
                           :status {"cause" "user-hangup"}))))
           (is (= {:ivr.ticket/emit
-                  {:state "AcdTransferred"
+                  {:applicationid "app-id"
+                   :from "from"
+                   :callTime 42
+                   :callId "call-id"
+                   :accountid "account-id"
+                   :scriptid "script-id"
+                   :to "to"
+                   :state "AcdTransferred"
                    :nextState "Terminated"
                    :time 71
                    :duration 29}}
@@ -332,7 +387,14 @@
 
         (testing "AcdTransferred -> TransferRinging"
           (is (= {:ivr.ticket/emit
-                  {:state "AcdTransferred"
+                  {:applicationid "app-id"
+                   :from "from"
+                   :callTime 42
+                   :callId "call-id"
+                   :accountid "account-id"
+                   :scriptid "script-id"
+                   :to "to"
+                   :state "AcdTransferred"
                    :nextState "TransferRinging"
                    :time 71
                    :duration 29
@@ -348,7 +410,14 @@
 
         (testing "InProgress -> AcdTransferred"
           (is (= {:ivr.ticket/emit
-                  {:state "InProgress"
+                  {:applicationid "app-id"
+                   :from "from"
+                   :callTime 42
+                   :callId "call-id"
+                   :accountid "account-id"
+                   :scriptid "script-id"
+                   :to "to"
+                   :state "InProgress"
                    :nextState "AcdTransferred"
                    :time 71
                    :duration 29
@@ -371,7 +440,14 @@
 
         (testing "InProgress -> Terminated"
           (is (= {:ivr.ticket/emit
-                  {:state "InProgress"
+                  {:applicationid "app-id"
+                   :from "from"
+                   :callTime 42
+                   :callId "call-id"
+                   :accountid "account-id"
+                   :scriptid "script-id"
+                   :to "to"
+                   :state "InProgress"
                    :nextState "Terminated"
                    :time 71
                    :duration 29
@@ -381,7 +457,14 @@
                    call
                    (assoc update :next-state "Terminated"))))
           (is (= {:ivr.ticket/emit
-                  {:state "InProgress"
+                  {:applicationid "app-id"
+                   :from "from"
+                   :callTime 42
+                   :callId "call-id"
+                   :accountid "account-id"
+                   :scriptid "script-id"
+                   :to "to"
+                   :state "InProgress"
                    :nextState "Terminated"
                    :time 71
                    :duration 29
@@ -400,7 +483,14 @@
 
         (testing "InProgress -> TransferRinging"
           (is (= {:ivr.ticket/emit
-                  {:state "InProgress"
+                  {:applicationid "app-id"
+                   :from "from"
+                   :callTime 42
+                   :callId "call-id"
+                   :accountid "account-id"
+                   :scriptid "script-id"
+                   :to "to"
+                   :state "InProgress"
                    :nextState "TransferRinging"
                    :time 71
                    :duration 29
@@ -471,7 +561,14 @@
 
         (testing "Transferred -> Terminated"
           (is (= {:ivr.ticket/emit
-                  {:state "Transferred"
+                  {:applicationid "app-id"
+                   :from "from"
+                   :callTime 42
+                   :callId "call-id"
+                   :accountid "account-id"
+                   :scriptid "script-id"
+                   :to "to"
+                   :state "Transferred"
                    :nextState "Terminated"
                    :time 71
                    :duration 29
@@ -499,7 +596,14 @@
 
         (testing "TransferRinging -> AcdTransferred"
           (is (= {:ivr.ticket/emit
-                  {:state "TransferRinging"
+                  {:applicationid "app-id"
+                   :from "from"
+                   :callTime 42
+                   :callId "call-id"
+                   :accountid "account-id"
+                   :scriptid "script-id"
+                   :to "to"
+                   :state "TransferRinging"
                    :nextState "AcdTransferred"
                    :time 71
                    :duration 29
@@ -519,7 +623,14 @@
 
         (testing "TransferRinging -> InProgress"
           (is (= {:ivr.ticket/emit
-                  {:state "TransferRinging"
+                  {:applicationid "app-id"
+                   :from "from"
+                   :callTime 42
+                   :callId "call-id"
+                   :accountid "account-id"
+                   :scriptid "script-id"
+                   :to "to"
+                   :state "TransferRinging"
                    :nextState "InProgress"
                    :time 71
                    :duration 29
@@ -532,7 +643,14 @@
 
         (testing "TransferRinging -> Terminated"
           (is (= {:ivr.ticket/emit
-                  {:state "TransferRinging"
+                  {:applicationid "app-id"
+                   :from "from"
+                   :callTime 42
+                   :callId "call-id"
+                   :accountid "account-id"
+                   :scriptid "script-id"
+                   :to "to"
+                   :state "TransferRinging"
                    :nextState "Terminated"
                    :time 71
                    :duration 29}}
@@ -540,7 +658,14 @@
                    call
                    (assoc update :next-state "Terminated"))))
           (is (= {:ivr.ticket/emit
-                  {:state "TransferRinging"
+                  {:applicationid "app-id"
+                   :from "from"
+                   :callTime 42
+                   :callId "call-id"
+                   :accountid "account-id"
+                   :scriptid "script-id"
+                   :to "to"
+                   :state "TransferRinging"
                    :nextState "Terminated"
                    :time 71
                    :duration 29
@@ -551,7 +676,14 @@
                    (assoc update
                           :next-state "Terminated"
                           :status {"cause" "user-hangup"}))))
-          (let [expected-ticket {:state "TransferRinging"
+          (let [expected-ticket {:applicationid "app-id"
+                                 :from "from"
+                                 :callTime 42
+                                 :callId "call-id"
+                                 :accountid "account-id"
+                                 :scriptid "script-id"
+                                 :to "to"
+                                 :state "TransferRinging"
                                  :nextState "Terminated"
                                  :time 71
                                  :duration 29
@@ -580,7 +712,14 @@
 
         (testing "TransferRinging -> Transferred"
           (is (= {:ivr.ticket/emit
-                  {:state "TransferRinging"
+                  {:applicationid "app-id"
+                   :from "from"
+                   :callTime 42
+                   :callId "call-id"
+                   :accountid "account-id"
+                   :scriptid "script-id"
+                   :to "to"
+                   :state "TransferRinging"
                    :nextState "Transferred"
                    :time 71
                    :duration 29
@@ -591,7 +730,14 @@
 
         (testing "TransferRinging -> TransferRinging"
           (is (= {:ivr.ticket/emit
-                  {:state "TransferRinging"
+                  {:applicationid "app-id"
+                   :from "from"
+                   :callTime 42
+                   :callId "call-id"
+                   :accountid "account-id"
+                   :scriptid "script-id"
+                   :to "to"
+                   :state "TransferRinging"
                    :nextState "TransferRinging"
                    :time 71
                    :duration 29

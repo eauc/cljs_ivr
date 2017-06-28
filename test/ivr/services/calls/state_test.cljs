@@ -50,7 +50,9 @@
                                     "new-state" "new-state"}
                            :dial-status {"dial-status" "state"
                                          "new-dial-status" "new-state"}}}
-                  :ivr.ticket/emit {:state "Created"
+                  :ivr.ticket/emit {:callId "call-id"
+                                    :callTime 42
+                                    :state "Created"
                                     :nextState "InProgress"
                                     :time 71
                                     :duration 29}
