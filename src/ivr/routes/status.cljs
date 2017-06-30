@@ -11,7 +11,8 @@
 
 
 (def resolve-call-middleware
-  (routes-dispatch/dispatch [:ivr.call/resolve {:create? false}]))
+  (routes-dispatch/dispatch [:ivr.call/resolve {:create? false
+                                                :fail? false}]))
 
 
 (def call-status-route

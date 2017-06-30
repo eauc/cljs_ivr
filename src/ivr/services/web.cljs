@@ -34,7 +34,7 @@
 
 
 (defn request [{:as description
-                :keys [method url accept data type]
+                :keys [method url accept data query type]
                 :or {method "GET"
                      accept "json"
                      type "json"}}]
@@ -45,6 +45,7 @@
         (.accept accept)
         (.buffer true)
         (.parse parse-response-body)
+        (.query (clj->js query))
         (.send (clj->json data))
         (.then
           (fn [response]

@@ -52,7 +52,7 @@
                    [pjstadig/humane-test-output "0.8.1"]]
     :cljsbuild
     {:builds
-     {:app {:figwheel {:on-jsload "ivr.core/create-app"}
+     {:app {:figwheel {:on-jsload "ivr.server/create-app"}
             :compiler {:preloads [devtools.preload]}}
       :test {:figwheel {:on-jsload "ivr.core-test/run-tests"}
              :source-paths ["src" "test"]

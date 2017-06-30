@@ -30,7 +30,8 @@
   (routes-dispatch/dispatch [:ivr.call/resolve {:create? true}]))
 
 (def resolve-call-middleware
-  (routes-dispatch/dispatch [:ivr.call/resolve {:create? false}]))
+  (routes-dispatch/dispatch [:ivr.call/resolve {:create? false
+                                                :fail? true}]))
 
 (def resolve-script-middleware
   (routes-dispatch/dispatch [:ivr.script/resolve-script]))
@@ -54,19 +55,20 @@
 
 (def router
   (-> (.Router express #js {:mergeParams true})
-      (doto (.use resolve-script-middleware)
+      (doto
+          (.use script-start-url resolve-script-middleware)
+          (.use script-start-url resolve-or-create-call-middleware)
+          (.use script-start-url resolve-start-node-middleware)
+          (.post script-start-url script-enter-node-route)
 
-        (.use script-start-url resolve-or-create-call-middleware)
-        (.use script-start-url resolve-start-node-middleware)
-        (.post script-start-url script-enter-node-route)
+          (.use script-enter-node-url resolve-script-middleware)
+          (.use script-enter-node-url resolve-call-middleware)
+          (.use script-enter-node-url resolve-enter-node-middleware)
+          (.post script-enter-node-url script-enter-node-route)
 
-        (.use script-enter-node-url resolve-call-middleware)
-        (.use script-enter-node-url resolve-enter-node-middleware)
-        (.post script-enter-node-url script-enter-node-route)
-
-        (.use script-leave-node-url resolve-call-middleware)
-        (.use script-leave-node-url resolve-leave-node-middleware)
-        (.post script-leave-node-url script-leave-node-route))
+          (.use script-leave-node-url resolve-call-middleware)
+          (.use script-leave-node-url resolve-leave-node-middleware)
+          (.post script-leave-node-url script-leave-node-route))
       (status-routes/init)))
 
 

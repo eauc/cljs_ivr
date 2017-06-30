@@ -39,12 +39,24 @@
         (recur xs (str msg " " x))))))
 
 
+(def console-group
+  (if-not (nil? js/console.group)
+    (fn [& args] (js/console.group.apply js/console (clj->js args)))
+    (fn [& args] (js/console.log.apply js/console (clj->js args)))))
+
+
+(def console-group-end
+  (if-not (nil? js/console.groupEnd)
+    (fn [& args] (js/console.groupEnd.apply js/console (clj->js args)))
+    (fn [& args] nil)))
+
+
 (re-loggers/set-loggers!
   {:log (fn [& args] (js/console.log.apply js/console (clj->js args)))
    :warn (log-reframe-wrapper "warn")
    :error (log-reframe-wrapper "error")
-   :group (fn [& args] (js/console.group.apply js/console (clj->js args)))
-   :groupEnd (fn [& args] (js/console.groupEnd.apply js/console (clj->js args)))})
+   :group console-group
+   :groupEnd console-group-end})
 
 
 (def default-interceptors

@@ -80,7 +80,8 @@
                                           :account-id :accountid
                                           :application-id :applicationid
                                           :script-id :scriptid})
-           {:state current-state
+           {:subject "CALL"
+            :state current-state
             :nextState next-state
             :time now
             :duration duration})))

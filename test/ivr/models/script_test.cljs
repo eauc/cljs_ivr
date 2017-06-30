@@ -59,8 +59,8 @@
                {} {:params {"script" {}}})))
 
 
-      (let [script {:id "script-id"
-                    :nodes {:1 {}}}]
+      (let [script {"_id" "script-id"
+                    "nodes" {"1" {}}}]
         (is (= {:ivr.routes/response
                 {:status 500
                  :data {:status 500
@@ -71,7 +71,7 @@
                  {} {:params {"script" script}}))))
 
 
-      (let [script {"id" "script-id"
+      (let [script {"_id" "script-id"
                     "start" "toto"
                     "nodes" {"1" {}}}]
         (is (= {:ivr.routes/response
@@ -84,7 +84,7 @@
                  {} {:params {"script" script}}))))
 
 
-      (let [script {"id" "script-id"
+      (let [script {"_id" "script-id"
                     "start" "1"
                     "nodes" {"1" {"type" "announcement"}}}
             params {"script" script}]
@@ -97,7 +97,7 @@
 
 
     (testing "resolve-node"
-      (let [script {"id" "script-id"
+      (let [script {"_id" "script-id"
                     "nodes" {"other" {}}}]
         (is (= {:ivr.routes/response
                 {:status 500
@@ -111,7 +111,7 @@
                            "node_id" "42"}}))))
 
 
-      (let [script {"id" "script-id"
+      (let [script {"_id" "script-id"
                     "nodes" {"42" {"type" "announcement"}}}
             params {"script" script
                     "node_id" "42"}]
@@ -196,26 +196,26 @@
                               "account_id" "account-id"
                               "script_id" nil}}}
                (script/conform {"nodes" {"1" {}}} options)))
-        (is (= {"id" "script-id"
+        (is (= {"_id" "script-id"
                 "account_id" "account-id"
                 "nodes" {"1" {"id" "1"
                               "account_id" "account-id"
                               "script_id" "script-id"}}}
-               (script/conform {"id" "script-id"
+               (script/conform {"_id" "script-id"
                                 "nodes" {"1" {}}} options)))
-        (is (= {"id" "script-id"
+        (is (= {"_id" "script-id"
                 "account_id" "account-id"
                 "nodes" {"1" {"id" "1"
                               "account_id" "account-id"
                               "script_id" "script-id"
                               "node" "payload"}}}
-               (script/conform {"id" "script-id"
+               (script/conform {"_id" "script-id"
                                 "nodes" {"1" {"node" "payload"}}} options)))
-        (is (= {"id" "script-id"
+        (is (= {"_id" "script-id"
                 "account_id" "account-id"
                 "nodes" {"3" {"id" "3"
                               "account_id" "account-id"
                               "script_id" "script-id"
                               "next" "2"}}}
-               (script/conform {"id" "script-id"
+               (script/conform {"_id" "script-id"
                                 "nodes" {"3" {"next" "2"}}} options)))))))

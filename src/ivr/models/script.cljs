@@ -46,7 +46,7 @@
           (contains? script "start") (update "start" str))
       (update "nodes" #(into {} (for [[k v] %]
                                   [k (node/conform v {:id k
-                                                      :script-id (get script "id")
+                                                      :script-id (get script "_id")
                                                       :account-id account-id})])))))
 
 

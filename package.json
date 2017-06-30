@@ -1,0 +1,33 @@
+{
+  "name": "cljs_ivr",
+  "version": "1.0.0",
+  "description": "- refonte spec   - instrumenter ivr.node ns durant les tests node/types - implement fetch external url   - web request timeout / max body size",
+  "main": "index.js",
+  "directories": {
+    "doc": "doc",
+    "test": "test"
+  },
+  "devDependencies": {
+    "async": "^2.5.0",
+    "chai": "^4.0.2",
+    "mocha": "^3.4.2",
+    "nock": "^9.0.13",
+    "supertest": "^3.0.0",
+    "supertest-as-promised": "^4.0.2",
+    "underscore": "^1.8.3",
+    "xml2js": "^0.4.17"
+  },
+  "scripts": {
+    "test": "mocha $(find test/server -name '*Spec.js')"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eauc/cljs_ivr.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/eauc/cljs_ivr/issues"
+  },
+  "homepage": "https://github.com/eauc/cljs_ivr#readme"
+}

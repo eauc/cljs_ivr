@@ -38,17 +38,19 @@
 
 (defn find-or-create-call
   [{:keys [db] :as coeffects}
-   {:keys [create?] :as options}
+   {:keys [create? fail?] :as options}
    {{:strs [call_id] :as params} :params}]
   (let [call (call/db-call db call_id)]
     (cond
       (and (nil? call)
            (not create?)) {:ivr.routes/response
-                           (routes-error/error-response
-                             {:status 404
-                              :status_code "call_not_found"
-                              :message "Call not found"
-                              :cause {:call-id call_id}})}
+                           (if fail?
+                             (routes-error/error-response
+                               {:status 404
+                                :status_code "call_not_found"
+                                :message "Call not found"
+                                :cause {:call-id call_id}})
+                             {:status 204})}
       (nil? call) (try-to-create-call coeffects params)
       :else {:ivr.routes/params (assoc params "call" call)
              :ivr.routes/next nil})))
