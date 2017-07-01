@@ -37,24 +37,25 @@
 
 (defn init
   [config]
-  (let [producer (get-in config [:zmq :publisherName])
-        publish-to (get-in config [:zmq :publishTo])
-        version (get-in config [:zmq :ticket_version])
-        new-socket (-> zeromq
-                       (.socket "pub")
-                       (.bindSync publish-to))]
-    (log "info" "Publish channel bound"
-         {:producer producer
-          :publish-to publish-to
-          :version version})
-    (reset! socket-state {:socket new-socket
-                          :producer producer
-                          :version version})))
+  (if (get-in config [:zmq :activeZMQ])
+    (let [producer (get-in config [:zmq :publisherName])
+          publish-to (get-in config [:zmq :publishTo])
+          version (get-in config [:zmq :ticket_version])
+          new-socket (-> zeromq
+                         (.socket "pub")
+                         (.bindSync publish-to))]
+      (log "info" "Publish channel bound"
+           {:producer producer
+            :publish-to publish-to
+            :version version})
+      (reset! socket-state {:socket new-socket
+                            :producer producer
+                            :version version}))))
 
 
 (defn stop
   []
-  (-> @socket-state :socket .close))
+  (some-> @socket-state :socket .close))
 
 
 (re-frame/reg-fx

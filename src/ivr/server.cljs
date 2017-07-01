@@ -8,6 +8,7 @@
             [ivr.routes.call :as call-routes]
             [ivr.routes.config :as config-routes]
             [ivr.routes.index :as index-routes]
+            [ivr.routes.twimlet :as twimlet-routes]
             [ivr.services.config :as config]
             [ivr.services.tickets :as tickets]
             [re-frame.core :as re-frame]))
@@ -28,7 +29,8 @@
               (api-v1-routes/init)
               (call-routes/init)
               (config-routes/init)
-              (action-routes/init))))
+              (action-routes/init)
+              (twimlet-routes/init))))
 
 
 (defn http-server

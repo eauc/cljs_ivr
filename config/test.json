@@ -1,4 +1,7 @@
 {
+  "business": {
+    "welcome-sound": "welcome-id"
+  },
   "environment": {
     "dispatch_url": {
       "internal": "http://clouddispatch"

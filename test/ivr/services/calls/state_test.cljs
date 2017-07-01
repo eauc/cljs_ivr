@@ -43,7 +43,7 @@
           (is (= {:ivr.call/update
                   {:id "call-id"
                    :state {:current "InProgress"
-                           :start-time 71
+                           :start-time 42
                            :info {:info :state
                                   :new-info :new-state}
                            :status {"status" "state"
@@ -55,8 +55,8 @@
                                     :callTime 42
                                     :state "Created"
                                     :nextState "InProgress"
-                                    :time 71
-                                    :duration 29}
+                                    :time 42
+                                    :duration 0}
                   :dispatch-n
                   [[:ivr.call/leave-state {:id "call-id"
                                            :time 71

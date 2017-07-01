@@ -63,7 +63,7 @@
 
 (node/reg-action
   ::eval-list-with-config
-  [(re-frame/inject-cofx :ivr.config/cofx [:ivr :transfersda])]
+  [(re-frame/inject-cofx :ivr.config/cofx [:business :transfersda])]
   eval-list-with-config)
 
 
@@ -80,7 +80,6 @@
     (if-not (empty? callback-params)
       (->> (clj->js callback-params)
            (.stringify query-string)
-           xml-escape
            (str "?"))
       "")))
 

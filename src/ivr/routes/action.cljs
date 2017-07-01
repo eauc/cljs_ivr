@@ -56,6 +56,7 @@
 (def router
   (-> (.Router express #js {:mergeParams true})
       (doto
+
           (.use script-start-url resolve-script-middleware)
           (.use script-start-url resolve-or-create-call-middleware)
           (.use script-start-url resolve-start-node-middleware)

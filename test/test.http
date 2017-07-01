@@ -246,3 +246,14 @@ GET http://localhost:3000/smartccivr/script/1234/node/start?account_id=0007&appl
 # Terminated
 
 POST http://localhost:3000/smartccivr/script/1234/status?account_id=0007&call_id=2234&status=failed&cause=user-hangup
+
+####################################
+# Geolocalisation
+####################################
+# loop play
+
+POST http://localhost:3000/smartccivr/twimlets/loopPlay/file-name
+
+# welcome
+
+POST http://localhost:3000/smartccivr/twimlets/welcome

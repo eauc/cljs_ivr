@@ -38,7 +38,7 @@
 
 (defn sda-limit-success
   [_ params]
-  (log "info" "sda limit ok" params)
+  (log "info" "sda limit ok")
   {})
 
 (db/reg-event-fx
@@ -47,8 +47,8 @@
 
 
 (defn sda-limit-error
-  [_ params]
-  (log "error" "sda limit error" params)
+  [_ {:keys [error]}]
+  (log "error" "sda limit error" {:error error})
   {})
 
 (db/reg-event-fx

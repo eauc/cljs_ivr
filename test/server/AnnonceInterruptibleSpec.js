@@ -3,12 +3,10 @@
 
 const server = require("./helpers/server.js");
 var _ = require("underscore");
-// var CallStatus = require("../../Status/CallStatus");
 var TicketsEmitter = require("events");
 var async = require("async");
 var nock = require("nock");
 require("chai").should();
-// require("./helpers/SmartMatchObjectRedefine");
 var tickets = new TicketsEmitter();
 var DrivenCall = require("./helpers/DrivenCallMock.js");
 

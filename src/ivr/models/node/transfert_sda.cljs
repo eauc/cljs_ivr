@@ -1,5 +1,6 @@
 (ns ivr.models.node.transfert-sda
-  (:require [ivr.models.call :as call]
+  (:require [ivr.libs.logger :as logger]
+            [ivr.models.call :as call]
             [ivr.models.node :as node]
             [ivr.routes.url :as url]
             [re-frame.core :as re-frame]))
@@ -56,7 +57,7 @@
 
 (node/reg-action
   ::transfert-sda-with-config
-  [(re-frame/inject-cofx :ivr.config/cofx [:ivr :transfersda])]
+  [(re-frame/inject-cofx :ivr.config/cofx [:business :transfersda])]
   transfert-sda-with-config)
 
 (defmethod node/leave-type "transfersda"

@@ -23,15 +23,15 @@
         verb (verbs/first-verb response)
         next-state (cond
                      (and (= :enter current-action)
-                          (= "transferqueue" node-type)
-                          (= :Play verb)) "AcdTransferred"
+                          (= "transferqueue" node-type)) "AcdTransferred"
                      (and (= :enter current-action)
                           (= "transfersda" node-type)
                           (= :Dial verb)) "TransferRinging"
                      (and (= "transferlist" node-type)
                           (= :Dial verb)) "TransferRinging"
                      (= "transferlist" node-type) nil
-                     :else "InProgress")
+                     (= :enter current-action) "InProgress"
+                     :else nil)
         change-state? (and success? next-state)
         state-update {:id call-id :next-state next-state}]
     (log "debug" "check-call-state"

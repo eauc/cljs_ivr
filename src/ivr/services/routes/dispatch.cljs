@@ -24,7 +24,7 @@
                          (merge body query)))
                    (merge express-params))]
     (->> params
-         (log "info" "Extract ivr-params")
+         (log "debug" "Extract ivr-params")
          (set-route-params route))))
 
 

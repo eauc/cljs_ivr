@@ -14,7 +14,7 @@
 
 (defn- params-fx [context route new-params]
   (->> new-params
-       (log "info" "Update ivr-params")
+       (log "debug" "Update ivr-params")
        (dispatch/set-route-params route)))
 
 (interceptor/reg-fx

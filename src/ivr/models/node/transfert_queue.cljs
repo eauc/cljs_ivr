@@ -29,14 +29,14 @@
                     :queue_id queue
                     :on-success [::play-waiting-sound {:call-id call-id :node node :queue-id queue}]
                     :on-error [::error-acd-enqueue {:node node}]}))]
-    {:ivr.web/request
+    {:dispatch-n [[:ivr.call/state {:id call-id :info {:queue queue}}]]
+     :ivr.web/request
      (acd acd-params)}))
 
 
 (defn- play-waiting-sound
   [{:keys [verbs]} {:keys [call-id queue-id wait-sound]}]
-  {:dispatch-n [[:ivr.call/state {:id call-id :info {:queue queue-id}}]]
-   :ivr.routes/response
+  {:ivr.routes/response
    (verbs
      [{:type :ivr.verbs/loop-play
        :path (str "/cloudstore/file/" wait-sound)}])})

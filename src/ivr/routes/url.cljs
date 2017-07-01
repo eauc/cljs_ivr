@@ -1,6 +1,7 @@
 (ns ivr.routes.url
   (:require [clojure.string :as s]))
 
+
 (def config
   {:module "IVR"
    :version "1.0.0"
@@ -15,7 +16,11 @@
                       :context "/"}
                :status {:link "/script/:script_id"
                         :call "/status"
-                        :dial "/dialstatus"}}}})
+                        :dial "/dialstatus"}
+               :twimlet {:link "/twimlets"
+                         :loop-play "/loopPlay/:file"
+                         :welcome "/welcome"}}}})
+
 
 (defn- relative [api-path]
   (let [value (get-in (:apis config) api-path)]
@@ -23,12 +28,15 @@
       value
       (:link value))))
 
+
 (defn- replace-param [url [name value]]
   (let [pattern (s/replace (str name) #"-" "_")]
     (s/replace url pattern value)))
 
+
 (defn- replace-params [url params]
   (reduce #(replace-param %1 %2) url params))
+
 
 (defn absolute
   ([api-path]
@@ -47,6 +55,7 @@
    (-> api-path
        absolute
        (replace-params params))))
+
 
 (defn describe
   ([api-path]

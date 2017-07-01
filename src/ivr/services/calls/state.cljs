@@ -13,9 +13,15 @@
   [{:keys [call-time-now db]}
    {:keys [id next-state info status dial-status] :as event}]
   (let [{:keys [state] :as call} (call/db-call db id)
+        {current-state :current start-time :start-time} state
         state-update
         (cond-> state
-          next-state (merge {:current next-state :start-time call-time-now})
+          (and next-state
+               (not (= next-state current-state)))
+          (merge {:current next-state
+                  :start-time (if (= "Created" current-state)
+                                (get-in call [:info :time])
+                                call-time-now)})
           info (update :info merge info)
           status (update :status merge status)
           dial-status (update :dial-status merge dial-status))]

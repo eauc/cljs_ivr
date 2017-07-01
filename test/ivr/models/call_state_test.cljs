@@ -101,6 +101,18 @@
 
         (testing "from Transferred"
           (is (= {:ivr.call/remove "call-id"
+                  :ivr.ticket/emit {:producer "IVR"
+                                    :time 71
+                                    :duration 57
+                                    :applicationid "app-id"
+                                    :from "from"
+                                    :callTime 42
+                                    :callid "call-id"
+                                    :action :ongoing
+                                    :accountid "account-id"
+                                    :subject "ACTION"
+                                    :scriptid "script-id"
+                                    :to "to"}
                   :ivr.web/request {:services :query
                                     :type :ivr.services/call-on-end
                                     :action :data
@@ -128,7 +140,7 @@
                                  :subject "ACTION"
                                  :scriptid "script-id"
                                  :to "to"}]
-            (is (= nil
+            (is (= expected-ticket
                    (get (call-state/on-enter
                           (assoc-in call [:state :status "cause"] "xml-hangup")
                           options)
@@ -236,6 +248,8 @@
                 (merge base-ticket
                        {:state "Created"
                         :nextState "AcdTransferred"
+                        :time 42
+                        :duration 0
                         :queueid "queue-id"})}
                (call-state/emit-ticket
                  call
@@ -251,7 +265,9 @@
         (is (= {:ivr.ticket/emit
                 (merge base-ticket
                        {:state "Created"
-                        :nextState "InProgress"})}
+                        :nextState "InProgress"
+                        :time 42
+                        :duration 0})}
                (call-state/emit-ticket
                  call
                  (assoc update :next-state "InProgress")))))
@@ -273,6 +289,8 @@
                 (merge base-ticket
                        {:state "Created"
                         :nextState "TransferRinging"
+                        :time 42
+                        :duration 0
                         :ringingSda "sda"})}
                (call-state/emit-ticket
                  call

@@ -74,16 +74,23 @@
   [{{current-state :current
      start-time :start-time} :state :as call}
    {:keys [now next-state] :as update}]
-  (let [duration (- now start-time)]
-    (merge (set/rename-keys (:info call) {:id :callId
-                                          :time :callTime
-                                          :account-id :accountid
-                                          :application-id :applicationid
-                                          :script-id :scriptid})
+  (let [duration (if-not (= "Created" current-state)
+                   (- now start-time)
+                   0)
+        call-info (set/rename-keys
+                    (:info call)
+                    {:id :callId
+                     :time :callTime
+                     :account-id :accountid
+                     :application-id :applicationid
+                     :script-id :scriptid})]
+    (merge call-info
            {:subject "CALL"
             :state current-state
             :nextState next-state
-            :time now
+            :time (if-not (= "Created" current-state)
+                    now
+                    (:callTime call-info))
             :duration duration})))
 
 

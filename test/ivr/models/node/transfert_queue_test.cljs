@@ -23,7 +23,9 @@
         params {"call" call}
         context {:call call :deps deps :params params}]
     (testing "enter"
-      (is (= {:ivr.web/request
+      (is (= {:dispatch-n
+              [[:ivr.call/state {:id "call-id", :info {:queue "queue-id"}}]]
+              :ivr.web/request
               {:acd :query
                :type :ivr.acd/enqueue-call
                :call call
@@ -40,9 +42,7 @@
 
 
       (testing "play-waiting-sound"
-        (is (= {:dispatch-n
-                [[:ivr.call/state {:id "call-id", :info {:queue "queue-id"}}]]
-                :ivr.routes/response
+        (is (= {:ivr.routes/response
                 {:verbs :create
                  :data [{:type :ivr.verbs/loop-play
                          :path "/cloudstore/file/waiting"}]}}

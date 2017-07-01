@@ -21,6 +21,7 @@
             ivr.models.node.voice-record-test
             ivr.models.script-test
             ivr.models.store-test
+            ivr.models.twimlet-test
             ivr.models.verbs-test
             ivr.routes.url-test
             ivr.services.calls.action-test
@@ -56,6 +57,7 @@
                   'ivr.models.node.voice-record-test
                   'ivr.models.script-test
                   'ivr.models.store-test
+                  'ivr.models.twimlet-test
                   'ivr.models.verbs-test
                   'ivr.routes.url-test
                   'ivr.services.calls.action-test
