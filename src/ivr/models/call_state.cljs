@@ -79,7 +79,7 @@
                    0)
         call-info (set/rename-keys
                     (:info call)
-                    {:id :callId
+                    {:id :callid
                      :time :callTime
                      :account-id :accountid
                      :application-id :applicationid

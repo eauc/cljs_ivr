@@ -42,6 +42,11 @@
                      :services #(assoc % :services :query)
                      :time 71}]
 
+        (testing "from Created"
+          (let [options (assoc options :from "Created")]
+            (is (= {:ivr.call/remove "call-id"}
+                   (call-state/on-enter call options)))))
+
         (testing "from AcdTransferred"
           (let [options (assoc options :from "AcdTransferred")
                 expected-ticket {:producer "IVR"
@@ -236,7 +241,7 @@
                        :applicationid "app-id"
                        :from "from"
                        :callTime 42
-                       :callId "call-id"
+                       :callid "call-id"
                        :accountid "account-id"
                        :scriptid "script-id"
                        :to "to"

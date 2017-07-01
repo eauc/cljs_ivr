@@ -78,9 +78,9 @@
         (let [node (merge node {"case" {"noagent" "69"
                                         "timeout" "71"}})
               context (update context :params
-                              merge {"overflowcause" "QUEUE_FULL"})]
+                              merge {"overflowcause" "FULL_QUEUE"})]
           (is (= {:dispatch-n
-                  [[:ivr.call/state {:id "call-id", :info {:overflow-cause "QUEUE_FULL"}}]]
+                  [[:ivr.call/state {:id "call-id", :info {:overflow-cause "FULL_QUEUE"}}]]
                   :ivr.routes/response
                   {:verbs :create
                    :data [{:type :ivr.verbs/hangup}]}}
@@ -112,9 +112,9 @@
                                         "noagent" "69"
                                         "timeout" "71"}})
               context (update context :params
-                              merge {"overflowcause" "QUEUE_FULL"})]
+                              merge {"overflowcause" "FULL_QUEUE"})]
           (is (= {:dispatch-n
-                  [[:ivr.call/state {:id "call-id", :info {:overflow-cause "QUEUE_FULL"}}]]
+                  [[:ivr.call/state {:id "call-id", :info {:overflow-cause "FULL_QUEUE"}}]]
                   :ivr.routes/response
                   {:verbs :create
                    :data [{:type :ivr.verbs/redirect

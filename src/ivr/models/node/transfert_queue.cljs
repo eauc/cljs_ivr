@@ -64,7 +64,7 @@
         call-id (call/id (get params "call"))
         next (cond
                (= "NO_AGENT" overflowcause) (get case "noagent")
-               (= "QUEUE_FULL" overflowcause) (get case "full")
+               (= "FULL_QUEUE" overflowcause) (get case "full")
                (= "QUEUE_TIMEOUT" overflowcause) (get case "timeout")
                :else nil)
         go-to-next (node/go-to-next (assoc node "next" next) deps)

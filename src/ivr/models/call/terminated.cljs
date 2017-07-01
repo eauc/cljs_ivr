@@ -24,8 +24,9 @@
         on-end-data (merge info
                            action-data
                            {:type :ivr.services/call-on-end})]
-    {:ivr.call/remove id
-     :ivr.web/request (services on-end-data)
-     :ivr.ticket/emit
-     (cond-> (call-action/call->ticket call time)
-       end-cause (assoc :endCause end-cause))}))
+    (cond-> {:ivr.call/remove id}
+      (not (= "Created" from))
+      (merge {:ivr.ticket/emit
+              (cond-> (call-action/call->ticket call time)
+                end-cause (assoc :endCause end-cause))
+              :ivr.web/request (services on-end-data)}))))
