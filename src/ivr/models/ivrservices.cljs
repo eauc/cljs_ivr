@@ -69,22 +69,17 @@
 
 
 (defmethod query :ivr.services/call-on-end
-  [{:keys [account-id script-id] :as params}]
+  [{:strs [accountid scriptid] :as params}]
   {:method "POST"
-   :url (str "/smartccivrservices/account/" account-id "/script/" script-id "/on-end")
-   :data (-> (dissoc params :type)
-             (set/rename-keys {:id :callid
-                               :account-id :accountid
-                               :application-id :applicationid
-                               :script-id :scriptid
-                               :time :callTime}))
+   :url (str "/smartccivrservices/account/" accountid "/script/" scriptid "/onend")
+   :data (log "error" "paf" (dissoc params :type))
    :on-success [:ivr.services/call-on-end-success params]
    :on-error [:ivr.services/call-on-end-error params]})
 
 
 (defn call-on-end-success
   [_ params]
-  (log "info" "call-on-end ok" params)
+  (log "info" "call-on-end ok")
   {})
 
 (db/reg-event-fx
@@ -93,8 +88,8 @@
 
 
 (defn call-on-end-error
-  [_ params]
-  (log "error" "call-on-end error" params)
+  [_ {:keys [error]}]
+  (log "error" "call-on-end error" error)
   {})
 
 (db/reg-event-fx

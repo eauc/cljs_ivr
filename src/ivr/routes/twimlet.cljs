@@ -27,10 +27,8 @@
 
 (def router
   (-> (.Router express)
-      (doto
-
-          (.post loop-play-url loop-play-route)
-          (.post welcome-url welcome-route))))
+      (doto (.all loop-play-url loop-play-route)
+        (.all welcome-url welcome-route))))
 
 
 (defn init

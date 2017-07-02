@@ -1,0 +1,26 @@
+{
+	"swagger": "2.0",
+	"info": {
+		"version": "1.0",
+		"title": "API du module SmartCCIVR"
+	},
+	"paths": {
+		"/twimlets/welcome": {
+			"produces": [
+				"application/xml"
+			],
+			"get": {
+				"summary": "Joue le son de bienvenue",
+				"description": "Retourne le CCML pour jouer le son de bienvenue",
+				"responses": {
+					"200": {
+						"description": "Le CCML à exécuter par CCAPI (diffusion du son de bienvenue)",
+						"schema": {
+							"type": "string"
+						}
+					}
+				}
+			}
+		}
+	}
+}

@@ -19,9 +19,9 @@
 
 (defn welcome-route
   [{:keys [db verbs]}]
-  (let [welcome-sound (get-in db [:config-info :config :business :welcome-sound])]
+  (let [welcome-sound (get-in db [:config-info :config :business :welcome_sound])]
     {:ivr.routes/response
-     (verbs [{:type :ivr.verbs/loop-play
+     (verbs [{:type :ivr.verbs/play
               :path (str "/cloudstore/file/" welcome-sound)}])}))
 
 (routes/reg-action

@@ -22,10 +22,10 @@
 
 
     (testing "welcome-model"
-      (let [db {:config-info {:config {:business {:welcome-sound "welcome-id"}}}}
+      (let [db {:config-info {:config {:business {:welcome_sound "welcome-id"}}}}
             deps {:db db :verbs verbs}]
         (is (= {:ivr.routes/response
                 {:verbs
-                 [{:type :ivr.verbs/loop-play
+                 [{:type :ivr.verbs/play
                    :path "/cloudstore/file/welcome-id"}]}}
                (twimlet/welcome-route deps)))))))

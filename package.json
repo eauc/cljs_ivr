@@ -12,6 +12,7 @@
     "body-parser": "^1.17.2",
     "chai": "^4.0.2",
     "express": "^4.15.3",
+    "hippie-swagger": "^3.0.0",
     "merge": "^1.2.0",
     "mocha": "^3.4.2",
     "nock": "^9.0.13",
@@ -21,6 +22,7 @@
     "sinon": "^2.3.6",
     "supertest": "^3.0.0",
     "supertest-as-promised": "^4.0.2",
+    "swagger-parser": "^3.4.1",
     "underscore": "^1.8.3",
     "xml2js": "^0.4.17"
   },

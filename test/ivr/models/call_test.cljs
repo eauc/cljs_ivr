@@ -34,7 +34,8 @@
                                         :time "call-time"}
                                  :state {:current "Created"
                                          :start-time "call-time"}
-                                 :action-data {}
+                                 :action-data {"callid" "call-id"
+                                               "callTime" "call-time"}
                                  :action-ongoing nil}}}
              (call/db-insert-call {} call)))
       (is (= {:calls {"other-id" {:call :data}
@@ -42,7 +43,8 @@
                                         :time "call-time"}
                                  :state {:current "Created"
                                          :start-time "call-time"}
-                                 :action-data {}
+                                 :action-data {"callid" "call-id"
+                                               "callTime" "call-time"}
                                  :action-ongoing nil}}}
              (call/db-insert-call {:calls {"other-id" {:call :data}}} call)))))
 
@@ -62,7 +64,8 @@
                                         :info :data}
                                  :state {:current "Created"
                                          :start-time "call-time"}
-                                 :action-data {}
+                                 :action-data {"callid" "call-id"
+                                               "callTime" "call-time"}
                                  :action-ongoing nil}}}
              (call/db-update-call db "call-id" update :info merge {:info :data})))))
 

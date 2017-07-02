@@ -17,10 +17,18 @@
 
 
 (defn info->call [{:keys [time] :as info}]
-  {:info (select-keys info [:id :account-id :application-id :from :to :script-id :time])
-   :state {:current "Created" :start-time time}
-   :action-data (call-number/geo-localize-call info)
-   :action-ongoing nil})
+  (let [call-info (select-keys info [:id :account-id :application-id :from :to :script-id :time])]
+    {:info call-info
+     :state {:current "Created" :start-time time}
+     :action-data (merge (set/rename-keys call-info {:id "callid"
+                                                     :account-id "accountid"
+                                                     :application-id "applicationid"
+                                                     :from "CALLER"
+                                                     :to "CALLEE"
+                                                     :script-id "scriptid"
+                                                     :time "callTime"})
+                         (call-number/geo-localize-call info))
+     :action-ongoing nil}))
 
 
 (defn id

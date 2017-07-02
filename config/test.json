@@ -1,6 +1,6 @@
 {
   "business": {
-    "welcome-sound": "welcome-id"
+    "welcome_sound": "welcome-id"
   },
   "environment": {
     "dispatch_url": {

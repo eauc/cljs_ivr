@@ -61,6 +61,11 @@
                                  :subject "ACTION"
                                  :scriptid "script-id"
                                  :to "to"}]
+            (is (= nil
+                   (get (call-state/on-enter
+                          (dissoc call :action-ongoing)
+                          options)
+                        :ivr.ticket/emit)))
             (is (= (assoc expected-ticket :endCause "")
                    (get (call-state/on-enter
                           (assoc-in call [:state :info :overflow-cause] "overflow-cause")
@@ -93,6 +98,11 @@
                                  :subject "ACTION"
                                  :scriptid "script-id"
                                  :to "to"}]
+            (is (= nil
+                   (get (call-state/on-enter
+                          (dissoc call :action-ongoing)
+                          options)
+                        :ivr.ticket/emit)))
             (is (= (assoc expected-ticket :endCause "CALLER_HANG_UP")
                    (get (call-state/on-enter
                           (assoc-in call [:state :status "cause"] "user-hangup")
@@ -105,6 +115,13 @@
                         :ivr.ticket/emit)))))
 
         (testing "from Transferred"
+          (is (= {:ivr.call/remove "call-id"
+                  :ivr.web/request {:services :query
+                                    :type :ivr.services/call-on-end
+                                    :action :data}}
+                 (call-state/on-enter
+                   (dissoc call :action-ongoing)
+                   options)))
           (is (= {:ivr.call/remove "call-id"
                   :ivr.ticket/emit {:producer "IVR"
                                     :time 71
@@ -120,14 +137,7 @@
                                     :to "to"}
                   :ivr.web/request {:services :query
                                     :type :ivr.services/call-on-end
-                                    :action :data
-                                    :account-id "account-id"
-                                    :application-id "app-id"
-                                    :id "call-id"
-                                    :script-id "script-id"
-                                    :from "from"
-                                    :to "to"
-                                    :time 42}}
+                                    :action :data}}
                  (call-state/on-enter call options))))
 
         (testing "from TransferRinging"
@@ -145,6 +155,11 @@
                                  :subject "ACTION"
                                  :scriptid "script-id"
                                  :to "to"}]
+            (is (= nil
+                   (get (call-state/on-enter
+                          (dissoc call :action-ongoing)
+                          options)
+                        :ivr.ticket/emit)))
             (is (= expected-ticket
                    (get (call-state/on-enter
                           (assoc-in call [:state :status "cause"] "xml-hangup")

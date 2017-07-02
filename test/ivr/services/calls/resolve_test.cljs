@@ -85,7 +85,13 @@
                                     :script-id "script-id"
                                     :time "call-time-now"}
                              :state {:current "Created" :start-time "call-time-now"}
-                             :action-data {}
+                             :action-data {"callid" "new-call"
+                                           "accountid" "account-id"
+                                           "applicationid" "application-id"
+                                           "CALLER" "from-sda"
+                                           "CALLEE" "to-sda"
+                                           "scriptid" "script-id"
+                                           "callTime" "call-time-now"}
                              :action-ongoing nil}]
           (is (= {:ivr.call/create expected-call
                   :ivr.routes/params (assoc params "call" expected-call)

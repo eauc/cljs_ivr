@@ -75,21 +75,21 @@
 
   (testing "call onEnd"
     (let [params {:type :ivr.services/call-on-end
-                  :account-id "account-id"
-                  :application-id "app-id"
-                  :script-id "script-id"
-                  :from "from"
-                  :to "to"
-                  :time 42}
+                  "accountid" "account-id"
+                  "applicationid" "app-id"
+                  "scriptid" "script-id"
+                  "CALLER" "from"
+                  "CALLEE" "to"
+                  "callTime" 42}
           request (services/query params)]
       (is (= {:method "POST"
-              :url "/smartccivrservices/account/account-id/script/script-id/on-end"
-              :data {:from "from"
-                     :to "to"
-                     :accountid "account-id"
-                     :applicationid "app-id"
-                     :scriptid "script-id"
-                     :callTime 42}
+              :url "/smartccivrservices/account/account-id/script/script-id/onend"
+              :data {"CALLER" "from"
+                     "CALLEE" "to"
+                     "accountid" "account-id"
+                     "applicationid" "app-id"
+                     "scriptid" "script-id"
+                     "callTime" 42}
               :on-success
               [:ivr.services/call-on-end-success params]
               :on-error

@@ -48,13 +48,13 @@
     {:ivr.routes/response
      (verbs
        [{:type :ivr.verbs/record
-         :maxlength (:maxlength config)
+         :maxlength (or (:maxlength config) 300)
          :finishonkey (str validate_key cancel_key)
          :callbackurl callback-url}])}))
 
 (node/reg-action
   ::record-with-config
-  [(re-frame/inject-cofx :ivr.config/cofx [:ivr :voicerecord])]
+  [(re-frame/inject-cofx :ivr.config/cofx [:business :voicerecord])]
   record-with-config)
 
 
@@ -64,7 +64,7 @@
     :or {record_digits ""}
     :as params}]
   (and (= "digit-a" record_cause)
-       (re-find (re-pattern (str cancel_key "$")) record_digits)))
+       (.endsWith record_digits cancel_key)))
 
 
 (defn- cancel-record

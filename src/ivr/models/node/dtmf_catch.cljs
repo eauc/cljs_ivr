@@ -24,7 +24,8 @@
 (defn- conform-welcome
   [node]
   (-> node
-      (update "retry" #(if-not (integer? %) 0 %))
+      (cond-> (contains? node "retry")
+        (update "retry" conform-sound))
       (update "welcome" #(or % []))
       (update "welcome" #(if-not (vector? %) (vector %) %))
       (update "welcome" #(mapv conform-sound %))))
@@ -109,7 +110,7 @@
 (defn- retry
   [{:strs [retry welcome] :as node}
    {:keys [retries] :as context}]
-  (let [sounds (if (> retries 1) (drop retry welcome) welcome)]
+  (let [sounds (if (and (> retries 1) retry) (concat [retry] welcome) welcome)]
     (resolve-sounds [] sounds node context)))
 
 
