@@ -1,5 +1,5 @@
 (ns ivr.specs.node
-  (:require [cljs.spec :as spec]
+  (:require [cljs.spec.alpha :as spec]
             [ivr.specs.call]))
 
 (def known-types

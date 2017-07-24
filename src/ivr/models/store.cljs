@@ -1,5 +1,5 @@
 (ns ivr.models.store
-  (:require [cljs.spec :as spec]
+  (:require [cljs.spec.alpha :as spec]
             [ivr.services.routes.error :as routes-error]
             [re-frame.core :as re-frame]))
 

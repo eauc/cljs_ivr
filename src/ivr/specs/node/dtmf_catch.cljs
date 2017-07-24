@@ -1,5 +1,5 @@
 (ns ivr.specs.node.dtmf-catch
-  (:require [cljs.spec :as spec]
+  (:require [cljs.spec.alpha :as spec]
             [ivr.specs.node]))
 
 (spec/def :ivr.node.dtmf-catch.sound/pronounce

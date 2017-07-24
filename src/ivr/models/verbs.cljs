@@ -1,5 +1,5 @@
 (ns ivr.models.verbs
-  (:require [cljs.spec :as spec]
+  (:require [cljs.spec.alpha :as spec]
             [ivr.libs.logger :as logger]
             [ivr.models.verb-base :as verb-base]
             [ivr.models.verbs.dial-number]

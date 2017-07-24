@@ -1,5 +1,5 @@
 (ns ivr.specs.script
-  (:require [cljs.spec :as spec]
+  (:require [cljs.spec.alpha :as spec]
             [ivr.specs.call]
             [ivr.specs.node.announcement]
             [ivr.specs.node.dtmf-catch]

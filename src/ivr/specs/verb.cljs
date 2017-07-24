@@ -1,5 +1,5 @@
 (ns ivr.specs.verb
-  (:require [cljs.spec :as spec]))
+  (:require [cljs.spec.alpha :as spec]))
 
 (spec/def :ivr.verb/type
   keyword?)

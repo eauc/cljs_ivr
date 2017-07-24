@@ -1,6 +1,6 @@
 (ns ivr.services.routes-test
   (:require [clojure.test :as test :refer-macros [async deftest is run-tests testing use-fixtures]]
-            [cljs.spec :as spec]
+            [cljs.spec.test.alpha :as stest]
             [ivr.services.routes :as routes]
             [ivr.services.routes.interceptor :as interceptor]))
 

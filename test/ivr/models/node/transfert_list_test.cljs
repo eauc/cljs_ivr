@@ -1,5 +1,5 @@
 (ns ivr.models.node.transfert-list-test
-  (:require [cljs.spec.test :as stest]
+  (:require [cljs.spec.test.alpha :as stest]
             [clojure.test :as test :refer-macros [deftest is testing use-fixtures]]
             [ivr.models.call :as call]
             [ivr.models.node :as node]

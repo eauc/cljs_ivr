@@ -1,5 +1,5 @@
 (ns ivr.specs.node.voice-record
-  (:require [cljs.spec :as spec]
+  (:require [cljs.spec.alpha :as spec]
             [ivr.specs.node]))
 
 (spec/def :ivr.node.voice-record/varname

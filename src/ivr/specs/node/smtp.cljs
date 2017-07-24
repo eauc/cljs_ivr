@@ -1,5 +1,5 @@
 (ns ivr.specs.node.smtp
-  (:require [cljs.spec :as spec]))
+  (:require [cljs.spec.alpha :as spec]))
 
 (spec/def :ivr.node.smtp/attachment
   string?)

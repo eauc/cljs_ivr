@@ -1,6 +1,6 @@
 (ns ivr.models.node-action-test
   (:require [clojure.test :as test :refer-macros [async deftest is run-tests testing use-fixtures]]
-            [cljs.spec.test :as stest]
+            [cljs.spec.test.alpha :as stest]
             [ivr.models.call :as call]
             [ivr.models.node-action :as node-action]
             [ivr.models.verbs :as verbs]))

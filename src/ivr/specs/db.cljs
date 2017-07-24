@@ -1,5 +1,5 @@
 (ns ivr.specs.db
-  (:require [cljs.spec :as spec]
+  (:require [cljs.spec.alpha :as spec]
             [ivr.specs.call]
             [ivr.specs.config]))
 

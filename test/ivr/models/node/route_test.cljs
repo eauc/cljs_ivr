@@ -1,5 +1,5 @@
 (ns ivr.models.node.route-test
-	(:require [cljs.spec.test :as stest]
+	(:require [cljs.spec.test.alpha :as stest]
 						[clojure.test :as test :refer-macros [async deftest is run-tests testing use-fixtures]]
 						[ivr.models.node :as node]
 						[ivr.models.node.route :as route-node]

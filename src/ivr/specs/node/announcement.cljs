@@ -1,5 +1,5 @@
 (ns ivr.specs.node.announcement
-  (:require [cljs.spec :as spec]
+  (:require [cljs.spec.alpha :as spec]
             [ivr.specs.node]))
 
 (spec/def :ivr.node.announcement/soundname

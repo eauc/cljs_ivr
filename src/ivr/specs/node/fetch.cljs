@@ -1,5 +1,5 @@
 (ns ivr.specs.node.fetch
-  (:require [cljs.spec :as spec]
+  (:require [cljs.spec.alpha :as spec]
             [ivr.specs.node]))
 
 (spec/def :ivr.node.fetch/id_routing_rule

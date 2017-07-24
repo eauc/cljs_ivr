@@ -1,5 +1,5 @@
 (ns ivr.models.verb-base
-  (:require [cljs.spec :as spec]
+  (:require [cljs.spec.alpha :as spec]
             [ivr.specs.verb]))
 
 (spec/fdef create-type

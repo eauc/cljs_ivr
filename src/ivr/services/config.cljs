@@ -1,7 +1,7 @@
 (ns ivr.services.config
   (:require [cljs.core.async :as async :refer [<!]]
             [cljs.nodejs :as nodejs]
-            [cljs.spec :as spec]
+            [cljs.spec.alpha :as spec]
             [clojure.string :as str]
             [ivr.db :as db]
             [ivr.libs.logger :as logger]

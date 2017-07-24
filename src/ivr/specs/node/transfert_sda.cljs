@@ -1,5 +1,5 @@
 (ns ivr.specs.node.transfert-sda
-  (:require [cljs.spec :as spec]))
+  (:require [cljs.spec.alpha :as spec]))
 
 (spec/def :ivr.node.transfert-sda/dest
   string?)

@@ -1,5 +1,5 @@
 (ns ivr.specs.route
-  (:require [cljs.spec :as spec]))
+  (:require [cljs.spec.alpha :as spec]))
 
 (spec/def :ivr.route/req
   any?)

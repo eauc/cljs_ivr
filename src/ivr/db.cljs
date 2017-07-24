@@ -1,5 +1,5 @@
 (ns ivr.db
-  (:require [cljs.spec :as spec]
+  (:require [cljs.spec.alpha :as spec]
             [clojure.data :as data]
             [ivr.debug :refer [debug?]]
             [ivr.libs.logger :as logger]

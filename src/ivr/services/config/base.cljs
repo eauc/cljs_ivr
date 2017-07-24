@@ -1,5 +1,5 @@
 (ns ivr.services.config.base
-  (:require [cljs.spec :as spec]
+  (:require [cljs.spec.alpha :as spec]
             [ivr.specs.config]
             [ivr.libs.logger :as logger]))
 

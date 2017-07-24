@@ -1,5 +1,5 @@
 (ns ivr.services.routes.interceptor
-  (:require [cljs.spec :as spec]
+  (:require [cljs.spec.alpha :as spec]
             [ivr.libs.logger :as logger]
             [ivr.services.routes.dispatch :as dispatch]
             [ivr.specs.route]

@@ -1,5 +1,5 @@
 (ns ivr.specs.config
-  (:require [cljs.spec :as spec]))
+  (:require [cljs.spec.alpha :as spec]))
 
 (spec/def :ivr.config/config
   map?)

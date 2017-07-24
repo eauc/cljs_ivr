@@ -1,6 +1,6 @@
 (ns ivr.services.config.base-test
   (:require [cljs.core.async :refer [<!]]
-            [cljs.spec.test :as stest]
+            [cljs.spec.test.alpha :as stest]
             [clojure.test :as test :refer-macros [async deftest is run-tests testing use-fixtures]]
             [ivr.services.config.base :as base])
   (:require-macros [cljs.core.async.macros :refer [go]]))
